@@ -1,38 +1,39 @@
 import os
 import webbrowser
+from typing import Any
 from skills.base_skill import BaseSkill
 
 # System monitoring
 try:
     import psutil
-    HAS_PSUTIL = True
+    has_psutil = True
 except ImportError:
-    HAS_PSUTIL = False
+    has_psutil = False
     print("⚠️ psutil not available - system info disabled")
 
 # Screenshot capability
 try:
     import pyautogui
-    HAS_PYAUTOGUI = True
+    has_pyautogui = True
 except ImportError:
-    HAS_PYAUTOGUI = False
+    has_pyautogui = False
     print("⚠️ pyautogui not available - screenshot disabled")
 
 # Try to import pycaw for audio control
 try:
     from comtypes import CLSCTX_ALL
     from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-    HAS_AUDIO_CONTROL = True
+    has_audio_control = True
 except (ImportError, Exception):
-    HAS_AUDIO_CONTROL = False
+    has_audio_control = False
     print("⚠️  pycaw not available - volume control disabled")
 
 # Try to import screen_brightness_control for brightness control
 try:
     import screen_brightness_control as sbc
-    HAS_BRIGHTNESS_CONTROL = True
+    has_brightness_control = True
 except ImportError:
-    HAS_BRIGHTNESS_CONTROL = False
+    has_brightness_control = False
     print("⚠️ screen_brightness_control not available - brightness control disabled")
 
 
@@ -40,14 +41,14 @@ class OpenAppSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'open_app'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
         app_name = entities.get('app_name', '').lower()
         return self._open_application(app_name)
 
-    def _open_application(self, app_name: str):
+    def _open_application(self, app_name: str) -> str:
         """Open an application by searching for it."""
         app_paths = {
             'chrome': "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -77,8 +78,8 @@ class OpenAppSkill(BaseSkill):
                 os.path.join(os.environ.get("APPDATA"), "Microsoft\\Windows\\Start Menu\\Programs"),
                 os.path.join(os.environ.get("ALLUSERSPROFILE"), "Microsoft\\Windows\\Start Menu\\Programs")
             ]
-            for dir in search_dirs:
-                for root, _, files in os.walk(dir):
+            for dir_path in search_dirs:
+                for root, _, files in os.walk(dir_path):
                     for file in files:
                         if app_name.lower() in file.lower() and file.endswith((".exe", ".lnk")):
                             try:
@@ -94,11 +95,11 @@ class AutomationSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent in ['type_text', 'move_mouse']
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
-        if not HAS_PYAUTOGUI:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
+        if not has_pyautogui:
             return "Automation features are not available."
         
         if intent == 'type_text':
@@ -124,11 +125,11 @@ class WindowSwitchSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'switch_window'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
-        if not HAS_PYAUTOGUI:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
+        if not has_pyautogui:
             return "Window switching is not available."
         
         pyautogui.hotkey('alt', 'tab')
@@ -139,21 +140,23 @@ class VolumeSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'volume'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
         action = entities.get('action')
         level = entities.get('level')
         return self._control_volume(action, level)
 
-    def _control_volume(self, action: str = None, level: int = None):
+    def _control_volume(self, action: str = None, level: int = None) -> str:
         """Control system volume."""
-        if not HAS_AUDIO_CONTROL:
+        if not has_audio_control:
             return "Volume control is not available on this system."
         
         try:
             device = AudioUtilities.GetSpeakers()
+            if not device:
+                return "No audio device found."
             volume = device.EndpointVolume
             current_level = volume.GetMasterVolumeLevelScalar()
             
@@ -189,16 +192,16 @@ class BrightnessSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'brightness'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
         level = entities.get('level')
         return self._control_brightness(level)
 
-    def _control_brightness(self, level: int = None):
+    def _control_brightness(self, level: int = None) -> str:
         """Control screen brightness."""
-        if not HAS_BRIGHTNESS_CONTROL:
+        if not has_brightness_control:
             return "Brightness control is not available on this system."
         
         try:
@@ -209,7 +212,7 @@ class BrightnessSkill(BaseSkill):
                 else:
                     return "Brightness must be between 0 and 100."
             else:
-                current_brightness = sbc.get_brightness()
+                current_brightness = sbc.get_brightness()[0]
                 return f"Current brightness is {current_brightness}%"
         except Exception as e:
             print(f"❌ Brightness control error: {e}")
@@ -220,11 +223,11 @@ class SystemInfoSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'system_info'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
-        if not HAS_PSUTIL: 
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
+        if not has_psutil: 
             return "System info is not available."
         try:
             info = {
@@ -240,11 +243,11 @@ class ScreenshotSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'screenshot'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
-        if not HAS_PYAUTOGUI:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
+        if not has_pyautogui:
             return "Screenshot feature not available."
         try:
             import datetime
@@ -260,9 +263,9 @@ class ShutdownSkill(BaseSkill):
     def __init__(self, assistant):
         self.assistant = assistant
 
-    def can_handle(self, intent: str, entities: dict) -> bool:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> bool:
         return intent == 'shutdown'
 
-    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+    async def handle(self, intent: str, entities: dict[str, Any], assistant: "JarvisAssistant") -> str:
         os.system("shutdown /s /t 5")
         return "Shutting down the system in 5 seconds."

@@ -18,19 +18,17 @@ import inspect
 import os
 import sys
 import threading
-from typing import Dict, List
+from typing import Any, List
 
-import numpy as np
 import sounddevice as sd
 import speech_recognition as sr
-from playsound import playsound
 
 # Enhanced speech recognition
 try:
     import whisper
-    HAS_WHISPER = True
+    has_whisper = True
 except ImportError:
-    HAS_WHISPER = False
+    has_whisper = False
     print("⚠️ Whisper not available - using Google Speech only")
 
 # Import custom modules
@@ -38,8 +36,8 @@ from intent_detector import IntentDetector
 from enhanced_memory import EnhancedJarvisMemory
 from skills.base_skill import BaseSkill
 from wake_word import WakeWordDetector
+from tts import TTSManager, VoiceMode
 from gui_emitter import emitter
-from tts import TTSManager
 
 
 class SkillManager:
@@ -65,7 +63,7 @@ class SkillManager:
                 except Exception as e:
                     print(f"❌ Error loading skill {module_name}: {e}")
 
-    async def handle_intent(self, intent: str, entities: dict, user_input: str):
+    async def handle_intent(self, intent: str, entities: dict[str, Any], user_input: str):
         """
         Find the appropriate skill to handle the intent and execute it.
         """
@@ -116,7 +114,7 @@ class JarvisAssistant:
         print(f"📝 User: {self.memory.get_preference('owner', 'Guest')}")
         print(f"📍 Location: {self.memory.get_preference('city', 'Unknown')}")
 
-    async def speak_async(self, text: str, mode: str = "normal"):
+    async def speak_async(self, text: str, mode: VoiceMode = "normal"):
         """Asynchronously convert text to speech and emit a signal."""
         if self.use_gui:
             self.emitter.response_received.emit(text)
@@ -125,7 +123,7 @@ class JarvisAssistant:
     def listen(self, timeout: int = 5) -> str:
         """Listen for voice input with fallback to text."""
         result = self._listen_with_whisper(timeout)
-        if result is not None:
+        if result:
             return result
 
         if self.use_gui:
@@ -139,12 +137,12 @@ class JarvisAssistant:
                 return user_input.lower()
         except Exception as input_error:
             print(f"❌ Input error: {input_error}")
-        return None
+        return ""
 
     def _listen_with_whisper(self, timeout: int = 5) -> str:
         """Enhanced audio capture with Whisper."""
-        if not HAS_WHISPER:
-            return None
+        if not has_whisper:
+            return ""
         try:
             if self.use_gui:
                 self.emitter.status_changed.emit("🎤 Listening...")
@@ -164,10 +162,10 @@ class JarvisAssistant:
             if text:
                 print(f"👤 You (Whisper): {text}")
                 return text.lower()
-            return None
+            return ""
         except Exception as e:
             print(f"⚠️ Whisper error: {e}")
-            return None
+            return ""
 
     async def _process_command_async(self, command: str):
         """Asynchronously process a command."""
@@ -198,7 +196,7 @@ class JarvisAssistant:
                 print("👂 Wake word detected! Listening for command...")
             
             loop = asyncio.get_running_loop()
-            asyncio.run_coroutine_threadsafe(self.speak_async("Yes, sir? "), loop)
+            asyncio.run_coroutine_threadsafe(self.speak_async("Yes, sir?"), loop)
             
             command_thread = threading.Thread(target=self._listen_for_command_thread)
             command_thread.start()
@@ -280,9 +278,6 @@ class JarvisAssistant:
         print("🤖 JARVIS - Refactored AI Voice Assistant")
         print("="*60)
         
-        if sys.platform == "win32":
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-        
         self.use_gui = use_gui
         if self.use_gui:
             self.emitter.is_running_changed.emit(True)
@@ -301,7 +296,7 @@ def main():
     parser = argparse.ArgumentParser(description='JARVIS - Advanced AI Voice Assistant')
     parser.add_argument('--api-key', type=str, default="YOUR_GEMINI_API_KEY",
                         help='Gemini API Key')
-    parser.add_argument('--gui', action='store_true', help='Use GUI mode')
+    parser.add_gument('--gui', action='store_true', help='Use GUI mode')
     
     args = parser.parse_args()
     

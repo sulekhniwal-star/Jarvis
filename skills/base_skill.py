@@ -13,7 +13,7 @@ class BaseSkill(ABC):
         pass
 
     @abstractmethod
-    def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
         """
         Execute the skill's logic and return a response.
         """

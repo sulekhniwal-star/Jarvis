@@ -27,6 +27,14 @@ except (ImportError, Exception):
     HAS_AUDIO_CONTROL = False
     print("⚠️  pycaw not available - volume control disabled")
 
+# Try to import screen_brightness_control for brightness control
+try:
+    import screen_brightness_control as sbc
+    HAS_BRIGHTNESS_CONTROL = True
+except ImportError:
+    HAS_BRIGHTNESS_CONTROL = False
+    print("⚠️ screen_brightness_control not available - brightness control disabled")
+
 
 class OpenAppSkill(BaseSkill):
     def __init__(self, assistant):
@@ -40,7 +48,7 @@ class OpenAppSkill(BaseSkill):
         return self._open_application(app_name)
 
     def _open_application(self, app_name: str):
-        """Open an application."""
+        """Open an application by searching for it."""
         app_paths = {
             'chrome': "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
             'youtube': "https://www.youtube.com",
@@ -62,7 +70,69 @@ class OpenAppSkill(BaseSkill):
             self.assistant.memory.add_habit(f"opened_{app_name}")
             return f"Opening {app_name}"
         else:
+            # Search for the app in Program Files and Start Menu
+            search_dirs = [
+                os.environ.get("ProgramFiles", "C:\\Program Files"),
+                os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)"),
+                os.path.join(os.environ.get("APPDATA"), "Microsoft\\Windows\\Start Menu\\Programs"),
+                os.path.join(os.environ.get("ALLUSERSPROFILE"), "Microsoft\\Windows\\Start Menu\\Programs")
+            ]
+            for dir in search_dirs:
+                for root, _, files in os.walk(dir):
+                    for file in files:
+                        if app_name.lower() in file.lower() and file.endswith((".exe", ".lnk")):
+                            try:
+                                os.startfile(os.path.join(root, file))
+                                self.assistant.memory.add_habit(f"opened_{app_name}")
+                                return f"Opening {app_name}"
+                            except Exception as e:
+                                return f"Found {app_name} but could not open it: {e}"
             return f"I don't know how to open {app_name}"
+
+
+class AutomationSkill(BaseSkill):
+    def __init__(self, assistant):
+        self.assistant = assistant
+
+    def can_handle(self, intent: str, entities: dict) -> bool:
+        return intent in ['type_text', 'move_mouse']
+
+    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+        if not HAS_PYAUTOGUI:
+            return "Automation features are not available."
+        
+        if intent == 'type_text':
+            text_to_type = entities.get('text', '')
+            if text_to_type:
+                pyautogui.typewrite(text_to_type)
+                return f"Typing: {text_to_type}"
+            else:
+                return "You need to tell me what to type."
+        
+        elif intent == 'move_mouse':
+            x = entities.get('x')
+            y = entities.get('y')
+            if x is not None and y is not None:
+                pyautogui.moveTo(int(x), int(y))
+                return f"Moving mouse to ({x}, {y})"
+            else:
+                return "You need to provide x and y coordinates to move the mouse."
+        return "Unknown automation command."
+
+
+class WindowSwitchSkill(BaseSkill):
+    def __init__(self, assistant):
+        self.assistant = assistant
+
+    def can_handle(self, intent: str, entities: dict) -> bool:
+        return intent == 'switch_window'
+
+    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+        if not HAS_PYAUTOGUI:
+            return "Window switching is not available."
+        
+        pyautogui.hotkey('alt', 'tab')
+        return "Switching window."
 
 
 class VolumeSkill(BaseSkill):
@@ -113,6 +183,37 @@ class VolumeSkill(BaseSkill):
         except Exception as e:
             print(f"❌ Volume control error: {e}")
             return "I couldn't control the volume."
+
+
+class BrightnessSkill(BaseSkill):
+    def __init__(self, assistant):
+        self.assistant = assistant
+
+    def can_handle(self, intent: str, entities: dict) -> bool:
+        return intent == 'brightness'
+
+    async def handle(self, intent: str, entities: dict, assistant: "JarvisAssistant") -> str:
+        level = entities.get('level')
+        return self._control_brightness(level)
+
+    def _control_brightness(self, level: int = None):
+        """Control screen brightness."""
+        if not HAS_BRIGHTNESS_CONTROL:
+            return "Brightness control is not available on this system."
+        
+        try:
+            if level is not None:
+                if 0 <= level <= 100:
+                    sbc.set_brightness(level)
+                    return f"Brightness set to {level}%"
+                else:
+                    return "Brightness must be between 0 and 100."
+            else:
+                current_brightness = sbc.get_brightness()
+                return f"Current brightness is {current_brightness}%"
+        except Exception as e:
+            print(f"❌ Brightness control error: {e}")
+            return "I couldn't control the brightness."
 
 
 class SystemInfoSkill(BaseSkill):

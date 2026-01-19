@@ -20,11 +20,9 @@ import sys
 import threading
 from typing import Dict, List
 
-import edge_tts
 import numpy as np
 import sounddevice as sd
 import speech_recognition as sr
-from gtts import gTTS
 from playsound import playsound
 
 # Enhanced speech recognition
@@ -35,19 +33,13 @@ except ImportError:
     HAS_WHISPER = False
     print("⚠️ Whisper not available - using Google Speech only")
 
-# Try to import pyttsx3 for offline TTS
-try:
-    import pyttsx3
-    HAS_PYTTSX3 = True
-except ImportError:
-    HAS_PYTTSX3 = False
-
 # Import custom modules
 from intent_detector import IntentDetector
-from memory import JarvisMemory
+from enhanced_memory import EnhancedJarvisMemory
 from skills.base_skill import BaseSkill
 from wake_word import WakeWordDetector
 from gui_emitter import emitter
+from tts import TTSManager
 
 
 class SkillManager:
@@ -94,7 +86,6 @@ class SkillManager:
         context = self.assistant.memory.get_context_summary()
         response = self.assistant.intent_detector.get_ai_response(user_input, context)
         await self.assistant.speak_async(response)
-        self.assistant.memory.add_conversation(user_input, response, "ai_response")
 
 
 class JarvisAssistant:
@@ -105,15 +96,11 @@ class JarvisAssistant:
         self.use_gui = use_gui
 
         # Initialize core systems
-        self.memory = JarvisMemory()
+        self.memory = EnhancedJarvisMemory()
         self.intent_detector = IntentDetector(api_key)
         self.skill_manager = SkillManager(self)
         self.wake_word_detector = WakeWordDetector(on_wake_callback=self.on_wake_word)
-
-        # Voice settings - Initialize TTS engine
-        self.engine = None
-        self.tts_method = None  # 'edge-tts', 'pyttsx3', 'gtts', or None
-        self._initialize_tts()
+        self.tts_manager = TTSManager()
 
         self.recognizer = sr.Recognizer()
 
@@ -126,74 +113,14 @@ class JarvisAssistant:
         self.emitter = emitter
 
         print("✅ JARVIS Initialized Successfully!")
-        print(f"📝 User: {self.memory.memory.get('owner', 'Guest')}")
-        print(f"📍 Location: {self.memory.memory.get('city', 'Unknown')}")
+        print(f"📝 User: {self.memory.get_preference('owner', 'Guest')}")
+        print(f"📍 Location: {self.memory.get_preference('city', 'Unknown')}")
 
-    def _initialize_tts(self):
-        """Initializes the best available TTS engine."""
-        if HAS_EDGE_TTS:
-            self.tts_method = 'edge-tts'
-            print("✅ Edge-TTS enabled (high quality)")
-        elif HAS_PYTTSX3:
-            try:
-                self.engine = pyttsx3.init()
-                self.engine.setProperty('rate', 150)
-                self.tts_method = 'pyttsx3'
-                print("✅ pyttsx3 Text-to-Speech enabled (offline)")
-            except Exception as e:
-                print(f"⚠️ pyttsx3 initialization failed: {e}")
-                self.engine = None
-        elif HAS_GTTS:
-            self.tts_method = 'gtts'
-            print("✅ Google Text-to-Speech enabled (online)")
-        else:
-            print("⚠️ No TTS available - responses will be text-only")
-
-    async def speak_async(self, text: str):
+    async def speak_async(self, text: str, mode: str = "normal"):
         """Asynchronously convert text to speech and emit a signal."""
-        print(f"🔊 JARVIS: {text}")
         if self.use_gui:
             self.emitter.response_received.emit(text)
-        try:
-            if self.tts_method == 'edge-tts':
-                await self._speak_edge_tts(text)
-            elif self.tts_method == 'pyttsx3' and self.engine:
-                await asyncio.to_thread(self._speak_pyttsx3, text)
-            elif self.tts_method == 'gtts':
-                await asyncio.to_thread(self._speak_gtts, text)
-        except Exception as e:
-            print(f"❌ Speech synthesis error: {e}")
-
-    async def _speak_edge_tts(self, text: str):
-        """Speak using Edge-TTS."""
-        try:
-            voice = "en-US-GuyNeural"
-            communicate = edge_tts.Communicate(text, voice)
-            temp_audio_file = os.path.join(os.path.expanduser("~"), "AppData", "Local", "Temp", "jarvis_tts.mp3")
-            await communicate.save(temp_audio_file)
-            await asyncio.to_thread(playsound, temp_audio_file)
-            os.remove(temp_audio_file)
-        except Exception as e:
-            print(f"⚠️ Edge-TTS error: {e}")
-
-    def _speak_pyttsx3(self, text: str):
-        """Speak using pyttsx3."""
-        try:
-            self.engine.say(text)
-            self.engine.runAndWait()
-        except Exception as e:
-            print(f"⚠️ pyttsx3 error: {e}")
-
-    def _speak_gtts(self, text: str):
-        """Speak using gTTS."""
-        try:
-            tts = gTTS(text=text, lang='en')
-            temp_audio = os.path.join(os.path.expanduser("~"), "AppData", "Local", "Temp", "jarvis_gtts.mp3")
-            tts.save(temp_audio)
-            playsound(temp_audio)
-            os.remove(temp_audio)
-        except Exception as e:
-            print(f"⚠️ gTTS error: {e}")
+        await self.tts_manager.speak_async(text, mode)
 
     def listen(self, timeout: int = 5) -> str:
         """Listen for voice input with fallback to text."""
@@ -271,7 +198,7 @@ class JarvisAssistant:
                 print("👂 Wake word detected! Listening for command...")
             
             loop = asyncio.get_running_loop()
-            asyncio.run_coroutine_threadsafe(self.speak_async("Yes, sir?"), loop)
+            asyncio.run_coroutine_threadsafe(self.speak_async("Yes, sir? "), loop)
             
             command_thread = threading.Thread(target=self._listen_for_command_thread)
             command_thread.start()
@@ -292,7 +219,7 @@ class JarvisAssistant:
 
     async def main_loop(self):
         """The main async loop for terminal mode."""
-        await self.speak_async(f"Hello! I'm JARVIS, ready to assist {self.memory.memory.get('owner', 'you')}.")
+        await self.speak_async(f"Hello! I'm JARVIS, ready to assist {self.memory.get_preference('owner', 'you')}.")
         
         wake_word_thread = threading.Thread(target=self.wake_word_detector.start, daemon=True)
         wake_word_thread.start()
@@ -327,7 +254,7 @@ class JarvisAssistant:
         """Run JARVIS with the PyQt5 GUI."""
         try:
             from PyQt5.QtWidgets import QApplication
-            from gui import JarvisGUI
+            from ui import JarvisGUI
             
             app = QApplication(sys.argv)
             gui = JarvisGUI(jarvis_assistant=self)

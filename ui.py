@@ -65,31 +65,52 @@ class JarvisGUI(QMainWindow):
 
     def init_ui(self):
         """Initialize the user interface."""
-        self.setWindowTitle("🤖 JARVIS - Advanced AI Assistant")
-        self.setGeometry(100, 100, 1000, 700)
+        self.setWindowTitle("J.A.R.V.I.S")
+        self.setGeometry(100, 100, 1200, 800)
         self.setStyleSheet("""
-            QMainWindow { background-color: #0a0e27; }
-            QLabel { color: #00d9ff; font-weight: bold; }
-            QPushButton { background-color: #0066cc; color: white; border: none;
-                          border-radius: 5px; padding: 10px; font-weight: bold; }
-            QPushButton:hover { background-color: #0099ff; }
-            QPushButton:pressed { background-color: #003399; }
-            QPushButton:disabled { background-color: #555; }
-            QTextEdit { background-color: #1a1f3a; color: #00d9ff; border: 2px solid #0066cc;
-                        border-radius: 5px; font-family: Courier; }
+            QMainWindow {
+                background-color: #02091c;
+            }
+            QLabel {
+                color: #00e5ff;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+            QPushButton {
+                background-color: transparent;
+                color: #00e5ff;
+                border: 2px solid #00e5ff;
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #00e5ff;
+                color: #02091c;
+            }
+            QPushButton:pressed {
+                background-color: #00aacc;
+            }
+            QTextEdit {
+                background-color: rgba(0, 229, 255, 0.05);
+                border: 1px solid #00e5ff;
+                border-radius: 5px;
+                color: #fafafa;
+                font-size: 14px;
+            }
         """)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
 
-        title = QLabel("🤖 JARVIS - Advanced AI Assistant")
-        title.setFont(QFont('Arial', 24, QFont.Weight.Bold))
+        title = QLabel("J.A.R.V.I.S")
+        title.setFont(QFont('Segoe UI', 36, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(title)
 
-        self.status_label = QLabel("🔴 Offline")
-        self.status_label.setFont(QFont('Arial', 14))
+        self.status_label = QLabel("INITIALIZING...")
+        self.status_label.setFont(QFont('Segoe UI', 14))
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(self.status_label)
 
@@ -97,25 +118,31 @@ class JarvisGUI(QMainWindow):
         main_layout.addWidget(self.visualizer)
 
         self.listen_progress = QProgressBar()
+        self.listen_progress.setTextVisible(False)
         self.listen_progress.setStyleSheet("""
-            QProgressBar { border: 2px solid #0066cc; border-radius: 5px; text-align: center; }
-            QProgressBar::chunk { background-color: #00ff00; }
+            QProgressBar {
+                border: none;
+                background-color: transparent;
+            }
+            QProgressBar::chunk {
+                background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00e5ff, stop:1 #02091c);
+            }
         """)
         self.listen_progress.setVisible(False)
         main_layout.addWidget(self.listen_progress)
 
         self.response_text = QTextEdit()
         self.response_text.setReadOnly(True)
-        self.response_text.setMinimumHeight(150)
+        self.response_text.setMinimumHeight(100)
         main_layout.addWidget(self.response_text)
 
         button_layout = QHBoxLayout()
-        self.listen_btn = QPushButton("🎤 Listening (Wake Word Active)")
+        self.listen_btn = QPushButton("WAKE WORD ACTIVE")
         self.listen_btn.setFixedHeight(50)
-        self.listen_btn.setEnabled(False) # Disabled as wake word is always on
+        self.listen_btn.setEnabled(False)
         button_layout.addWidget(self.listen_btn)
 
-        self.exit_btn = QPushButton("❌ Exit")
+        self.exit_btn = QPushButton("SHUT DOWN")
         self.exit_btn.setFixedHeight(50)
         self.exit_btn.clicked.connect(self.close)
         button_layout.addWidget(self.exit_btn)

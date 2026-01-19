@@ -1,47 +1,44 @@
-# Jarvis AI Assistant
+# Enhanced Jarvis AI Assistant
 
-A voice-activated AI assistant inspired by Jarvis from the Avengers movies.
+A voice-activated AI assistant inspired by Jarvis from the Avengers movies with advanced AI capabilities.
 
-## Features
+## New Features
 
-- **Voice Recognition**: Responds to "Jarvis" wake word
-- **Text-to-Speech**: Speaks responses back to you
-- **Time & Date**: Get current time and date
-- **Web Search**: Search Google for anything
-- **System Control**: Open applications like Notepad, Calculator
-- **Weather**: Get weather information (requires API key)
+- **AI Brain**: Natural conversations using Gemini AI
+- **Realistic Voice**: Edge-TTS for human-like speech
+- **Free Weather**: Using wttr.in service
+- **Smart Commands**: Dynamic weather, YouTube, Wikipedia
+- **System Control**: Volume, screenshots, screen lock
+- **Spotify Integration**: Music playback control
+- **Secure**: API keys stored in .env file
 
 ## Setup
 
 1. Run `setup.bat` to install dependencies
-2. For weather features, get a free API key from OpenWeatherMap and replace `your_api_key_here` in jarvis.py
+2. Edit `.env` file with your API keys:
+   - Gemini API: https://makersuite.google.com/app/apikey
+   - Spotify (optional): https://developer.spotify.com/
 
 ## Usage
 
 1. Run: `python jarvis.py`
-2. Wait for "Jarvis online" message
-3. Say commands starting with "Jarvis"
+2. Wait for "Enhanced Jarvis online"
+3. Just say "Jarvis" and give any command
 
 ## Example Commands
 
-- "Jarvis, what time is it?"
-- "Jarvis, what's the date?"
-- "Jarvis, search for Python tutorials"
-- "Jarvis, open notepad"
-- "Jarvis, open calculator"
-- "Jarvis, what's the weather?"
-- "Jarvis, shutdown"
+- "Jarvis, what's the weather in Tokyo?"
+- "Jarvis, play relaxing music on YouTube"
+- "Jarvis, what is quantum computing?"
+- "Jarvis, volume up"
+- "Jarvis, play music" (Spotify)
+- "Jarvis, explain artificial intelligence"
+- "Jarvis, take a screenshot"
 
 ## Requirements
 
 - Python 3.7+
 - Microphone
 - Internet connection
-- Windows OS (for system commands)
-
-## Troubleshooting
-
-If you get microphone errors, make sure:
-- Your microphone is working
-- Python has microphone permissions
-- Try running as administrator
+- Windows OS
+- Gemini API key for full functionality

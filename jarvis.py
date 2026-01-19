@@ -1,36 +1,68 @@
 import speech_recognition as sr
-import pyttsx3
+import edge_tts
+import asyncio
+import pygame
+import io
 import datetime
 import webbrowser
 import os
 import requests
 import json
+import re
+import pywhatkit
+import wikipedia
+import pyautogui
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+from dotenv import load_dotenv
+import google.generativeai as genai
 import threading
 import time
+
+load_dotenv()
 
 class Jarvis:
     def __init__(self):
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-        self.tts_engine = pyttsx3.init()
-        self.setup_voice()
         self.wake_word = "jarvis"
         self.listening = True
         
-    def setup_voice(self):
-        voices = self.tts_engine.getProperty('voices')
-        # Use male voice if available
-        for voice in voices:
-            if 'male' in voice.name.lower():
-                self.tts_engine.setProperty('voice', voice.id)
-                break
-        self.tts_engine.setProperty('rate', 180)
-        self.tts_engine.setProperty('volume', 0.9)
-    
-    def speak(self, text):
+        # Initialize Gemini AI
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        self.model = genai.GenerativeModel('gemini-pro')
+        
+        # Initialize pygame for audio
+        pygame.mixer.init()
+        
+        # Initialize Spotify
+        self.spotify = None
+        if os.getenv('SPOTIFY_CLIENT_ID'):
+            self.spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
+                client_id=os.getenv('SPOTIFY_CLIENT_ID'),
+                client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
+                redirect_uri="http://localhost:8080",
+                scope="user-modify-playback-state user-read-playback-state"
+            ))
+        
+    async def speak(self, text):
         print(f"Jarvis: {text}")
-        self.tts_engine.say(text)
-        self.tts_engine.runAndWait()
+        
+        # Use Edge-TTS for natural voice
+        voice = "en-US-AriaNeural"
+        communicate = edge_tts.Communicate(text, voice)
+        
+        audio_data = b""
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_data += chunk["data"]
+        
+        # Play audio using pygame
+        pygame.mixer.music.load(io.BytesIO(audio_data))
+        pygame.mixer.music.play()
+        
+        while pygame.mixer.music.get_busy():
+            await asyncio.sleep(0.1)
     
     def listen(self):
         try:
@@ -60,90 +92,185 @@ class Jarvis:
         return f"Today is {today.strftime('%A, %B %d, %Y')}"
     
     def search_web(self, query):
-        search_url = f"https://www.google.com/search?q={query}"
-        webbrowser.open(search_url)
+        webbrowser.open(f"https://www.google.com/search?q={query}")
         return f"Searching for {query}"
     
-    def get_weather(self, city="New York"):
+    def play_youtube(self, query):
         try:
-            # Using a free weather API (you'll need to get an API key)
-            api_key = "your_api_key_here"  # Replace with actual API key
-            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+            pywhatkit.playonyt(query)
+            return f"Playing {query} on YouTube"
+        except:
+            return "Couldn't play video"
+    
+    def get_wikipedia_summary(self, query):
+        try:
+            summary = wikipedia.summary(query, sentences=2)
+            return summary
+        except:
+            return f"Couldn't find information about {query}"
+    
+    def control_spotify(self, command):
+        if not self.spotify:
+            return "Spotify not configured"
+        
+        try:
+            if "play" in command:
+                self.spotify.start_playback()
+                return "Playing music"
+            elif "pause" in command or "stop" in command:
+                self.spotify.pause_playback()
+                return "Music paused"
+            elif "next" in command:
+                self.spotify.next_track()
+                return "Next song"
+            elif "previous" in command:
+                self.spotify.previous_track()
+                return "Previous song"
+        except:
+            return "Spotify control failed"
+    
+    def system_control(self, command):
+        if "volume up" in command:
+            pyautogui.press('volumeup')
+            return "Volume increased"
+        elif "volume down" in command:
+            pyautogui.press('volumedown')
+            return "Volume decreased"
+        elif "mute" in command:
+            pyautogui.press('volumemute')
+            return "Audio muted"
+        elif "lock screen" in command:
+            os.system("rundll32.exe user32.dll,LockWorkStation")
+            return "Screen locked"
+        elif "screenshot" in command:
+            pyautogui.screenshot("screenshot.png")
+            return "Screenshot saved"
+        return "System command not recognized"
+    
+    async def ask_ai(self, question):
+        try:
+            response = self.model.generate_content(question)
+            return response.text
+        except:
+            return "I'm having trouble connecting to my AI brain right now"
+    
+    def wait_for_wake_word(self):
+        # Simple wake word detection using speech recognition
+        try:
+            with self.microphone as source:
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+            
+            with self.microphone as source:
+                audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
+            
+            command = self.recognizer.recognize_google(audio).lower()
+            return self.wake_word in command
+        except:
+            return False
+    
+    def get_weather(self, command):
+        # Extract city from command
+        city_match = re.search(r'weather in (.+)', command)
+        city = city_match.group(1) if city_match else "New York"
+        
+        try:
+            # Using free wttr.in service
+            url = f"http://wttr.in/{city}?format=%C+%t+in+%l"
             response = requests.get(url)
-            data = response.json()
             
             if response.status_code == 200:
-                temp = data['main']['temp']
-                desc = data['weather'][0]['description']
-                return f"The weather in {city} is {desc} with a temperature of {temp} degrees Celsius"
+                weather_info = response.text.strip()
+                return f"The weather is {weather_info}"
             else:
-                return "Sorry, I couldn't get the weather information"
+                return f"Sorry, I couldn't get weather for {city}"
         except:
-            return "Weather service is currently unavailable"
+            return "Weather service unavailable"
     
-    def process_command(self, command):
+    async def process_command(self, command):
         if not command:
             return
             
+        # Basic commands (fast response)
         if "time" in command:
-            self.speak(self.get_time())
+            await self.speak(self.get_time())
         
         elif "date" in command:
-            self.speak(self.get_date())
+            await self.speak(self.get_date())
         
         elif "weather" in command:
-            self.speak(self.get_weather())
+            await self.speak(self.get_weather(command))
         
-        elif "search" in command or "google" in command:
-            query = command.replace("search", "").replace("google", "").strip()
-            if query:
-                self.speak(self.search_web(query))
-            else:
-                self.speak("What would you like me to search for?")
+        elif "play" in command and "youtube" in command:
+            query = command.replace("play", "").replace("youtube", "").strip()
+            await self.speak(self.play_youtube(query))
+        
+        elif "search" in command:
+            query = command.replace("search", "").strip()
+            await self.speak(self.search_web(query))
+        
+        elif "what is" in command or "who is" in command:
+            query = command.replace("what is", "").replace("who is", "").strip()
+            result = self.get_wikipedia_summary(query)
+            await self.speak(result)
+        
+        elif "spotify" in command or "music" in command:
+            result = self.control_spotify(command)
+            await self.speak(result)
         
         elif "open" in command:
             if "notepad" in command:
                 os.system("notepad")
-                self.speak("Opening Notepad")
+                await self.speak("Opening Notepad")
             elif "calculator" in command:
                 os.system("calc")
-                self.speak("Opening Calculator")
+                await self.speak("Opening Calculator")
             elif "browser" in command:
                 webbrowser.open("https://www.google.com")
-                self.speak("Opening browser")
+                await self.speak("Opening browser")
         
-        elif "shutdown" in command or "exit" in command or "quit" in command:
-            self.speak("Goodbye sir. Shutting down.")
+        elif any(word in command for word in ["volume", "mute", "lock", "screenshot"]):
+            result = self.system_control(command)
+            await self.speak(result)
+        
+        elif "shutdown" in command or "exit" in command:
+            await self.speak("Goodbye sir. Shutting down.")
             self.listening = False
         
         elif "hello" in command or "hi" in command:
-            self.speak("Hello sir. How can I assist you today?")
+            await self.speak("Hello sir. How can I assist you today?")
         
         else:
-            self.speak("I'm sorry, I didn't understand that command. Try asking about time, date, weather, or tell me to search something.")
+            # Use AI for unknown commands
+            await self.speak("Let me think about that...")
+            ai_response = await self.ask_ai(command)
+            await self.speak(ai_response)
     
-    def run(self):
-        self.speak("Jarvis online. How may I assist you today?")
+    async def run(self):
+        await self.speak("Enhanced Jarvis online. I'm ready for natural conversation.")
         
         while self.listening:
             try:
-                command = self.listen()
-                
-                if self.wake_word in command:
-                    # Remove wake word and process the rest
-                    command = command.replace(self.wake_word, "").strip()
+                # Wait for wake word using speech recognition
+                if self.wait_for_wake_word():
+                    await self.speak("Yes sir?")
+                    
+                    # Listen for command
+                    command = self.listen()
                     if command:
-                        self.process_command(command)
-                    else:
-                        self.speak("Yes sir?")
+                        # Remove wake word if present
+                        command = command.replace(self.wake_word, "").strip()
+                        await self.process_command(command)
                 
             except KeyboardInterrupt:
-                self.speak("Goodbye sir.")
+                await self.speak("Goodbye sir.")
                 break
             except Exception as e:
                 print(f"Error: {e}")
-                time.sleep(1)
+                await asyncio.sleep(1)
+
+async def main():
+    jarvis = Jarvis()
+    await jarvis.run()
 
 if __name__ == "__main__":
-    jarvis = Jarvis()
-    jarvis.run()
+    asyncio.run(main())

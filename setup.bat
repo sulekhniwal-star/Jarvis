@@ -1,18 +1,24 @@
 @echo off
-echo Installing Jarvis dependencies...
+echo Installing Enhanced Jarvis dependencies...
 pip install -r requirements.txt
 
 echo.
-echo Setup complete! 
+echo Enhanced Jarvis Setup Complete!
 echo.
-echo To run Jarvis, use: python jarvis.py
+echo IMPORTANT: Edit .env file and add your API keys:
+echo - Gemini API key (for AI conversations)
+echo - Spotify keys (optional, for music control)
 echo.
-echo Commands you can try:
-echo - "Jarvis, what time is it?"
-echo - "Jarvis, what's the date?"
-echo - "Jarvis, search for Python tutorials"
-echo - "Jarvis, open notepad"
-echo - "Jarvis, open calculator"
-echo - "Jarvis, shutdown"
+echo New Features:
+echo - Natural conversations with AI
+echo - Realistic voice using Edge-TTS
+echo - Free weather using wttr.in
+echo - YouTube: "Jarvis, play music on YouTube"
+echo - Wikipedia: "Jarvis, what is artificial intelligence?"
+echo - System control: "Jarvis, volume up"
+echo - Smart weather: "Jarvis, weather in Tokyo"
+echo - Spotify control: "Jarvis, play music"
+echo.
+echo To run: python jarvis.py
 echo.
 pause

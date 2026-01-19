@@ -1,57 +1,136 @@
-# Enhanced Jarvis AI Assistant
+# Advanced Jarvis AI Assistant
 
-A voice-activated AI assistant inspired by Jarvis from the Avengers movies with advanced AI capabilities.
+A next-generation voice-activated AI assistant with modular architecture, multi-AI integration, and advanced capabilities.
 
-## New Features
+## 🚀 ADVANCED FEATURES
 
-- **AI Brain**: Natural conversations using Gemini AI
-- **Realistic Voice**: Edge-TTS for human-like speech
-- **Free Weather**: Using wttr.in service
-- **Smart Commands**: Dynamic weather, YouTube, Wikipedia
-- **System Control**: Volume, screenshots, screen lock
-- **Spotify Integration**: Music playback control
-- **Secure**: API keys stored in .env file
+### 🧠 **Multi-AI Intelligence**
+- **Gemini Pro**: Primary AI with vision capabilities
+- **OpenAI GPT**: Fallback AI for enhanced responses
+- **Modular Skills**: Extensible skill system (math, trivia, coding help)
+- **Learning Mode**: Interactive fact learning and recall
 
-## ADVANCED FEATURES
+### 🎤 **Enhanced Voice & Interaction**
+- **Wake Word Detection**: "Hey Jarvis" or "Jarvis"
+- **Emotion Control**: Cheerful, serious, excited, calm voices
+- **Multilingual Support**: Auto-detect and translate languages
+- **Custom Commands**: Create personalized voice commands
 
-- **👁️ VISION**: Screen and webcam analysis with Gemini Pro Vision
-- **🧠 LONG-TERM MEMORY**: Remembers preferences across sessions
-- **🎨 IMAGE GENERATION**: Create images with AI
-- **📈 STOCK PRICES**: Real-time stock information
-- **⚡ WORK MODE**: Auto-launch development environment
+### 🖥️ **System Integration**
+- **Cross-Platform**: Windows, macOS, Linux support
+- **GUI Dashboard**: Visual interface with command history
+- **REST API**: Mobile app integration endpoints
+- **Authentication**: PIN-based security for sensitive commands
 
-## Setup
+### 🌐 **Advanced Capabilities**
+- **Vision Analysis**: Screen and webcam analysis
+- **Image Generation**: AI-powered image creation
+- **News & Information**: Real-time headlines and data
+- **Smart Memory**: Long-term conversation memory
+- **Work Mode**: Auto-launch development environment
 
-1. Run `setup.bat` to install dependencies
-2. Edit `.env` file with your API keys:
-   - Gemini API: https://makersuite.google.com/app/apikey
-   - Spotify (optional): https://developer.spotify.com/
+## 🔧 SETUP
 
-## Usage
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-1. Run: `python jarvis.py`
-2. Wait for "Enhanced Jarvis online"
-3. Just say "Jarvis" and give any command
+2. **Configure API Keys** (edit `.env` file):
+   - Gemini API (required): https://makersuite.google.com/app/apikey
+   - OpenAI API (optional): https://platform.openai.com/api-keys
+   - News API (optional): https://newsapi.org/register
+   - Hugging Face (optional): https://huggingface.co/settings/tokens
 
-## Example Commands
+## 🎯 USAGE
 
-- "Jarvis, what's the weather in Tokyo?"
-- "Jarvis, play relaxing music on YouTube"
-- "Jarvis, what is quantum computing?"
+### Basic Mode:
+```bash
+python jarvis.py
+```
+
+### With GUI Dashboard:
+```bash
+python jarvis.py --gui
+```
+
+### With REST API:
+```bash
+python jarvis.py --api
+```
+
+### With Authentication:
+```bash
+python jarvis.py --auth pin
+```
+
+## 💬 EXAMPLE COMMANDS
+
+### 🎨 **Creative & Visual**
+- "Jarvis, what am I looking at?" (screen analysis)
+- "Jarvis, generate image of a sunset over mountains"
+- "Jarvis, look at me" (webcam analysis)
+
+### 🧠 **Learning & Memory**
+- "Jarvis, teach me that Python was created in 1991"
+- "Jarvis, what did you learn about Python?"
+- "Jarvis, remember I prefer coffee over tea"
+
+### 🌍 **Information & Services**
+- "Jarvis, tell me the news"
+- "Jarvis, weather in Tokyo"
+- "Jarvis, calculate 15 * 24"
+- "Jarvis, play trivia game"
+
+### 🔧 **System & Automation**
+- "Jarvis, start work mode" (launches VS Code, Spotify, browser)
+- "Jarvis, open Discord"
 - "Jarvis, volume up"
-- "Jarvis, play music" (Spotify)
-- "Jarvis, explain artificial intelligence"
-- "Jarvis, take a screenshot"
-- **"Jarvis, what am I looking at?"** (Vision)
-- **"Jarvis, generate image of a futuristic city"** (AI Art)
-- **"Jarvis, remember I like tea"** (Memory)
-- **"Jarvis, how is Apple stock doing?"** (Stocks)
-- **"Jarvis, start work mode"** (Automation)
+- "Jarvis, take screenshot"
 
-## Requirements
+### 🎛️ **Customization**
+- "Jarvis, create command hello response Hello there!"
+- "Jarvis, change voice to british"
+- "Jarvis, switch to spanish language"
+
+## 🔌 API ENDPOINTS
+
+When running with `--api` flag:
+
+- `POST /api/command` - Send voice commands
+- `GET /api/status` - Check system status
+
+## 🛡️ SECURITY
+
+- **PIN Authentication**: Protect sensitive commands
+- **Secure API Keys**: Environment variable storage
+- **Command Validation**: Input sanitization
+
+## 🔧 REQUIREMENTS
 
 - Python 3.7+
-- Microphone
-- Internet connection
-- Windows OS
-- Gemini API key for full functionality
+- Microphone access
+- Internet connection (for AI services)
+- Cross-platform compatibility
+
+## 📱 MOBILE INTEGRATION
+
+Use the REST API endpoints to build mobile apps that can:
+- Send commands to Jarvis
+- Receive responses
+- Monitor system status
+
+## 🎮 SKILL DEVELOPMENT
+
+Extend Jarvis with custom skills:
+
+```python
+def my_custom_skill(query):
+    return "Custom response"
+
+jarvis.skill_manager.register_skill(
+    'custom', my_custom_skill, ['keyword1', 'keyword2']
+)
+```
+
+Your advanced Jarvis is now ready with enterprise-level capabilities!

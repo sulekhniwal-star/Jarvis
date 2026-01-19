@@ -30,9 +30,126 @@ import sqlite3
 from datetime import datetime as dt
 import pickle
 from AppOpener import open as app_open
+import openai
+from googletrans import Translator
+import hashlib
+import getpass
+import tkinter as tk
+from tkinter import ttk, scrolledtext
+from flask import Flask, jsonify, request
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+class JarvisSkillManager:
+    def __init__(self):
+        self.skills = {}
+        self.load_default_skills()
+    
+    def register_skill(self, name, handler, keywords):
+        self.skills[name] = {'handler': handler, 'keywords': keywords}
+    
+    def load_default_skills(self):
+        self.register_skill('math', self.math_solver, ['calculate', 'math', 'solve'])
+        self.register_skill('trivia', self.trivia_game, ['trivia', 'quiz', 'game'])
+    
+    def math_solver(self, query):
+        try:
+            math_expr = re.search(r'[0-9+\-*/().\s]+', query)
+            if math_expr:
+                result = eval(math_expr.group())
+                return f"The answer is {result}"
+        except:
+            return "I couldn't solve that math problem"
+        return "Please provide a valid math expression"
+    
+    def trivia_game(self, query):
+        questions = [
+            ("What is the capital of France?", "Paris"),
+            ("What is 2 + 2?", "4"),
+            ("What year was Python created?", "1991")
+        ]
+        import random
+        q, a = random.choice(questions)
+        return f"Trivia question: {q}"
+    
+    def find_skill(self, command):
+        for skill_name, skill_data in self.skills.items():
+            for keyword in skill_data['keywords']:
+                if keyword in command.lower():
+                    return skill_data['handler']
+        return None
+
+class JarvisAuth:
+    def __init__(self):
+        self.authenticated = False
+        self.auth_method = os.getenv('AUTH_METHOD', 'none')
+        self.user_pin = os.getenv('USER_PIN', '1234')
+    
+    def authenticate(self, method='pin', input_data=None):
+        if self.auth_method == 'none':
+            self.authenticated = True
+            return True
+        if method == 'pin' and input_data == self.user_pin:
+            self.authenticated = True
+            return True
+        return False
+    
+    def is_authenticated(self):
+        return self.authenticated
+
+class JarvisGUI:
+    def __init__(self, jarvis_instance):
+        self.jarvis = jarvis_instance
+        self.root = tk.Tk()
+        self.root.title("Jarvis Dashboard")
+        self.root.geometry("800x600")
+        self.setup_gui()
+    
+    def setup_gui(self):
+        self.response_text = scrolledtext.ScrolledText(self.root, height=20, width=80)
+        self.response_text.pack(pady=10)
+        
+        self.command_entry = tk.Entry(self.root, width=60)
+        self.command_entry.pack(pady=5)
+        
+        send_btn = tk.Button(self.root, text="Send Command", command=self.send_command)
+        send_btn.pack(pady=5)
+        
+        self.status_label = tk.Label(self.root, text="Status: Ready")
+        self.status_label.pack(pady=5)
+    
+    def send_command(self):
+        command = self.command_entry.get()
+        if command:
+            self.response_text.insert(tk.END, f"You: {command}\n")
+            response = "Processing command..."
+            self.response_text.insert(tk.END, f"Jarvis: {response}\n")
+            self.command_entry.delete(0, tk.END)
+    
+    def run(self):
+        self.root.mainloop()
+
+class JarvisAPI:
+    def __init__(self, jarvis_instance):
+        self.jarvis = jarvis_instance
+        self.app = Flask(__name__)
+        self.setup_routes()
+    
+    def setup_routes(self):
+        @self.app.route('/api/command', methods=['POST'])
+        def process_command():
+            data = request.json
+            command = data.get('command', '')
+            response = "Command processed"
+            return jsonify({'response': response, 'status': 'success'})
+        
+        @self.app.route('/api/status', methods=['GET'])
+        def get_status():
+            return jsonify({'status': 'online', 'version': '2.0'})
+    
+    def run(self, host='0.0.0.0', port=5000):
+        self.app.run(host=host, port=port, debug=False)
 
 class Jarvis:
     def __init__(self):
@@ -40,33 +157,63 @@ class Jarvis:
         self.microphone = sr.Microphone()
         self.wake_word = "jarvis"
         self.listening = True
-        self.conversation_memory = deque(maxlen=10)
+        self.conversation_memory = deque(maxlen=20)
         self.current_voice = "en-US-AriaNeural"
         self.offline_mode = False
+        self.current_language = 'en'
+        
+        # Initialize components
+        self.skill_manager = JarvisSkillManager()
+        self.auth = JarvisAuth()
+        self.translator = Translator()
         
         # Initialize long-term memory database
         self.init_memory_db()
         
-        # Initialize Gemini AI with Vision support
+        # Initialize AI models
+        self.init_ai_models()
+        
+        # Initialize services
+        self.init_services()
+        
+        # Available voices with emotions
+        self.voices = {
+            "male": "en-US-DavisNeural",
+            "female": "en-US-AriaNeural",
+            "british": "en-GB-RyanNeural",
+            "cheerful": "en-US-JennyNeural",
+            "serious": "en-US-GuyNeural"
+        }
+        
+        # Custom commands storage
+        self.custom_commands = self.load_custom_commands()
+        
+        # Work mode applications (cross-platform)
+        self.work_apps = self.get_platform_apps()
+    
+    def init_ai_models(self):
         try:
             genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.gemini_model = genai.GenerativeModel('gemini-1.5-flash')
             self.vision_model = genai.GenerativeModel('gemini-1.5-flash')
-            logging.info("Gemini AI initialized with vision")
+            
+            if os.getenv('OPENAI_API_KEY'):
+                openai.api_key = os.getenv('OPENAI_API_KEY')
+                self.openai_available = True
+            else:
+                self.openai_available = False
+            
+            logging.info("AI models initialized")
         except Exception as e:
-            logging.error(f"Gemini AI failed: {e}")
-            self.model = None
+            logging.error(f"AI model initialization failed: {e}")
+            self.gemini_model = None
             self.vision_model = None
-        
-        # Initialize pygame for audio
+    
+    def init_services(self):
         try:
             pygame.mixer.init()
-        except Exception as e:
-            logging.error(f"Audio init failed: {e}")
-        
-        # Initialize Spotify
-        self.spotify = None
-        try:
+            
+            self.spotify = None
             if os.getenv('SPOTIFY_CLIENT_ID'):
                 self.spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
                     client_id=os.getenv('SPOTIFY_CLIENT_ID'),
@@ -75,21 +222,91 @@ class Jarvis:
                     scope="user-modify-playback-state user-read-playback-state"
                 ))
         except Exception as e:
-            logging.error(f"Spotify init failed: {e}")
+            logging.error(f"Service initialization failed: {e}")
+    
+    def get_platform_apps(self):
+        system = platform.system().lower()
+        if system == "windows":
+            return ["code", "spotify", "chrome"]
+        elif system == "darwin":
+            return ["open -a 'Visual Studio Code'", "open -a Spotify", "open -a 'Google Chrome'"]
+        else:
+            return ["code", "spotify", "google-chrome"]
+    
+    def load_custom_commands(self):
+        try:
+            if os.path.exists('custom_commands.json'):
+                with open('custom_commands.json', 'r') as f:
+                    return json.load(f)
+        except Exception as e:
+            logging.error(f"Failed to load custom commands: {e}")
+        return {}
+    
+    def save_custom_command(self, trigger, response):
+        self.custom_commands[trigger] = response
+        try:
+            with open('custom_commands.json', 'w') as f:
+                json.dump(self.custom_commands, f, indent=2)
+            return f"Custom command '{trigger}' saved"
+        except Exception as e:
+            return f"Failed to save command: {e}"
+    
+    def translate_text(self, text, target_lang='en'):
+        try:
+            if target_lang != 'en':
+                result = self.translator.translate(text, dest=target_lang)
+                return result.text
+            return text
+        except Exception as e:
+            logging.error(f"Translation failed: {e}")
+            return text
+    
+    def detect_language(self, text):
+        try:
+            detection = self.translator.detect(text)
+            return detection.lang
+        except:
+            return 'en'
+    
+    def learning_mode(self, command):
+        if "teach me" in command or "learn that" in command:
+            fact = command.replace("teach me", "").replace("learn that", "").strip()
+            if fact:
+                self.save_memory('learned_fact', fact, importance=3)
+                return f"I've learned: {fact}"
+            return "What would you like me to learn?"
+        elif "what did you learn about" in command:
+            topic = command.replace("what did you learn about", "").strip()
+            memories = self.recall_memory(topic)
+            if memories:
+                return f"I learned: {'. '.join(memories[:2])}"
+            return f"I haven't learned anything about {topic} yet"
+        return "Learning mode: Say 'teach me [fact]' or 'what did you learn about [topic]'"
+    
+    def multi_ai_response(self, query):
+        responses = []
         
-        # Available voices
-        self.voices = {
-            "male": "en-US-DavisNeural",
-            "female": "en-US-AriaNeural",
-            "british": "en-GB-RyanNeural"
-        }
+        if self.gemini_model:
+            try:
+                gemini_response = self.gemini_model.generate_content(query)
+                responses.append(('gemini', gemini_response.text))
+            except Exception as e:
+                logging.error(f"Gemini error: {e}")
         
-        # Work mode applications
-        self.work_apps = {
-            "windows": ["code", "spotify", "chrome"],
-            "darwin": ["open -a 'Visual Studio Code'", "open -a Spotify", "open -a 'Google Chrome'"],
-            "linux": ["code", "spotify", "google-chrome"]
-        }
+        if self.openai_available:
+            try:
+                openai_response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": query}],
+                    max_tokens=150
+                )
+                responses.append(('openai', openai_response.choices[0].message.content))
+            except Exception as e:
+                logging.error(f"OpenAI error: {e}")
+        
+        if responses:
+            return responses[0][1]
+        return "I'm having trouble with my AI systems right now"
         
     def init_memory_db(self):
         """Initialize SQLite database for long-term memory"""
@@ -128,14 +345,25 @@ class Jarvis:
                 (f"%{query}%",)
             )
             memories = [row[0] for row in cursor.fetchall()]
-            return memories
-        except Exception as e:
-            logging.error(f"Recall memory failed: {e}")
-            return []
+    async def speak(self, text, emotion="neutral"):
         print(f"Jarvis: {text}")
         
         try:
-            communicate = edge_tts.Communicate(text, self.current_voice)
+            if self.current_language != 'en':
+                text = self.translate_text(text, self.current_language)
+            
+            voice = self.current_voice
+            if emotion == "cheerful":
+                voice = self.voices.get("cheerful", self.current_voice)
+            elif emotion == "serious":
+                voice = self.voices.get("serious", self.current_voice)
+            
+            if emotion == "excited":
+                text = f"<prosody rate='fast' pitch='high'>{text}</prosody>"
+            elif emotion == "calm":
+                text = f"<prosody rate='slow' pitch='low'>{text}</prosody>"
+            
+            communicate = edge_tts.Communicate(text, voice)
             
             audio_data = b""
             async for chunk in communicate.stream():
@@ -271,26 +499,22 @@ class Jarvis:
         return "System command not recognized"
     
     async def ask_ai(self, question):
-        if not self.model:
+        if not self.gemini_model:
             return "AI service unavailable"
             
         try:
-            # Check for relevant memories
             memories = self.recall_memory(question)
             context_from_memory = "\n".join(memories) if memories else ""
             
-            # Combine conversation memory and long-term memory
             conversation_context = "\n".join([f"User: {q}\nJarvis: {a}" for q, a in self.conversation_memory])
             full_context = f"{context_from_memory}\n{conversation_context}" if context_from_memory else conversation_context
             
             full_prompt = f"{full_context}\nUser: {question}\nJarvis:" if full_context else question
             
-            response = self.model.generate_content(full_prompt)
+            response = self.gemini_model.generate_content(full_prompt)
             
-            # Save to both memories
             self.conversation_memory.append((question, response.text))
             
-            # Save important interactions to long-term memory
             if any(word in question.lower() for word in ['remember', 'important', 'preference', 'like', 'dislike']):
                 self.save_memory('preference', f"User said: {question}. Response: {response.text}", importance=2)
             
@@ -300,7 +524,6 @@ class Jarvis:
             return "I'm having trouble with my AI brain right now"
     
     def wait_for_wake_word(self):
-        # Simple wake word detection using speech recognition
         try:
             with self.microphone as source:
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
@@ -309,7 +532,7 @@ class Jarvis:
                 audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
             
             command = self.recognizer.recognize_google(audio).lower()
-            return self.wake_word in command
+            return self.wake_word in command or "hey jarvis" in command
         except:
             return False
     
@@ -521,14 +744,58 @@ class Jarvis:
     async def process_command(self, command):
         if not command:
             return
-            
+        
+        sensitive_commands = ['shutdown', 'delete', 'format', 'install']
+        if any(cmd in command for cmd in sensitive_commands) and not self.auth.is_authenticated():
+            await self.speak("Authentication required for this command")
+            return
+        
         try:
-            # Vision commands - screen analysis
+            detected_lang = self.detect_language(command)
+            if detected_lang != 'en':
+                command = self.translate_text(command, 'en')
+                self.current_language = detected_lang
+            
+            for trigger, response in self.custom_commands.items():
+                if trigger.lower() in command.lower():
+                    await self.speak(response)
+                    return
+            
+            skill_handler = self.skill_manager.find_skill(command)
+            if skill_handler:
+                result = skill_handler(command)
+                await self.speak(result)
+                return
+            
+            if "teach me" in command or "learn that" in command or "what did you learn" in command:
+                result = self.learning_mode(command)
+                await self.speak(result)
+                return
+            
+            if "create command" in command:
+                parts = command.split("create command", 1)[1].strip().split("response")
+                if len(parts) == 2:
+                    trigger = parts[0].strip()
+                    response = parts[1].strip()
+                    result = self.save_custom_command(trigger, response)
+                    await self.speak(result)
+                else:
+                    await self.speak("Say: create command [trigger] response [response]")
+                return
+            
+            if "switch to" in command and "language" in command:
+                lang_map = {'spanish': 'es', 'french': 'fr', 'german': 'de', 'english': 'en'}
+                for lang_name, lang_code in lang_map.items():
+                    if lang_name in command:
+                        self.current_language = lang_code
+                        await self.speak(f"Switched to {lang_name}")
+                        return
+            
+            # Vision commands
             if "what am i looking at" in command or "analyze screen" in command or "what's on my screen" in command:
-                # Extract any specific question about the screen
                 prompt = "Analyze this screenshot and describe what you see"
                 if "what" in command and "screen" not in command:
-                    prompt = command  # Use the full question as prompt
+                    prompt = command
                 result = await self.analyze_screen(prompt)
                 await self.speak(result)
             
@@ -537,9 +804,8 @@ class Jarvis:
                 result = self.get_news_headlines()
                 await self.speak(result)
             
-            # Image generation commands
+            # Image generation
             elif "generate image" in command or "create image" in command or "make image" in command:
-                # Extract the prompt for image generation
                 prompt = command
                 for phrase in ["generate image of", "create image of", "make image of", "generate image", "create image", "make image"]:
                     if phrase in command:
@@ -553,9 +819,8 @@ class Jarvis:
                 result = self.generate_image_hf(prompt)
                 await self.speak(result)
             
-            # App opening commands
+            # App opening
             elif "open" in command and not any(word in command for word in ["notepad", "calculator", "browser"]):
-                # Extract app name
                 app_name = command.replace("open", "").strip()
                 if app_name:
                     result = self.open_application(app_name)
@@ -563,42 +828,7 @@ class Jarvis:
                 else:
                     await self.speak("What application would you like me to open?")
             
-            # Stock information
-            elif "stock" in command and ("price" in command or "how is" in command):
-                # Extract stock symbol
-                words = command.split()
-                symbol = "AAPL"  # Default
-                for i, word in enumerate(words):
-                    if word.lower() in ["apple", "aapl"]:
-                        symbol = "AAPL"
-                    elif word.lower() in ["google", "googl"]:
-                        symbol = "GOOGL"
-                    elif word.lower() in ["microsoft", "msft"]:
-                        symbol = "MSFT"
-                result = self.get_stock_info(symbol)
-                await self.speak(result)
-            
-            # Work mode
-            elif "work mode" in command or "start work" in command:
-                result = self.work_mode()
-                await self.speak(result)
-            
-            # Memory commands
-            elif "remember" in command:
-                content = command.replace("remember", "").strip()
-                self.save_memory('user_request', content, importance=2)
-                await self.speak(f"I'll remember that: {content}")
-            
-            elif "what do you remember about" in command:
-                query = command.replace("what do you remember about", "").strip()
-                memories = self.recall_memory(query)
-                if memories:
-                    result = "I remember: " + ". ".join(memories[:2])
-                else:
-                    result = f"I don't have any memories about {query}"
-                await self.speak(result)
-            
-            # Existing commands
+            # Existing commands with enhancements
             elif "time" in command:
                 await self.speak(self.get_time())
             elif "date" in command:
@@ -612,40 +842,37 @@ class Jarvis:
             elif "change voice" in command or "voice" in command:
                 result = self.change_voice(command)
                 await self.speak(result)
-            elif "play" in command and "youtube" in command:
-                query = command.replace("play", "").replace("youtube", "").strip()
-                await self.speak(self.play_youtube(query))
-            elif "search" in command:
-                query = command.replace("search", "").strip()
-                await self.speak(self.search_web(query))
-            elif "what is" in command or "who is" in command:
-                query = command.replace("what is", "").replace("who is", "").strip()
-                result = self.get_wikipedia_summary(query)
-                await self.speak(result)
-            elif "spotify" in command or "music" in command:
-                result = self.control_spotify(command)
-                await self.speak(result)
-            elif "open" in command:  # Handle basic open commands
-                await self._handle_open_command(command)
-            elif any(word in command for word in ["volume", "mute", "lock", "screenshot"]):
-                result = self.system_control(command)
+            elif "work mode" in command or "start work" in command:
+                result = self.work_mode()
+                await self.speak(result, emotion="excited")
+            elif "remember" in command:
+                content = command.replace("remember", "").strip()
+                self.save_memory('user_request', content, importance=2)
+                await self.speak(f"I'll remember that: {content}")
+            elif "what do you remember about" in command:
+                query = command.replace("what do you remember about", "").strip()
+                memories = self.recall_memory(query)
+                if memories:
+                    result = "I remember: " + ". ".join(memories[:2])
+                else:
+                    result = f"I don't have any memories about {query}"
                 await self.speak(result)
             elif "shutdown" in command or "exit" in command:
-                await self.speak("Goodbye sir. Shutting down.")
+                await self.speak("Goodbye sir. Shutting down.", emotion="calm")
                 self.listening = False
             elif "hello" in command or "hi" in command:
-                await self.speak("Hello sir. How can I assist you today?")
+                await self.speak("Hello sir. How can I assist you today?", emotion="cheerful")
             else:
                 if not self.offline_mode:
                     await self.speak("Let me think about that...")
-                    ai_response = await self.ask_ai(command)
+                    ai_response = self.multi_ai_response(command)
                     await self.speak(ai_response)
                 else:
                     await self.speak("I'm in offline mode. Try basic commands like time, volume, or screenshot.")
                     
         except Exception as e:
             logging.error(f"Command error: {e}")
-            await self.speak("Sorry, I encountered an error.")
+            await self.speak("Sorry, I encountered an error.", emotion="serious")
     
     async def _handle_open_command(self, command):
         try:
@@ -672,22 +899,33 @@ class Jarvis:
             logging.error(f"Open command error: {e}")
             await self.speak("Couldn't open that application")
     
-    async def run(self):
-        await self.speak("Enhanced Jarvis online with vision, news, image generation, and app control.")
+    async def run(self, gui_mode=False, api_mode=False):
+        await self.speak("Advanced Jarvis online with multi-AI, learning, and cross-platform capabilities.", emotion="cheerful")
+        
+        if gui_mode:
+            gui = JarvisGUI(self)
+            gui_thread = threading.Thread(target=gui.run)
+            gui_thread.daemon = True
+            gui_thread.start()
+        
+        if api_mode:
+            api = JarvisAPI(self)
+            api_thread = threading.Thread(target=lambda: api.run())
+            api_thread.daemon = True
+            api_thread.start()
         
         while self.listening:
             try:
                 if self.wait_for_wake_word():
-                    await self.speak("Yes sir?")
+                    await self.speak("Yes sir?", emotion="cheerful")
                     
                     command = self.listen()
                     if command:
-                        command = command.replace(self.wake_word, "").strip()
+                        command = command.replace(self.wake_word, "").replace("hey jarvis", "").strip()
                         await self.process_command(command)
                 
             except KeyboardInterrupt:
-                await self.speak("Goodbye sir.")
-                # Close database connection
+                await self.speak("Goodbye sir.", emotion="calm")
                 if hasattr(self, 'conn'):
                     self.conn.close()
                 break
@@ -695,11 +933,28 @@ class Jarvis:
                 logging.error(f"Main loop error: {e}")
                 await asyncio.sleep(1)
                 if not self.offline_mode:
-                    await self.speak("I encountered an error but I'm still here.")
+                    await self.speak("I encountered an error but I'm still here.", emotion="serious")
 
 async def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Advanced Jarvis AI Assistant')
+    parser.add_argument('--gui', action='store_true', help='Enable GUI dashboard')
+    parser.add_argument('--api', action='store_true', help='Enable REST API')
+    parser.add_argument('--auth', choices=['none', 'pin'], default='none', help='Authentication method')
+    
+    args = parser.parse_args()
+    
+    os.environ['AUTH_METHOD'] = args.auth
+    
     jarvis = Jarvis()
-    await jarvis.run()
+    
+    if args.auth == 'pin':
+        pin = getpass.getpass("Enter PIN: ")
+        if not jarvis.auth.authenticate('pin', pin):
+            print("Authentication failed")
+            return
+    
+    await jarvis.run(gui_mode=args.gui, api_mode=args.api)
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -19,7 +19,10 @@ class IntentDetector:
         'shutdown': ['shutdown', 'turn off', 'power off', 'sleep'],
         'restart': ['restart', 'reboot'],
         'exit': ['exit', 'quit', 'goodbye', 'bye'],
-        'ai_response': ['what', 'how', 'why', 'tell me', 'explain', 'help']
+        'ai_response': ['what', 'how', 'why', 'tell me', 'explain', 'help'],
+        'learn_preference': ['remember', 'my favorite', 'i like', 'my name is'],
+        'get_preference': ['what is my', 'do you remember', 'what do you know about me'],
+        'add_contact': ['add contact', 'new contact', 'save contact']
     }
     
     def __init__(self, api_key: str):
@@ -46,32 +49,108 @@ class IntentDetector:
             return self._keyword_based_detection(user_input)
     
     def _ai_based_detection(self, user_input: str, context: str) -> Tuple[str, float, Dict[str, Any]]:
-        """Use Gemini AI for intent detection."""
-        prompt = f"""You are a smart assistant intent detector. Analyze the user's input and classify it.
+        """Use Gemini AI for more accurate intent detection with few-shot prompting."""
+        
+        # Define the list of possible intents
+        possible_intents = [
+            'greeting', 'time', 'joke', 'weather', 'open_app', 'volume', 
+            'system_info', 'screenshot', 'shutdown', 'restart', 'exit', 'ai_response',
+            'learn_preference', 'get_preference', 'add_contact'
+        ]
+        
+        # Create a more detailed prompt with few-shot examples
+        prompt = f"""As an advanced intent detector for a voice assistant, your task is to analyze the user's input and provide a precise JSON output.
 
-User input: "{user_input}"
+## Instructions
+1.  **Classify the Intent**: Determine the user's primary goal from the list of possible intents.
+2.  **Extract Entities**: Identify key details (metadata) from the input.
+3.  **JSON Output**: Respond ONLY with a valid JSON object containing the intent, confidence, and extracted parameters.
+
+## Possible Intents
+`{', '.join(possible_intents)}`
+
+## Examples
+User Input: "Hey Jarvis, what's the weather like in London?"
+JSON Output:
+{{
+    "intent": "weather",
+    "confidence": 0.95,
+    "parameters": {{ "location": "London" }}
+}}
+
+User Input: "Can you open Google Chrome for me?"
+JSON Output:
+{{
+    "intent": "open_app",
+    "confidence": 0.98,
+    "parameters": {{ "app_name": "chrome" }}
+}}
+
+User Input: "Remember my favorite color is blue"
+JSON Output:
+{{
+    "intent": "learn_preference",
+    "confidence": 0.97,
+    "parameters": {{ "key": "favorite color", "value": "blue" }}
+}}
+
+User Input: "What is my favorite color?"
+JSON Output:
+{{
+    "intent": "get_preference",
+    "confidence": 0.96,
+    "parameters": {{ "key": "favorite color" }}
+}}
+
+User Input: "Add a new contact named John Doe with phone 123-456-7890"
+JSON Output:
+{{
+    "intent": "add_contact",
+    "confidence": 0.98,
+    "parameters": {{ "name": "John Doe", "phone": "123-456-7890" }}
+}}
+
+User Input: "What is the capital of France?"
+JSON Output:
+{{
+    "intent": "ai_response",
+    "confidence": 0.9,
+    "parameters": {{}}
+}}
+
+## Current Task
+User Input: "{user_input}"
 Context: {context if context else "No previous context"}
 
-Respond ONLY with valid JSON (no markdown, no extra text):
-{{
-    "intent": "one_of_these: greeting, time, joke, weather, open_app, volume, system_info, screenshot, shutdown, restart, exit, ai_response",
-    "confidence": 0.0-1.0,
-    "app_name": "if open_app intent, specify app name, else null",
-    "action": "specific action if applicable, else null",
-    "parameters": {{"key": "value"}} or {{}}
-}}"""
+Respond with the JSON output:
+"""
         
         try:
+            # Generate content using the Gemini model
             response = self.model.generate_content(prompt)
-            result = json.loads(response.text)
             
-            return (
-                result.get('intent', 'ai_response'),
-                result.get('confidence', 0.7),
-                result.get('parameters', {})
-            )
-        except (json.JSONDecodeError, ValueError, KeyError):
-            # Fallback if AI response is malformed
+            # Clean up the response to ensure it's valid JSON
+            cleaned_response = response.text.strip().replace('```json', '').replace('```', '').strip()
+            
+            # Parse the JSON response
+            result = json.loads(cleaned_response)
+            
+            # Extract intent, confidence, and parameters
+            intent = result.get('intent', 'ai_response')
+            confidence = result.get('confidence', 0.75)
+            parameters = result.get('parameters', {})
+            
+            # Ensure the detected intent is valid
+            if intent not in possible_intents:
+                intent = 'ai_response' # Default to AI response if intent is unknown
+            
+            return intent, confidence, parameters
+
+        except (json.JSONDecodeError, ValueError, KeyError) as e:
+            print(f"⚠️  AI parsing failed: {e}. Falling back to keyword detection.")
+            return self._keyword_based_detection(user_input)
+        except Exception as e:
+            print(f"⚠️  AI detection failed unexpectedly: {e}. Falling back to keyword detection.")
             return self._keyword_based_detection(user_input)
     
     def _keyword_based_detection(self, user_input: str) -> Tuple[str, float, Dict[str, Any]]:
@@ -91,9 +170,9 @@ Respond ONLY with valid JSON (no markdown, no extra text):
     def _extract_metadata(self, intent: str, user_input: str) -> Dict[str, Any]:
         """Extract relevant metadata from user input."""
         metadata = {}
+        words = user_input.split()
         
         if intent == 'open_app':
-            # Extract app name
             apps = ['chrome', 'youtube', 'vscode', 'notepad', 'calculator', 'spotify']
             for app in apps:
                 if app in user_input:
@@ -101,46 +180,55 @@ Respond ONLY with valid JSON (no markdown, no extra text):
                     break
         
         elif intent == 'volume':
-            # Extract volume level
             import re
             numbers = re.findall(r'\d+', user_input)
             if numbers:
                 metadata['level'] = int(numbers[0])
-            
-            if 'mute' in user_input:
-                metadata['action'] = 'mute'
-            elif 'unmute' in user_input:
-                metadata['action'] = 'unmute'
-            elif ('set' in user_input or 'change' in user_input) and numbers:
-                # "set to X" or "change to X"
-                metadata['action'] = 'set'
-            elif 'increase' in user_input or 'louder' in user_input or 'turn up' in user_input:
-                # "increase by X" or just "increase"
-                if numbers and ('by' in user_input or 'to' not in user_input):
-                    # "increase by 10" - use level as increment
-                    metadata['increment'] = int(numbers[0])
-                    metadata['action'] = 'increase_by'
-                else:
-                    # "increase to X" or just "increase"
-                    metadata['action'] = 'increase'
-            elif 'decrease' in user_input or 'lower' in user_input or 'turn down' in user_input or 'quiet' in user_input:
-                # "decrease by X" or just "decrease"
-                if numbers and ('by' in user_input or 'to' not in user_input):
-                    # "decrease by 10" - use level as decrement
-                    metadata['increment'] = int(numbers[0])
-                    metadata['action'] = 'decrease_by'
-                else:
-                    # "decrease to X" or just "decrease"
-                    metadata['action'] = 'decrease'
-        
+            if 'mute' in user_input: metadata['action'] = 'mute'
+            elif 'unmute' in user_input: metadata['action'] = 'unmute'
+            elif 'increase' in user_input: metadata['action'] = 'increase'
+            elif 'decrease' in user_input: metadata['action'] = 'decrease'
+            elif 'set' in user_input: metadata['action'] = 'set'
+
         elif intent == 'weather':
-            # Try to extract location
-            words = user_input.split()
-            for i, word in enumerate(words):
-                if word == 'in' and i + 1 < len(words):
-                    metadata['location'] = ' '.join(words[i+1:])
-                    break
+            if 'in' in words:
+                try:
+                    idx = words.index('in')
+                    metadata['location'] = ' '.join(words[idx+1:])
+                except (ValueError, IndexError):
+                    pass
         
+        elif intent == 'learn_preference':
+            # Example: "remember my name is John" -> key='name', value='John'
+            try:
+                if 'is' in words:
+                    is_idx = words.index('is')
+                    key_words = words[2:is_idx]
+                    value_words = words[is_idx+1:]
+                    metadata['key'] = ' '.join(key_words)
+                    metadata['value'] = ' '.join(value_words)
+            except (ValueError, IndexError):
+                pass
+
+        elif intent == 'get_preference':
+            # Example: "what is my name" -> key='name'
+            try:
+                if 'my' in words:
+                    my_idx = words.index('my')
+                    metadata['key'] = ' '.join(words[my_idx+1:])
+            except (ValueError, IndexError):
+                pass
+                
+        elif intent == 'add_contact':
+            # Example: "add contact John Doe phone 12345"
+            try:
+                name_idx = words.index('contact') + 1
+                phone_idx = words.index('phone') + 1
+                metadata['name'] = ' '.join(words[name_idx:phone_idx-1])
+                metadata['phone'] = words[phone_idx]
+            except (ValueError, IndexError):
+                pass
+
         return metadata
     
     def get_ai_response(self, prompt: str, context: str = "") -> str:

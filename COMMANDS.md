@@ -124,13 +124,16 @@
 
 ### 💾 Memory Commands (Advanced)
 ```
-"Remember I like pizza"
-"My favorite music is lo-fi"
-"Store my email as user@email.com"
-"Add contact: mom at +91-123-456-7890"
-"Note: Call dentist on Friday"
+"Remember my name is John"
+"My favorite color is blue"
+"I like to listen to rock music"
+"What is my name?"
+"What is my favorite color?"
+"Do you remember my name?"
+"Add contact John Doe with phone 123-456-7890"
+"Add contact Jane Doe with email jane@example.com"
 ```
-→ JARVIS learns and remembers
+→ JARVIS learns, remembers, and retrieves personal information.
 
 ---
 

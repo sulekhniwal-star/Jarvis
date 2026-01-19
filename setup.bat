@@ -1,6 +1,6 @@
 @echo off
 echo Installing Advanced Jarvis dependencies...
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 echo.
 echo Advanced Jarvis Setup Complete!

@@ -22,6 +22,14 @@ import logging
 import platform
 import subprocess
 from collections import deque
+import cv2
+import numpy as np
+from PIL import Image
+import base64
+import sqlite3
+from datetime import datetime as dt
+import pickle
+from AppOpener import open as app_open
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -36,14 +44,19 @@ class Jarvis:
         self.current_voice = "en-US-AriaNeural"
         self.offline_mode = False
         
-        # Initialize Gemini AI with error handling
+        # Initialize long-term memory database
+        self.init_memory_db()
+        
+        # Initialize Gemini AI with Vision support
         try:
             genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-            self.model = genai.GenerativeModel('gemini-pro')
-            logging.info("Gemini AI initialized")
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.vision_model = genai.GenerativeModel('gemini-1.5-flash')
+            logging.info("Gemini AI initialized with vision")
         except Exception as e:
             logging.error(f"Gemini AI failed: {e}")
             self.model = None
+            self.vision_model = None
         
         # Initialize pygame for audio
         try:
@@ -71,7 +84,54 @@ class Jarvis:
             "british": "en-GB-RyanNeural"
         }
         
-    async def speak(self, text):
+        # Work mode applications
+        self.work_apps = {
+            "windows": ["code", "spotify", "chrome"],
+            "darwin": ["open -a 'Visual Studio Code'", "open -a Spotify", "open -a 'Google Chrome'"],
+            "linux": ["code", "spotify", "google-chrome"]
+        }
+        
+    def init_memory_db(self):
+        """Initialize SQLite database for long-term memory"""
+        try:
+            self.conn = sqlite3.connect('jarvis_memory.db')
+            self.conn.execute('''
+                CREATE TABLE IF NOT EXISTS memories (
+                    id INTEGER PRIMARY KEY,
+                    timestamp TEXT,
+                    category TEXT,
+                    content TEXT,
+                    importance INTEGER
+                )
+            ''')
+            self.conn.commit()
+        except Exception as e:
+            logging.error(f"Memory DB init failed: {e}")
+    
+    def save_memory(self, category, content, importance=1):
+        """Save important information to long-term memory"""
+        try:
+            timestamp = dt.now().isoformat()
+            self.conn.execute(
+                "INSERT INTO memories (timestamp, category, content, importance) VALUES (?, ?, ?, ?)",
+                (timestamp, category, content, importance)
+            )
+            self.conn.commit()
+        except Exception as e:
+            logging.error(f"Save memory failed: {e}")
+    
+    def recall_memory(self, query):
+        """Retrieve relevant memories based on query"""
+        try:
+            cursor = self.conn.execute(
+                "SELECT content FROM memories WHERE content LIKE ? ORDER BY importance DESC LIMIT 3",
+                (f"%{query}%",)
+            )
+            memories = [row[0] for row in cursor.fetchall()]
+            return memories
+        except Exception as e:
+            logging.error(f"Recall memory failed: {e}")
+            return []
         print(f"Jarvis: {text}")
         
         try:
@@ -215,11 +275,24 @@ class Jarvis:
             return "AI service unavailable"
             
         try:
-            context = "\n".join([f"User: {q}\nJarvis: {a}" for q, a in self.conversation_memory])
-            full_prompt = f"{context}\nUser: {question}\nJarvis:" if context else question
+            # Check for relevant memories
+            memories = self.recall_memory(question)
+            context_from_memory = "\n".join(memories) if memories else ""
+            
+            # Combine conversation memory and long-term memory
+            conversation_context = "\n".join([f"User: {q}\nJarvis: {a}" for q, a in self.conversation_memory])
+            full_context = f"{context_from_memory}\n{conversation_context}" if context_from_memory else conversation_context
+            
+            full_prompt = f"{full_context}\nUser: {question}\nJarvis:" if full_context else question
             
             response = self.model.generate_content(full_prompt)
+            
+            # Save to both memories
             self.conversation_memory.append((question, response.text))
+            
+            # Save important interactions to long-term memory
+            if any(word in question.lower() for word in ['remember', 'important', 'preference', 'like', 'dislike']):
+                self.save_memory('preference', f"User said: {question}. Response: {response.text}", importance=2)
             
             return response.text
         except Exception as e:
@@ -260,7 +333,152 @@ class Jarvis:
             logging.error(f"Weather error: {e}")
             return "Weather service unavailable"
     
-    def get_news(self):
+    async def analyze_screen(self, user_prompt="Analyze this screenshot"):
+        """Capture screenshot and analyze with Gemini Vision"""
+        if not self.vision_model:
+            return "Vision capabilities not available"
+        
+        try:
+            # Take screenshot
+            screenshot = pyautogui.screenshot()
+            screenshot.save("temp_screenshot.png")
+            
+            # Prepare image for Gemini
+            image = Image.open("temp_screenshot.png")
+            
+            # Analyze with Gemini Vision
+            response = self.vision_model.generate_content([user_prompt, image])
+            
+            # Clean up
+            os.remove("temp_screenshot.png")
+            
+            return response.text
+        except Exception as e:
+            logging.error(f"Screen analysis failed: {e}")
+            return "Couldn't analyze the screen"
+    
+    def get_news_headlines(self):
+        """Fetch top news headlines using NewsAPI"""
+        if self.offline_mode:
+            return "News requires internet connection"
+        
+        try:
+            api_key = os.getenv('NEWS_API_KEY')
+            if not api_key:
+                return "News API key not configured"
+            
+            url = f"https://newsapi.org/v2/top-headlines?country=us&category=technology&pageSize=5&apiKey={api_key}"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                articles = data.get('articles', [])
+                
+                if not articles:
+                    return "No news articles found"
+                
+                headlines = []
+                for i, article in enumerate(articles[:5], 1):
+                    title = article.get('title', 'No title')
+                    headlines.append(f"{i}. {title}")
+                
+                return "Here are the top tech headlines: " + ". ".join(headlines)
+            else:
+                return "Couldn't fetch news at the moment"
+        except Exception as e:
+            logging.error(f"News fetch error: {e}")
+            return "News service unavailable"
+    
+    def generate_image_hf(self, prompt):
+        """Generate image using Hugging Face Inference API"""
+        if self.offline_mode:
+            return "Image generation requires internet connection"
+        
+        try:
+            hf_token = os.getenv('HF_TOKEN')
+            if not hf_token:
+                return "Hugging Face token not configured"
+            
+            # Use Stable Diffusion model
+            api_url = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+            headers = {"Authorization": f"Bearer {hf_token}"}
+            
+            payload = {"inputs": prompt}
+            
+            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+            
+            if response.status_code == 200:
+                # Save the generated image
+                timestamp = int(time.time())
+                filename = f"generated_image_{timestamp}.png"
+                
+                with open(filename, "wb") as f:
+                    f.write(response.content)
+                
+                # Open the image
+                if platform.system() == "Windows":
+                    os.startfile(filename)
+                elif platform.system() == "Darwin":
+                    subprocess.run(["open", filename])
+                else:
+                    subprocess.run(["xdg-open", filename])
+                
+                return f"Image generated and saved as {filename}. Opening now."
+            else:
+                return "Image generation failed. The model might be loading, try again in a moment."
+        except Exception as e:
+            logging.error(f"Image generation error: {e}")
+            return "Couldn't generate image"
+    
+    def open_application(self, app_name):
+        """Open application using AppOpener"""
+        try:
+            app_open(app_name, match_closest=True)
+            return f"Opening {app_name}"
+        except Exception as e:
+            logging.error(f"App opening error: {e}")
+            return f"Couldn't open {app_name}. Make sure it's installed."
+    
+    def get_stock_info(self, symbol):
+        """Get stock information using Alpha Vantage"""
+        if self.offline_mode:
+            return "Stock info requires internet connection"
+        
+        try:
+            api_key = os.getenv('ALPHA_VANTAGE_API_KEY', 'demo')
+            url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
+            
+            response = requests.get(url, timeout=5)
+            data = response.json()
+            
+            if "Global Quote" in data:
+                quote = data["Global Quote"]
+                price = quote["05. price"]
+                change = quote["09. change"]
+                return f"{symbol} is trading at ${price}, change: {change}"
+            else:
+                return f"Couldn't get stock info for {symbol}"
+        except Exception as e:
+            logging.error(f"Stock info error: {e}")
+            return "Stock service unavailable"
+    
+    def work_mode(self):
+        """Launch work applications"""
+        try:
+            system = platform.system().lower()
+            apps = self.work_apps.get(system, [])
+            
+            for app in apps:
+                if system == "windows":
+                    subprocess.Popen(app, shell=True)
+                else:
+                    subprocess.Popen(app.split(), shell=True)
+                time.sleep(1)  # Delay between launches
+            
+            return "Work mode activated - launching VS Code, Spotify, and browser"
+        except Exception as e:
+            logging.error(f"Work mode error: {e}")
+            return "Couldn't activate work mode"
         if self.offline_mode:
             return "News requires internet connection"
             
@@ -305,15 +523,88 @@ class Jarvis:
             return
             
         try:
-            if "time" in command:
+            # Vision commands - screen analysis
+            if "what am i looking at" in command or "analyze screen" in command or "what's on my screen" in command:
+                # Extract any specific question about the screen
+                prompt = "Analyze this screenshot and describe what you see"
+                if "what" in command and "screen" not in command:
+                    prompt = command  # Use the full question as prompt
+                result = await self.analyze_screen(prompt)
+                await self.speak(result)
+            
+            # News commands
+            elif "tell me the news" in command or "what's the news" in command or "news headlines" in command:
+                result = self.get_news_headlines()
+                await self.speak(result)
+            
+            # Image generation commands
+            elif "generate image" in command or "create image" in command or "make image" in command:
+                # Extract the prompt for image generation
+                prompt = command
+                for phrase in ["generate image of", "create image of", "make image of", "generate image", "create image", "make image"]:
+                    if phrase in command:
+                        prompt = command.split(phrase, 1)[-1].strip()
+                        break
+                
+                if not prompt or prompt == command:
+                    await self.speak("What image would you like me to generate?")
+                    return
+                
+                result = self.generate_image_hf(prompt)
+                await self.speak(result)
+            
+            # App opening commands
+            elif "open" in command and not any(word in command for word in ["notepad", "calculator", "browser"]):
+                # Extract app name
+                app_name = command.replace("open", "").strip()
+                if app_name:
+                    result = self.open_application(app_name)
+                    await self.speak(result)
+                else:
+                    await self.speak("What application would you like me to open?")
+            
+            # Stock information
+            elif "stock" in command and ("price" in command or "how is" in command):
+                # Extract stock symbol
+                words = command.split()
+                symbol = "AAPL"  # Default
+                for i, word in enumerate(words):
+                    if word.lower() in ["apple", "aapl"]:
+                        symbol = "AAPL"
+                    elif word.lower() in ["google", "googl"]:
+                        symbol = "GOOGL"
+                    elif word.lower() in ["microsoft", "msft"]:
+                        symbol = "MSFT"
+                result = self.get_stock_info(symbol)
+                await self.speak(result)
+            
+            # Work mode
+            elif "work mode" in command or "start work" in command:
+                result = self.work_mode()
+                await self.speak(result)
+            
+            # Memory commands
+            elif "remember" in command:
+                content = command.replace("remember", "").strip()
+                self.save_memory('user_request', content, importance=2)
+                await self.speak(f"I'll remember that: {content}")
+            
+            elif "what do you remember about" in command:
+                query = command.replace("what do you remember about", "").strip()
+                memories = self.recall_memory(query)
+                if memories:
+                    result = "I remember: " + ". ".join(memories[:2])
+                else:
+                    result = f"I don't have any memories about {query}"
+                await self.speak(result)
+            
+            # Existing commands
+            elif "time" in command:
                 await self.speak(self.get_time())
             elif "date" in command:
                 await self.speak(self.get_date())
             elif "weather" in command:
                 result = self.get_weather(command)
-                await self.speak(result)
-            elif "news" in command:
-                result = self.get_news()
                 await self.speak(result)
             elif "remind me" in command:
                 result = self.set_reminder(command)
@@ -334,7 +625,7 @@ class Jarvis:
             elif "spotify" in command or "music" in command:
                 result = self.control_spotify(command)
                 await self.speak(result)
-            elif "open" in command:
+            elif "open" in command:  # Handle basic open commands
                 await self._handle_open_command(command)
             elif any(word in command for word in ["volume", "mute", "lock", "screenshot"]):
                 result = self.system_control(command)
@@ -382,7 +673,7 @@ class Jarvis:
             await self.speak("Couldn't open that application")
     
     async def run(self):
-        await self.speak("Enhanced Jarvis online. I'm ready for natural conversation.")
+        await self.speak("Enhanced Jarvis online with vision, news, image generation, and app control.")
         
         while self.listening:
             try:
@@ -396,6 +687,9 @@ class Jarvis:
                 
             except KeyboardInterrupt:
                 await self.speak("Goodbye sir.")
+                # Close database connection
+                if hasattr(self, 'conn'):
+                    self.conn.close()
                 break
             except Exception as e:
                 logging.error(f"Main loop error: {e}")

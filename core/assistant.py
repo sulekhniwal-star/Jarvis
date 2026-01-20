@@ -17,6 +17,7 @@ from skills.web_search import search_web
 from skills.time_date import get_time_date
 from skills.system_control import open_app
 from skills import pc_control
+from skills.email_sender import send_email
 
 class JarvisAssistant:
     def __init__(self):
@@ -120,6 +121,39 @@ class JarvisAssistant:
                     if "exit" in command_lower or "shutdown jarvis" in command_lower:
                         self.tts.speak("Goodbye! Shutting down Jarvis.")
                         break
+                    
+                    # Check for email sending commands
+                    if "send email to" in command_lower:
+                        recipient = command_lower.split("send email to", 1)[1].strip()
+                        
+                        # Ask for subject
+                        self.tts.speak("What is the subject of the email?")
+                        subject = self.stt.listen()
+                        if not subject:
+                            self.tts.speak("No subject provided. Email cancelled.")
+                            continue
+                        
+                        # Ask for body
+                        self.tts.speak("What is the message content?")
+                        body = self.stt.listen()
+                        if not body:
+                            self.tts.speak("No message content provided. Email cancelled.")
+                            continue
+                        
+                        # Confirm sending
+                        self.tts.speak("Do you want me to send this email now?")
+                        confirmation = self.stt.listen()
+                        
+                        if confirmation and "yes" in confirmation.lower():
+                            response = send_email(recipient, subject, body)
+                        else:
+                            response = "Email cancelled."
+                        
+                        response = self.personality.apply_style(response)
+                        self.tts.speak(response)
+                        self.memory.add(command, response)
+                        self.persistent_memory.save(command, response)
+                        continue
                     
                     # Check for PC control commands
                     if command_lower.startswith("type "):

@@ -54,16 +54,6 @@ python jarvis.py
 python jarvis.py --gui
 ```
 
-### With REST API:
-```bash
-python jarvis.py --api
-```
-
-### With Authentication:
-```bash
-python jarvis.py --auth pin
-```
-
 ## 💬 EXAMPLE COMMANDS
 
 ### 🎨 **Creative & Visual**

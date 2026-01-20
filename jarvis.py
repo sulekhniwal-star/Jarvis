@@ -6,7 +6,10 @@ import platform
 import subprocess
 import tempfile
 from io import BytesIO
-from typing import Optional, Any
+from typing import Optional, Any, Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    pass
 
 try:
     import edge_tts  # type: ignore
@@ -43,6 +46,23 @@ try:
 except ImportError:
     Image = None  # type: ignore
 
+try:
+    import cv2  # type: ignore
+except ImportError:
+    cv2 = None  # type: ignore
+
+try:
+    import vosk  # type: ignore
+except ImportError:
+    vosk = None  # type: ignore
+
+try:
+    import psutil  # type: ignore
+except ImportError:
+    psutil = None  # type: ignore
+
+import json
+
 # Load environment variables
 if load_dotenv:
     load_dotenv()
@@ -53,20 +73,22 @@ logger = logging.getLogger(__name__)
 
 class JarvisAgent:
     """Modern Agentic AI Assistant using Gemini Function Calling"""
-    
+
     def __init__(self):
-        self.listening = True
-        
+        self.listening: bool = True
+        self.memory: Dict[str, Any] = {}
+        self.memory_file: str = "memory.json"
+
         # Check if speech recognition is available
         if not sr:
-            raise ImportError("speech_recognition package not installed. Run: pip install SpeechRecognition")
-            
+            print("Warning: speech_recognition package not installed. Speech recognition will not work. Run: pip install SpeechRecognition")
+
         self.recognizer = sr.Recognizer()  # type: ignore
         self.microphone = sr.Microphone()  # type: ignore
-        
+
         # Initialize Gemini with function calling
         self._setup_gemini()
-        
+
         logger.info("🤖 Jarvis Agent initialized with function calling capabilities")
     
     def _setup_gemini(self):
@@ -125,6 +147,54 @@ class JarvisAgent:
                     {
                         "name": "analyze_screen",
                         "description": "Take a screenshot and analyze what's on the screen",
+                        "parameters": {"type": "object", "properties": {}}
+                    },
+                    {
+                        "name": "analyze_webcam",
+                        "description": "Capture a frame from the webcam and analyze it",
+                        "parameters": {"type": "object", "properties": {}}
+                    },
+                    {
+                        "name": "remember_fact",
+                        "description": "Remember a fact or information",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "key": {"type": "string", "description": "Key for the memory"},
+                                "value": {"type": "string", "description": "Value to remember"}
+                            },
+                            "required": ["key", "value"]
+                        }
+                    },
+                    {
+                        "name": "recall_memory",
+                        "description": "Recall a remembered fact",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "key": {"type": "string", "description": "Key to recall"}
+                            },
+                            "required": ["key"]
+                        }
+                    },
+                    {
+                        "name": "get_battery_status",
+                        "description": "Get the current battery status",
+                        "parameters": {"type": "object", "properties": {}}
+                    },
+                    {
+                        "name": "shutdown_system",
+                        "description": "Shutdown the system",
+                        "parameters": {"type": "object", "properties": {}}
+                    },
+                    {
+                        "name": "restart_system",
+                        "description": "Restart the system",
+                        "parameters": {"type": "object", "properties": {}}
+                    },
+                    {
+                        "name": "sleep_system",
+                        "description": "Put the system to sleep",
                         "parameters": {"type": "object", "properties": {}}
                     },
                     {
@@ -306,14 +376,17 @@ class JarvisAgent:
     async def analyze_screen(self) -> str:
         """Take screenshot and analyze with Gemini Vision"""
         try:
+            if Image is None:
+                return "PIL not available for image processing"
+
             # Take screenshot
             screenshot = pyautogui.screenshot()  # type: ignore
-            
+
             # Convert to bytes
             img_buffer = BytesIO()
             screenshot.save(img_buffer, format='PNG')  # type: ignore
             img_buffer.seek(0)
-            
+
             # Analyze with Gemini Vision
             image = Image.open(img_buffer)  # type: ignore
             
@@ -324,7 +397,7 @@ class JarvisAgent:
                     image
                 ])  # type: ignore
             )  # type: ignore
-            
+
             return f"Screen analysis: {response.text}"  # type: ignore
             
         except Exception as e:
@@ -335,29 +408,164 @@ class JarvisAgent:
         """Control system functions"""
         try:
             action_lower = action.lower()
-            
+
             if "volume up" in action_lower:
                 if platform.system() == "Windows":
                     pyautogui.press('volumeup')  # type: ignore
                 return "Volume increased"
-                
+
             elif "volume down" in action_lower:
                 if platform.system() == "Windows":
                     pyautogui.press('volumedown')  # type: ignore
                 return "Volume decreased"
-                
+
             elif "screenshot" in action_lower:
                 screenshot = pyautogui.screenshot()  # type: ignore
                 filename = f"screenshot_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
                 screenshot.save(filename)  # type: ignore
                 return f"Screenshot saved as {filename}"
-                
+
             else:
                 return f"Unknown system action: {action}"
-                
+
         except Exception as e:
             logger.error(f"System control error: {e}")
             return f"System control failed: {action}"
+
+    def load_memory(self) -> Dict[str, Any]:
+        """Load memory from JSON file"""
+        try:
+            if os.path.exists(self.memory_file):
+                with open(self.memory_file, 'r') as f:
+                    return json.load(f)
+            return {}
+        except Exception as e:
+            logger.error(f"Error loading memory: {e}")
+            return {}
+
+    def save_memory(self):
+        """Save memory to JSON file"""
+        try:
+            with open(self.memory_file, 'w') as f:
+                json.dump(self.memory, f, indent=4)
+        except Exception as e:
+            logger.error(f"Error saving memory: {e}")
+
+    async def analyze_webcam(self) -> str:
+        """Capture a frame from the webcam and analyze with Gemini Vision"""
+        try:
+            if cv2 is None:
+                return "OpenCV not available for webcam analysis"
+
+            if Image is None:
+                return "PIL not available for image processing"
+
+            # Capture frame from webcam
+            cap = cv2.VideoCapture(0)  # type: ignore
+            if not cap.isOpened():  # type: ignore
+                return "Could not access webcam"
+
+            ret, frame = cap.read()  # type: ignore
+            cap.release()  # type: ignore
+
+            if not ret:
+                return "Failed to capture frame from webcam"
+
+            # Convert to PIL Image
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # type: ignore
+            pil_image = Image.fromarray(frame_rgb)  # type: ignore
+
+            # Analyze with Gemini Vision
+            response = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: self.vision_model.generate_content([  # type: ignore
+                    "Analyze this webcam image and describe what you see. Be concise and focus on the main elements.",
+                    pil_image
+                ])
+            )
+
+            return f"Webcam analysis: {response.text}"
+
+        except Exception as e:
+            logger.error(f"Webcam analysis error: {e}")
+            return "Could not analyze webcam"
+
+    async def remember_fact(self, key: str, value: str) -> str:
+        """Remember a fact"""
+        self.memory[key] = value
+        self.save_memory()
+        return f"Remembered: {key} = {value}"
+
+    async def recall_memory(self, key: str) -> str:
+        """Recall a remembered fact"""
+        if key in self.memory:
+            return f"{key}: {self.memory[key]}"
+        else:
+            return f"No memory found for {key}"
+
+    async def get_battery_status(self) -> str:
+        """Get battery status"""
+        try:
+            if psutil is None:
+                return "psutil not available for battery status"
+
+            battery = psutil.sensors_battery()  # type: ignore
+            if battery is None:
+                return "Battery information not available"
+
+            percent = battery.percent  # type: ignore
+            plugged = battery.power_plugged  # type: ignore
+            status = "Plugged in" if plugged else "On battery"
+            return f"Battery: {percent}% - {status}"
+
+        except Exception as e:
+            logger.error(f"Battery status error: {e}")
+            return "Could not get battery status"
+
+    async def shutdown_system(self) -> str:
+        """Shutdown the system"""
+        try:
+            system = platform.system().lower()
+            if system == "windows":
+                subprocess.run(["shutdown", "/s", "/t", "0"], check=False)
+            elif system == "darwin":
+                subprocess.run(["sudo", "shutdown", "-h", "now"], check=False)
+            elif system == "linux":
+                subprocess.run(["sudo", "shutdown", "-h", "now"], check=False)
+            return "System shutting down"
+        except Exception as e:
+            logger.error(f"Shutdown error: {e}")
+            return "Could not shutdown system"
+
+    async def restart_system(self) -> str:
+        """Restart the system"""
+        try:
+            system = platform.system().lower()
+            if system == "windows":
+                subprocess.run(["shutdown", "/r", "/t", "0"], check=False)
+            elif system == "darwin":
+                subprocess.run(["sudo", "shutdown", "-r", "now"], check=False)
+            elif system == "linux":
+                subprocess.run(["sudo", "shutdown", "-r", "now"], check=False)
+            return "System restarting"
+        except Exception as e:
+            logger.error(f"Restart error: {e}")
+            return "Could not restart system"
+
+    async def sleep_system(self) -> str:
+        """Put the system to sleep"""
+        try:
+            system = platform.system().lower()
+            if system == "windows":
+                subprocess.run(["rundll32.exe", "powrprof.dll,SetSuspendState", "0,1,0"], check=False)
+            elif system == "darwin":
+                subprocess.run(["pmset", "sleepnow"], check=False)
+            elif system == "linux":
+                subprocess.run(["systemctl", "suspend"], check=False)
+            return "System going to sleep"
+        except Exception as e:
+            logger.error(f"Sleep error: {e}")
+            return "Could not put system to sleep"
     
     async def execute_function_call(self, function_call) -> str:  # type: ignore
         """Execute a function call from Gemini"""
@@ -373,6 +581,13 @@ class JarvisAgent:
             "web_search": self.web_search,
             "open_application": self.open_application,
             "analyze_screen": self.analyze_screen,
+            "analyze_webcam": self.analyze_webcam,
+            "remember_fact": self.remember_fact,
+            "recall_memory": self.recall_memory,
+            "get_battery_status": self.get_battery_status,
+            "shutdown_system": self.shutdown_system,
+            "restart_system": self.restart_system,
+            "sleep_system": self.sleep_system,
             "system_control": self.system_control
         }
         
@@ -393,7 +608,7 @@ class JarvisAgent:
         """Process user input with Gemini and handle function calls"""
         try:
             # Send message to Gemini
-            response = await asyncio.get_event_loop().run_in_executor(  # type: ignore
+            response: "GenerateContentResponse" = await asyncio.get_event_loop().run_in_executor(  # type: ignore
                 None,
                 lambda: self.chat.send_message(user_input)  # type: ignore
             )  # type: ignore

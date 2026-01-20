@@ -12,6 +12,7 @@ from core.self_coder import SelfCoder
 from core.agent_mode import AgentMode
 from core.skill_learner import SkillLearner
 from core.life_os import LifeOS
+from core.self_improver import SelfImprover
 from utils.memory import Memory
 from utils.persistent_memory import PersistentMemory
 from utils.file_indexer import FileIndexer
@@ -34,6 +35,7 @@ class JarvisAssistant:
         self.self_coder = SelfCoder()
         self.skill_learner = SkillLearner()
         self.life_os = LifeOS()
+        self.self_improver = SelfImprover(self.memory, self.persistent_memory)
         self.memory = Memory()
         self.persistent_memory = PersistentMemory()
         self.file_indexer = FileIndexer("C:\\")
@@ -158,6 +160,16 @@ class JarvisAssistant:
                             response = self.skill_learner.learn_skill(skill_name, description)
                         else:
                             response = "No description provided. Skill learning cancelled."
+                        
+                        response = self.personality.apply_style(response)
+                        self.tts.speak(response)
+                        self.memory.add(command, response)
+                        self.persistent_memory.save(command, response)
+                        continue
+                    
+                    # Check for self-improvement commands
+                    if "improve yourself" in command_lower:
+                        response = self.self_improver.improve_system()
                         
                         response = self.personality.apply_style(response)
                         self.tts.speak(response)

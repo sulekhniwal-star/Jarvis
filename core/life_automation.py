@@ -1,3 +1,4 @@
+from typing import Any
 from datetime import datetime
 from core.gemini_llm import GeminiLLM
 from utils.goals import GoalsManager
@@ -5,7 +6,7 @@ from utils.routines import RoutinesManager
 
 
 class LifeAutomation:
-    def __init__(self, memory, persistent_memory):
+    def __init__(self, memory: Any, persistent_memory: Any):
         self.llm = GeminiLLM()
         self.goals_manager = GoalsManager()
         self.routines_manager = RoutinesManager()

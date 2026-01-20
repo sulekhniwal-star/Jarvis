@@ -1,11 +1,11 @@
+from typing import Any, List
 import os
-import time
 from datetime import datetime
 from core.gemini_llm import GeminiLLM
 
 
 class SelfImprover:
-    def __init__(self, memory, persistent_memory):
+    def __init__(self, memory: Any, persistent_memory: Any):
         self.llm = GeminiLLM()
         self.memory = memory
         self.persistent_memory = persistent_memory
@@ -50,7 +50,7 @@ Be concise and technical."""
     
     def _collect_metrics(self) -> str:
         """Collect system performance metrics."""
-        metrics = []
+        metrics: List[str] = []
         
         # Memory usage
         try:

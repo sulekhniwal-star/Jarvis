@@ -21,3 +21,9 @@ class WakeWordDetector:
         normalized_text = re.sub(r'[^\w\s]', '', text.lower())
         # Check for full word match
         return re.search(r'\b' + re.escape(self.wake_word) + r'\b', normalized_text) is not None
+    
+    def detect(self) -> bool:
+        """Detect wake word from audio input."""
+        # For now, return True to simulate wake word detection
+        # In a real implementation, this would listen for audio input
+        return True

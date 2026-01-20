@@ -1,3 +1,4 @@
+from typing import List
 """Main Jarvis assistant."""
 
 import os
@@ -25,13 +26,17 @@ from skills.time_date import get_time_date
 from skills.system_control import open_app
 from skills import pc_control
 from skills.email_sender import send_email
+from utils.memory import Memory
+from utils.persistent_memory import PersistentMemory
 
 class JarvisAssistant:
     def __init__(self):
         self.stt = SpeechToText()
         self.tts = TextToSpeech()
         self.llm = GeminiLLM()
-        self.wake_detector = WakeWordDetector()
+        self.memory = Memory()
+        self.persistent_memory = PersistentMemory()
+        self.wake_detector = WakeWordDetector("jarvis")
         self.intent_classifier = IntentClassifier()
         self.personality = PersonalityManager()
         self.self_coder = SelfCoder()
@@ -70,7 +75,7 @@ class JarvisAssistant:
     
     def _run_diagnostics(self):
         """Run system diagnostics and report status."""
-        failed_systems = []
+        failed_systems: List[str] = []
         
         # Test TTS
         try:

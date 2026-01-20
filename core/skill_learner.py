@@ -46,7 +46,11 @@ Only return the Python code, no explanations."""
         try:
             # Load the module
             spec = importlib.util.spec_from_file_location("temp_skill", skill_path)
+            if spec is None:
+                return False
             module = importlib.util.module_from_spec(spec)
+            if spec.loader is None:
+                return False
             spec.loader.exec_module(module)
             
             # Check if run function exists and is callable

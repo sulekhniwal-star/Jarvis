@@ -1,15 +1,16 @@
-import cv2
+from typing import Optional, Any
+import cv2  # type: ignore
 import os
 import numpy as np
 
 class FaceLogin:
     def __init__(self):
-        self.face_cascade = cv2.CascadeClassifier(
-            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        self.face_cascade = cv2.CascadeClassifier(  # type: ignore
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # type: ignore
         )
         self.ref_path = "reference_face.jpg"
 
-    def _capture_face(self, message="Look at the camera"):
+    def _capture_face(self, message: str = "Look at the camera") -> Optional[Any]:
         cap = cv2.VideoCapture(0)
         face_img = None
 
@@ -50,8 +51,8 @@ class FaceLogin:
             print("No face detected.")
             return False
 
-        diff = np.mean((ref_face.astype("float") - live_face.astype("float")) ** 2)
+        diff = np.mean((ref_face.astype("float") - live_face.astype("float")) ** 2)  # type: ignore
 
-        print("Face difference score:", diff)
+        print("Face difference score:", diff)  # type: ignore
 
-        return diff < 2000
+        return bool(diff < 2000)  # type: ignore

@@ -39,7 +39,7 @@ def send_email(to: str, subject: str, body: str) -> str:
     
     except smtplib.SMTPAuthenticationError:
         return "Email authentication failed. Check your credentials."
-    except smtplib.SMTPException as e:
+    except smtplib.SMTPException:
         return "Failed to send email. SMTP error occurred."
     except Exception:
         return "Failed to send email due to an unexpected error."

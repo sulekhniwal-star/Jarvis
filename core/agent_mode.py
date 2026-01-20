@@ -1,3 +1,4 @@
+from typing import Any
 from core.gemini_llm import GeminiLLM
 from core.self_coder import SelfCoder
 from skills.web_search import search_web
@@ -5,7 +6,7 @@ from skills.system_control import open_app
 
 
 class AgentMode:
-    def __init__(self, tts, memory, persistent_memory):
+    def __init__(self, tts: Any, memory: Any, persistent_memory: Any):
         self.llm = GeminiLLM()
         self.self_coder = SelfCoder()
         self.tts = tts
@@ -81,5 +82,5 @@ Respond with one of:
             if step_count >= max_steps:
                 self.tts.speak("Maximum steps reached. Task may need manual completion.")
             
-        except Exception as e:
+        except Exception:
             self.tts.speak("I encountered an error during autonomous execution.")

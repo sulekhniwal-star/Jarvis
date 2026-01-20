@@ -1,7 +1,7 @@
 """Main entry point for Jarvis assistant."""
 
 import sys
-from core.config import validate_config
+from config import validate_config
 from core.assistant import JarvisAssistant
 from face_login import FaceLogin
 from voice_login import VoiceLogin

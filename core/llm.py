@@ -1,6 +1,6 @@
 """Large Language Model integration."""
 
-import google.generativeai as genai
+import google.generativeai as genai  # type: ignore
 from config import GEMINI_API_KEY
 from utils.logger import logger
 
@@ -10,7 +10,7 @@ class GeminiLLM:
 
     def __init__(self):
         """Initialize the Gemini LLM with API key and system instruction."""
-        genai.configure(api_key=GEMINI_API_KEY)
+        genai.configure(api_key=GEMINI_API_KEY)  # type: ignore
         self.model = genai.GenerativeModel(
             'gemini-pro',
             system_instruction="You are Jarvis, a helpful AI assistant inspired by Iron Man."
@@ -29,7 +29,7 @@ class GeminiLLM:
         for attempt in range(max_retries):
             try:
                 logger.info(f"Generating reply for prompt (attempt {attempt + 1})")
-                response = self.model.generate_content(full_prompt)
+                response = self.model.generate_content(full_prompt)  # type: ignore
                 text = response.text
                 # Approximate trimming to ~500 tokens (roughly 400-500 words)
                 words = text.split()

@@ -1,17 +1,18 @@
+from typing import List, Dict
 import os
 
 
 class FileIndexer:
     def __init__(self, root_dir: str):
         self.root_dir = root_dir
-        self.index = []
+        self.index: List[Dict[str, str]] = []
         self.build_index()
     
-    def build_index(self):
+    def build_index(self) -> None:
         """Build file index by walking directory tree."""
         self.index = []
         try:
-            for root, dirs, files in os.walk(self.root_dir):
+            for root, _, files in os.walk(self.root_dir):
                 for file in files:
                     full_path = os.path.join(root, file)
                     self.index.append({
@@ -21,13 +22,13 @@ class FileIndexer:
         except Exception:
             pass
     
-    def search(self, query: str) -> list[str]:
+    def search(self, query: str) -> List[str]:
         """Search for files matching query (case-insensitive, partial match)."""
         if not query:
             return []
         
         query_lower = query.lower()
-        matches = []
+        matches: List[str] = []
         
         for entry in self.index:
             if query_lower in entry["name"].lower():

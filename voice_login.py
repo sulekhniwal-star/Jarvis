@@ -1,8 +1,8 @@
-import sounddevice as sd
-import librosa
+import sounddevice as sd  # type: ignore
+import librosa  # type: ignore
 import numpy as np
 import os
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity  # type: ignore
 
 
 class VoiceLogin:

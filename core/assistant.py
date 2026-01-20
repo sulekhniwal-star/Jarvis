@@ -11,10 +11,12 @@ from core.personality import PersonalityManager
 from core.self_coder import SelfCoder
 from core.agent_mode import AgentMode
 from core.skill_learner import SkillLearner
+from core.life_os import LifeOS
 from utils.memory import Memory
 from utils.persistent_memory import PersistentMemory
 from utils.file_indexer import FileIndexer
 from utils.goals import GoalsManager
+from utils.routines import RoutinesManager
 from skills.web_search import search_web
 from skills.time_date import get_time_date
 from skills.system_control import open_app
@@ -31,10 +33,12 @@ class JarvisAssistant:
         self.personality = PersonalityManager()
         self.self_coder = SelfCoder()
         self.skill_learner = SkillLearner()
+        self.life_os = LifeOS()
         self.memory = Memory()
         self.persistent_memory = PersistentMemory()
         self.file_indexer = FileIndexer("C:\\")
         self.goals_manager = GoalsManager()
+        self.routines_manager = RoutinesManager()
         self.sleeping = False
         self.last_command = None
     
@@ -154,6 +158,48 @@ class JarvisAssistant:
                             response = self.skill_learner.learn_skill(skill_name, description)
                         else:
                             response = "No description provided. Skill learning cancelled."
+                        
+                        response = self.personality.apply_style(response)
+                        self.tts.speak(response)
+                        self.memory.add(command, response)
+                        self.persistent_memory.save(command, response)
+                        continue
+                    
+                    # Check for daily briefing commands
+                    if ("what should i do today" in command_lower or 
+                        "give me my daily briefing" in command_lower):
+                        response = self.life_os.daily_briefing()
+                        
+                        response = self.personality.apply_style(response)
+                        self.tts.speak(response)
+                        self.memory.add(command, response)
+                        self.persistent_memory.save(command, response)
+                        continue
+                    
+                    # Check for routine management commands
+                    if "set a routine at" in command_lower and " to " in command_lower:
+                        # Parse time and task
+                        parts = command_lower.split("set a routine at", 1)[1].split(" to ", 1)
+                        if len(parts) == 2:
+                            time_str = parts[0].strip()
+                            task = parts[1].strip()
+                            self.routines_manager.add_routine(time_str, task)
+                            response = f"Routine set for {time_str}: {task}"
+                        else:
+                            response = "Please use format: set a routine at <time> to <task>"
+                        
+                        response = self.personality.apply_style(response)
+                        self.tts.speak(response)
+                        self.memory.add(command, response)
+                        self.persistent_memory.save(command, response)
+                        continue
+                    
+                    if "what are my routines" in command_lower:
+                        routines = self.routines_manager.list_routines()
+                        if routines:
+                            response = "Your routines are: " + ", ".join(routines)
+                        else:
+                            response = "You have no routines set."
                         
                         response = self.personality.apply_style(response)
                         self.tts.speak(response)

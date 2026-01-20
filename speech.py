@@ -27,7 +27,7 @@ class SpeechHandler:
             try:
                 # You may need to download a Vosk model (e.g., vosk-model-small-en-us-0.15)
                 # For now, we'll assume it's in a 'model' directory
-                model_path = "model"
+                model_path = "model/vosk-model-small-en-us-0.15"
                 if os.path.exists(model_path):
                     self.vosk_recognizer = vosk.Model(model_path)  # type: ignore
                     logger.info("🤖 Vosk model loaded for offline wake word detection")

@@ -300,8 +300,6 @@ class ToolHandler:
     async def get_news(self, category: str = "general") -> str:
         """Get latest news headlines using NewsAPI (free tier)"""
         try:
-            if NewsApiClient is None:
-                return "NewsAPI not available. Please install newsapi-python."
 
             api_key = os.getenv('NEWS_API_KEY')
             if not api_key:

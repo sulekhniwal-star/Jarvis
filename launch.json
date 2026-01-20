@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Jarvis",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/jarvis.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Run Jarvis GUI",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_gui.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Test Imports",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_imports.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

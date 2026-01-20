@@ -41,14 +41,14 @@ def test_imports():
     print("\nTesting optional imports...")
     for imp, name in optional_imports:
         try:
-            module = __import__(imp, fromlist=[name.split('.')[-1]])
+            _ = __import__(imp, fromlist=[name.split('.')[-1]])
             print(f"✓ {imp}")
         except ImportError as e:
             print(f"✗ {imp}: {e}")
 
     print("\nTesting google.generativeai specifically...")
     try:
-        import google.generativeai as genai
+        import google.generativeai as genai  # type: ignore
         print("✓ google.generativeai imported successfully")
         print(f"  Version: {genai.__version__ if hasattr(genai, '__version__') else 'unknown'}")
     except ImportError as e:

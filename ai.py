@@ -450,9 +450,6 @@ class AIHandler:
             from newsapi import NewsApiClient  # type: ignore
             import os
 
-            if NewsApiClient is None:
-                return "NewsAPI not available. Please install newsapi-python."
-
             api_key = os.getenv('NEWS_API_KEY')
             if not api_key:
                 return "NEWS_API_KEY not found in environment variables. Get one from https://newsapi.org/register"

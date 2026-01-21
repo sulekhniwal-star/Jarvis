@@ -12,7 +12,7 @@ class GeminiLLM:
         """Initialize the Gemini LLM with API key and system instruction."""
         genai.configure(api_key=GEMINI_API_KEY)  # type: ignore
         self.model = genai.GenerativeModel(
-            'gemini-pro',
+            'gemini-2.5-flash',
             system_instruction="You are Jarvis, a helpful AI assistant inspired by Iron Man."
         )
 

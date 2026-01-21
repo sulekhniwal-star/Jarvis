@@ -17,9 +17,18 @@ class SpeechToText:
         try:
             self.model: Any = WhisperModel("base", device="cpu", compute_type="int8")
             self.language = DEFAULT_LANGUAGE
+            self.supported_languages = ["en", "hi", "auto"]  # English, Hindi, Auto-detect
         except Exception as e:
             logger.error(f"Error initializing WhisperModel: {e}")
             raise
+    
+    def set_language(self, lang_code: str):
+        """Set the language for speech recognition."""
+        if lang_code in self.supported_languages:
+            self.language = lang_code
+        else:
+            logger.warning(f"Unsupported language: {lang_code}. Using auto-detect.")
+            self.language = "auto"
 
     def listen(self) -> str:
         """Capture audio and transcribe to text.
@@ -59,9 +68,14 @@ class SpeechToText:
 
             audio = np.concatenate(audio_chunks).flatten()
 
-            # Transcribe
-            segments, _ = self.model.transcribe(audio, language=self.language)
+            # Transcribe with language detection
+            lang = None if self.language == "auto" else self.language
+            segments, info = self.model.transcribe(audio, language=lang)
             text = " ".join([segment.text for segment in segments]).strip()
+            
+            # Log detected language for auto mode
+            if self.language == "auto" and hasattr(info, 'language'):
+                logger.info(f"Detected language: {info.language}")
 
             return text.lower()
 

@@ -109,9 +109,9 @@ class TimerAlarmSkill:
             duration_str = self._format_duration(duration)
             return f"Timer set for {duration_str}. I'll notify you when it goes off."
 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error(f"Set timer error: {e}")
-            return "Sorry, I couldn't set that timer."
+            return "Sorry, I couldn't set that timer. Please provide a valid duration."
 
     def _set_alarm(self, text: str) -> str:
         """Set an alarm."""
@@ -140,9 +140,9 @@ class TimerAlarmSkill:
             time_str = alarm_time.strftime('%I:%M %p')
             return f"Alarm set for {time_str}. I'll wake you up then."
 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error(f"Set alarm error: {e}")
-            return "Sorry, I couldn't set that alarm."
+            return "Sorry, I couldn't set that alarm. Please provide a valid time."
 
     def _set_cooking_timer(self, text: str) -> str:
         """Set a cooking timer."""
@@ -175,9 +175,9 @@ class TimerAlarmSkill:
             duration_str = self._format_duration(duration)
             return f"Cooking timer set for {duration_str}. I'll let you know when {food_item or 'your food'} is ready!"
 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error(f"Set cooking timer error: {e}")
-            return "Sorry, I couldn't set the cooking timer."
+            return "Sorry, I couldn't set the cooking timer. Please provide a valid duration."
 
     def _stop_timer(self, text: str) -> str:
         """Stop a timer."""
@@ -205,8 +205,8 @@ class TimerAlarmSkill:
                     return "No active timers to stop."
 
         except Exception as e:
-            logger.error(f"Stop timer error: {e}")
-            return "Sorry, I couldn't stop that timer."
+            logger.error(f"An unexpected error occurred while stopping the timer: {e}")
+            return "Sorry, an unexpected error occurred while trying to stop the timer."
 
     def _snooze_alarm(self) -> str:
         """Snooze the next alarm."""
@@ -229,6 +229,8 @@ class TimerAlarmSkill:
             snooze_str = snooze_time.strftime('%I:%M %p')
             return f"Alarm snoozed until {snooze_str}."
 
+        except IndexError:
+            return "There are no active alarms to snooze."
         except Exception as e:
             logger.error(f"Snooze alarm error: {e}")
             return "Sorry, I couldn't snooze the alarm."
@@ -255,6 +257,9 @@ class TimerAlarmSkill:
 
             return response
 
+        except ValueError as e:
+            logger.error(f"List timers error: {e}")
+            return "Sorry, I encountered an error while trying to list your timers."
         except Exception as e:
             logger.error(f"List timers error: {e}")
             return "Sorry, I couldn't list your timers."
@@ -358,7 +363,7 @@ class TimerAlarmSkill:
             if os.path.exists(self.timers_file):
                 with open(self.timers_file, 'r') as f:
                     return json.load(f)
-        except Exception as e:
+        except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
             logger.error(f"Error loading timers: {e}")
         return {}
 
@@ -367,7 +372,7 @@ class TimerAlarmSkill:
         try:
             with open(self.timers_file, 'w') as f:
                 json.dump(self.timers, f, indent=2)
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Error saving timers: {e}")
 
     def _load_alarms(self) -> Dict[str, Any]:
@@ -376,7 +381,7 @@ class TimerAlarmSkill:
             if os.path.exists(self.alarms_file):
                 with open(self.alarms_file, 'r') as f:
                     return json.load(f)
-        except Exception as e:
+        except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
             logger.error(f"Error loading alarms: {e}")
         return {}
 
@@ -385,7 +390,7 @@ class TimerAlarmSkill:
         try:
             with open(self.alarms_file, 'w') as f:
                 json.dump(self.alarms, f, indent=2)
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Error saving alarms: {e}")
 
     # Text extraction helper methods

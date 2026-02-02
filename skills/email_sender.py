@@ -1,3 +1,5 @@
+"""Email sending functionality using Gmail SMTP."""
+
 import smtplib
 import re
 import os
@@ -41,5 +43,5 @@ def send_email(to: str, subject: str, body: str) -> str:
         return "Email authentication failed. Check your credentials."
     except smtplib.SMTPException:
         return "Failed to send email. SMTP error occurred."
-    except Exception:
+    except (OSError, ValueError, ConnectionError):
         return "Failed to send email due to an unexpected error."

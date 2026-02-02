@@ -1,14 +1,16 @@
 """Enhanced skill routing for Jarvis assistant with multiple APIs."""
 
+from loguru import logger
+
 from skills.time_date import get_time_date
 from skills.small_talk import handle_small_talk
 from skills.system_control import open_app, shutdown_system, restart_system
 from skills.entertainment import EntertainmentSkill
 from skills.information import InformationSkill
 from skills.productivity import ProductivitySkill
-from loguru import logger
 
 class SkillRouter:
+    """Routes user input to appropriate skills and handles command execution."""
     def __init__(self):
         """Initialize skill router with enhanced skills."""
         self.entertainment_skill = EntertainmentSkill()
@@ -58,7 +60,7 @@ class SkillRouter:
 
             return None
 
-        except Exception as e:
+        except (AttributeError, ValueError, TypeError, ImportError) as e:
             logger.error(f"Skill routing error: {e}")
             return "I encountered an error processing your request. Please try again."
 

@@ -17,7 +17,7 @@ def open_app(app_name: str) -> str:
     try:
         subprocess.Popen(ALLOWED_APPS[app_lower])
         return f"Opening {app_name}"
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError, FileNotFoundError) as e:
         return f"Failed to open {app_name}: {str(e)}"
 
 def shutdown_system() -> str:
@@ -25,7 +25,7 @@ def shutdown_system() -> str:
     try:
         subprocess.run(["shutdown", "/s", "/t", "0"], check=True)
         return "Shutting down system"
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError, subprocess.CalledProcessError) as e:
         return f"Failed to shutdown: {str(e)}"
 
 def restart_system() -> str:
@@ -33,5 +33,5 @@ def restart_system() -> str:
     try:
         subprocess.run(["shutdown", "/r", "/t", "0"], check=True)
         return "Restarting system"
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError, subprocess.CalledProcessError) as e:
         return f"Failed to restart: {str(e)}"

@@ -19,8 +19,8 @@ class FileIndexer:
                         "name": file,
                         "path": full_path
                     })
-        except Exception:
-            pass
+        except OSError as e:
+            print(f"Error building file index: {e}")
 
     def search(self, query: str) -> List[str]:
         """Search for files matching query (case-insensitive, partial match)."""

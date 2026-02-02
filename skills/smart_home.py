@@ -2,8 +2,9 @@
 
 import json
 import os
+import re
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, Any
 from loguru import logger
 
 class SmartHomeSkill:
@@ -18,7 +19,10 @@ class SmartHomeSkill:
         self.scenes = self._load_scenes()
 
         self.commands = {
-            "control_device": ["turn on", "turn off", "dim", "brighten", "set temperature", "lock", "unlock"],
+            "control_device": [
+                "turn on", "turn off", "dim", "brighten", 
+                "set temperature", "lock", "unlock"
+            ],
             "device_status": ["status of", "is the", "how is", "check"],
             "scene": ["activate scene", "run scene", "scene"],
             "list_devices": ["list devices", "show devices", "what devices"],
@@ -66,7 +70,7 @@ class SmartHomeSkill:
             else:
                 return self._get_smart_home_overview()
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
             logger.error(f"Smart home skill error: {e}")
             return "Sorry, I'm having trouble with smart home controls right now."
 
@@ -86,7 +90,8 @@ class SmartHomeSkill:
             # Find device
             device = self._find_device(device_name)
             if not device:
-                return f"I couldn't find a device named '{device_name}'. Available devices: {', '.join(self.devices.keys())}"
+                return (f"I couldn't find a device named '{device_name}'. "
+                        f"Available devices: {', '.join(self.devices.keys())}")
 
             # Execute action
             result = self._execute_device_action(device, action, value)
@@ -94,7 +99,7 @@ class SmartHomeSkill:
 
             return result
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
             logger.error(f"Device control error: {e}")
             return "Sorry, I couldn't control that device."
 
@@ -113,7 +118,7 @@ class SmartHomeSkill:
             status = self._get_device_status_text(device)
             return f"The {device['name']} is {status}."
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
             logger.error(f"Device status error: {e}")
             return "Sorry, I couldn't check that device status."
 
@@ -126,7 +131,8 @@ class SmartHomeSkill:
                 return "Please specify which scene you'd like to activate."
 
             if scene_name not in self.scenes:
-                return f"I couldn't find a scene named '{scene_name}'. Available scenes: {', '.join(self.scenes.keys())}"
+                return (f"I couldn't find a scene named '{scene_name}'. "
+                        f"Available scenes: {', '.join(self.scenes.keys())}")
 
             scene = self.scenes[scene_name]
             results = []
@@ -144,18 +150,19 @@ class SmartHomeSkill:
             self._save_devices()
             return f"Scene '{scene_name}' activated. {len(results)} devices controlled."
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
             logger.error(f"Scene activation error: {e}")
             return "Sorry, I couldn't activate that scene."
 
     def _list_devices(self) -> str:
         """List all smart home devices."""
         if not self.devices:
-            return "You don't have any smart home devices set up yet. Try adding some devices first."
+            return ("You don't have any smart home devices set up yet. "
+                    "Try adding some devices first.")
 
         response = f"You have {len(self.devices)} smart home devices:\\n\\n"
 
-        for device_id, device in self.devices.items():
+        for _, device in self.devices.items():
             status = self._get_device_status_text(device)
             response += f"• {device['name']} ({device['type']}): {status}\\n"
 
@@ -167,7 +174,8 @@ class SmartHomeSkill:
             device_info = self._extract_device_info(text)
 
             if not device_info['name'] or not device_info['type']:
-                return "Please specify the device name and type. For example: 'add device living room light'"
+                return ("Please specify the device name and type. "
+                        "For example: 'add device living room light'")
 
             device_id = f"{device_info['type']}_{len(self.devices) + 1}"
             device = {
@@ -180,20 +188,20 @@ class SmartHomeSkill:
 
             # Add type-specific properties
             if device_info['type'] == 'light':
-                device['brightness'] = 100
+                device['brightness'] = '100'
                 device['color'] = 'white'
             elif device_info['type'] == 'thermostat':
-                device['temperature'] = 72
+                device['temperature'] = '72'
                 device['mode'] = 'auto'
             elif device_info['type'] == 'lock':
-                device['locked'] = True
+                device['locked'] = 'True'
 
             self.devices[device_id] = device
             self._save_devices()
 
             return f"Added new {device_info['type']}: {device_info['name']}"
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
             logger.error(f"Add device error: {e}")
             return "Sorry, I couldn't add that device."
 
@@ -214,9 +222,10 @@ class SmartHomeSkill:
             self.scenes[scene_info['name']] = scene
             self._save_scenes()
 
-            return f"Created scene '{scene_info['name']}' with {len(scene_info['actions'])} actions."
+            return (f"Created scene '{scene_info['name']}' with "
+                    f"{len(scene_info['actions'])} actions.")
 
-        except Exception as e:
+        except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
             logger.error(f"Create scene error: {e}")
             return "Sorry, I couldn't create that scene."
 
@@ -290,7 +299,7 @@ class SmartHomeSkill:
 
         return f"Unknown action '{action}' for thermostat"
 
-    def _control_lock(self, device: Dict[str, Any], action: str, value: Any = None) -> str:
+    def _control_lock(self, device: Dict[str, Any], action: str, _value: Any = None) -> str:
         """Control a lock device."""
         if action == 'lock':
             device['locked'] = True
@@ -301,7 +310,7 @@ class SmartHomeSkill:
 
         return f"Unknown action '{action}' for lock"
 
-    def _control_switch(self, device: Dict[str, Any], action: str, value: Any = None) -> str:
+    def _control_switch(self, device: Dict[str, Any], action: str, _value: Any = None) -> str:
         """Control a switch device."""
         if action == 'turn_on':
             device['status'] = 'on'
@@ -333,9 +342,9 @@ class SmartHomeSkill:
         """Load devices from file."""
         try:
             if os.path.exists(self.devices_file):
-                with open(self.devices_file, 'r') as f:
+                with open(self.devices_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError) as e:
             logger.error(f"Error loading devices: {e}")
 
         # Return default devices
@@ -361,18 +370,18 @@ class SmartHomeSkill:
     def _save_devices(self):
         """Save devices to file."""
         try:
-            with open(self.devices_file, 'w') as f:
+            with open(self.devices_file, 'w', encoding='utf-8') as f:
                 json.dump(self.devices, f, indent=2)
-        except Exception as e:
+        except (OSError, IOError, TypeError, UnicodeEncodeError) as e:
             logger.error(f"Error saving devices: {e}")
 
     def _load_scenes(self) -> Dict[str, Any]:
         """Load scenes from file."""
         try:
             if os.path.exists(self.scenes_file):
-                with open(self.scenes_file, 'r') as f:
+                with open(self.scenes_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError) as e:
             logger.error(f"Error loading scenes: {e}")
 
         # Return default scenes
@@ -390,9 +399,9 @@ class SmartHomeSkill:
     def _save_scenes(self):
         """Save scenes to file."""
         try:
-            with open(self.scenes_file, 'w') as f:
+            with open(self.scenes_file, 'w', encoding='utf-8') as f:
                 json.dump(self.scenes, f, indent=2)
-        except Exception as e:
+        except (OSError, IOError, TypeError, UnicodeEncodeError) as e:
             logger.error(f"Error saving scenes: {e}")
 
     # Text extraction helper methods
@@ -407,7 +416,6 @@ class SmartHomeSkill:
                 return name
 
         # Try to extract from common patterns
-        import re
         patterns = [
             r"the ([a-zA-Z\\s]+) (?:light|thermostat|lock|switch)",
             r"([a-zA-Z\\s]+) (?:light|thermostat|lock|switch)",
@@ -444,8 +452,6 @@ class SmartHomeSkill:
 
     def _extract_value(self, text: str) -> Any:
         """Extract value from text."""
-        import re
-
         # Extract numbers
         numbers = re.findall(r'\\d+', text)
         if numbers:
@@ -460,7 +466,6 @@ class SmartHomeSkill:
 
     def _extract_scene_name(self, text: str) -> str:
         """Extract scene name from text."""
-        import re
         match = re.search(r'(?:activate|run) scene ([a-zA-Z\\s]+)', text, re.IGNORECASE)
         if match:
             return match.group(1).strip()
@@ -475,10 +480,11 @@ class SmartHomeSkill:
 
     def _extract_device_info(self, text: str) -> Dict[str, str]:
         """Extract device info from text."""
-        import re
-
         # Pattern: "add device [name] [type]"
-        match = re.search(r'add device ([a-zA-Z\\s]+) (light|thermostat|lock|switch)', text, re.IGNORECASE)
+        match = re.search(
+            r'add device ([a-zA-Z\\s]+) (light|thermostat|lock|switch)', 
+            text, re.IGNORECASE
+        )
         if match:
             return {
                 'name': match.group(1).strip(),
@@ -487,7 +493,7 @@ class SmartHomeSkill:
 
         return {'name': '', 'type': ''}
 
-    def _extract_scene_info(self, text: str) -> Dict[str, Any]:
+    def _extract_scene_info(self, _text: str) -> Dict[str, Any]:
         """Extract scene info from text."""
         # This is a simplified implementation
         # In a real implementation, you'd parse more complex scene creation commands

@@ -1,10 +1,12 @@
-from typing import Any, List
 """Speech-to-text functionality."""
+
+from typing import Any, List
+import time
 
 import numpy as np
 import sounddevice as sd  # type: ignore
-import time
 from faster_whisper import WhisperModel  # type: ignore
+
 from config import DEFAULT_LANGUAGE
 from utils.logger import logger
 
@@ -19,7 +21,7 @@ class SpeechToText:
             self.language = DEFAULT_LANGUAGE
             self.supported_languages = ["en", "hi", "auto"]  # English, Hindi, Auto-detect
         except Exception as e:
-            logger.error(f"Error initializing WhisperModel: {e}")
+            logger.error("Error initializing WhisperModel: %s", e)
             raise
 
     def set_language(self, lang_code: str):
@@ -27,7 +29,7 @@ class SpeechToText:
         if lang_code in self.supported_languages:
             self.language = lang_code
         else:
-            logger.warning(f"Unsupported language: {lang_code}. Using auto-detect.")
+            logger.warning("Unsupported language: %s. Using auto-detect.", lang_code)
             self.language = "auto"
 
     def listen(self) -> str:
@@ -43,12 +45,14 @@ class SpeechToText:
             chunk_duration = 0.5  # seconds
             audio_chunks: List[Any] = []
 
-            def callback(indata: Any, frames: Any, time_info: Any, status: Any) -> None:
+            def callback(indata: Any, _frames: Any, _time_info: Any, status: Any) -> None:
                 if status:
-                    logger.warning(f"Sounddevice status: {status}")
+                    logger.warning("Sounddevice status: %s", status)
                 audio_chunks.append(indata.copy())
 
-            with sd.InputStream(samplerate=samplerate, channels=1, callback=callback):  # type: ignore
+            with sd.InputStream(
+                samplerate=samplerate, channels=1, callback=callback
+            ):  # type: ignore
                 start_time = time.time()
                 last_audio_time = start_time
 
@@ -75,10 +79,10 @@ class SpeechToText:
 
             # Log detected language for auto mode
             if self.language == "auto" and hasattr(info, 'language'):
-                logger.info(f"Detected language: {info.language}")
+                logger.info("Detected language: %s", info.language)
 
             return text.lower()
 
-        except Exception as e:
-            logger.error(f"Error in listen method: {e}")
+        except (OSError, ValueError, RuntimeError, AttributeError) as e:
+            logger.error("Error in listen method: %s", e)
             return ""

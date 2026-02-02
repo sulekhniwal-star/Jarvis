@@ -1,8 +1,10 @@
-from typing import Any
 """Text-to-speech functionality."""
 
-import pyttsx3  # type: ignore
+from typing import Any
 import time
+
+import pyttsx3  # type: ignore
+
 from utils.logger import logger
 
 
@@ -29,7 +31,7 @@ class TextToSpeech:
         if mode in ["normal", "jarvis"]:
             self.voice_mode = mode
         else:
-            logger.warning(f"Unknown voice mode: {mode}. Using jarvis mode.")
+            logger.warning("Unknown voice mode: %s. Using jarvis mode.", mode)
             self.voice_mode = "jarvis"
 
     def speak(self, text: str):
@@ -55,7 +57,7 @@ class TextToSpeech:
                     voices = self._engine.getProperty('voices')  # type: ignore
                     if voices:
                         self._engine.setProperty('voice', voices[0].id)  # type: ignore
-                except:
+                except (AttributeError, IndexError, RuntimeError):
                     pass  # Fail gracefully if pitch control unsupported
                 # Pause before speaking
                 time.sleep(0.4)
@@ -64,5 +66,5 @@ class TextToSpeech:
 
             self._engine.say(text)  # type: ignore
             self._engine.runAndWait()  # type: ignore
-        except Exception as e:
-            logger.error(f"Error in text-to-speech: {e}")
+        except (RuntimeError, OSError, AttributeError) as e:
+            logger.error("Error in text-to-speech: %s", e)

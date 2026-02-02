@@ -21,7 +21,8 @@ class VoiceLogin:
                           dtype='float64')
             sd.wait()
             return audio.flatten()
-        except Exception:
+        except (OSError, RuntimeError) as e:
+            print(f"Recording failed: {e}")
             return np.array([])
 
     def _extract_mfcc(self, audio: np.ndarray) -> np.ndarray:
@@ -29,7 +30,7 @@ class VoiceLogin:
         try:
             mfccs = librosa.feature.mfcc(y=audio, sr=self.sample_rate, n_mfcc=13)
             return np.mean(mfccs.T, axis=0)
-        except Exception:
+        except (ValueError, TypeError):
             return np.array([])
 
     def _setup_reference(self):
@@ -42,7 +43,8 @@ class VoiceLogin:
                 if len(mfcc) > 0:
                     np.save(self.reference_path, mfcc)
                     return True
-        except Exception:
+        except (OSError, ValueError) as e:
+            print(f"Reference setup failed: {e}")
             pass
         return False
 
@@ -72,5 +74,6 @@ class VoiceLogin:
 
             return similarity > 0.75
 
-        except Exception:
+        except (OSError, ValueError, FileNotFoundError) as e:
+            print(f"Authentication failed: {e}")
             return False

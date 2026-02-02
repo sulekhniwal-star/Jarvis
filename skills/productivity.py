@@ -2,10 +2,11 @@
 
 import json
 import os
-import schedule
+import random
+import re
 import time
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
+from typing import Any, Optional
 import threading
 from loguru import logger
 
@@ -78,7 +79,7 @@ class ProductivitySkill:
             else:
                 return self._get_productivity_overview()
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             logger.error(f"Productivity skill error: {e}")
             return "Sorry, I'm having trouble with productivity features right now."
 
@@ -103,12 +104,14 @@ class ProductivitySkill:
             self.tasks.append(task)
             self._save_data(self.tasks_file, self.tasks)
 
-            priority_text = f" (Priority: {task['priority']})" if task['priority'] != 'medium' else ""
+            priority_text = (
+                f" (Priority: {task['priority']})"
+                if task['priority'] != 'medium' else "")
             due_text = f" (Due: {task['due_date']})" if task['due_date'] else ""
 
             return f"Task added: {task_desc}{priority_text}{due_text}"
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             logger.error(f"Task handling error: {e}")
             return "Sorry, I couldn't add that task."
 
@@ -137,7 +140,7 @@ class ProductivitySkill:
 
             return f"Reminder set: '{reminder_text}' at {reminder_time.strftime('%Y-%m-%d %H:%M')}"
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError, AttributeError) as e:
             logger.error(f"Reminder handling error: {e}")
             return "Sorry, I couldn't set that reminder."
 
@@ -168,7 +171,7 @@ class ProductivitySkill:
 
             return f"Scheduled: '{event_desc}' on {event_time.strftime('%Y-%m-%d at %H:%M')}"
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError, AttributeError) as e:
             logger.error(f"Scheduling error: {e}")
             return "Sorry, I couldn't schedule that event."
 
@@ -183,13 +186,17 @@ class ProductivitySkill:
             response = f"You have {len(active_tasks)} active tasks:\\n\\n"
 
             for task in active_tasks:
-                priority_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(task.get('priority', 'medium'), "🟡")
-                due_text = f" (Due: {task.get('due_date', 'No due date')})" if task.get('due_date') else ""
-                response += f"{priority_icon} {task['id']}. {task['description']}{due_text}\\n"
+                priority_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
+                    task.get('priority', 'medium'), "🟡")
+                due_text = (
+                    f" (Due: {task.get('due_date', 'No due date')})"
+                    if task.get('due_date') else "")
+                response += (
+                    f"{priority_icon} {task['id']}. {task['description']}{due_text}\\n")
 
             return response
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             logger.error(f"List tasks error: {e}")
             return "Sorry, I couldn't retrieve your tasks."
 
@@ -210,7 +217,7 @@ class ProductivitySkill:
 
             return f"Task {task_id} not found or already completed."
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError) as e:
             logger.error(f"Complete task error: {e}")
             return "Sorry, I couldn't complete that task."
 
@@ -240,9 +247,10 @@ class ProductivitySkill:
             self.reminders.append(reminder)
             self._save_data(self.reminders_file, self.reminders)
 
-            return f"Time block started: {duration} minutes for {activity}. I'll remind you when it's done at {end_time.strftime('%H:%M')}."
+            return (f"Time block started: {duration} minutes for {activity}. "
+                    f"I'll remind you when it's done at {end_time.strftime('%H:%M')}.")
 
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, OSError, AttributeError) as e:
             logger.error(f"Time block error: {e}")
             return "Sorry, I couldn't set up that time block."
 
@@ -259,14 +267,16 @@ class ProductivitySkill:
             "Set clear, specific goals for each work session."
         ]
 
-        import random
         return f"Productivity tip: {random.choice(tips)}"
 
     def _get_productivity_overview(self) -> str:
         """Get productivity overview."""
         active_tasks = len([task for task in self.tasks if not task['completed']])
-        completed_today = len([task for task in self.tasks if task.get('completed') and
-                              task.get('completed_date', '').startswith(datetime.now().strftime('%Y-%m-%d'))])
+        completed_today = len([
+            task for task in self.tasks
+            if task.get('completed') and
+            task.get('completed_date', '').startswith(datetime.now().strftime('%Y-%m-%d'))
+        ])
         active_reminders = len([r for r in self.reminders if r['active']])
 
         return (f"Productivity Overview:\\n"
@@ -290,7 +300,7 @@ class ProductivitySkill:
                                 self._save_data(self.reminders_file, self.reminders)
 
                     time.sleep(60)  # Check every minute
-                except Exception as e:
+                except (ValueError, KeyError, TypeError, OSError, AttributeError) as e:
                     logger.error(f"Reminder checker error: {e}")
                     time.sleep(60)
 
@@ -302,18 +312,18 @@ class ProductivitySkill:
         """Load data from JSON file."""
         try:
             if os.path.exists(filename):
-                with open(filename, 'r') as f:
+                with open(filename, 'r', encoding='utf-8') as f:
                     return json.load(f)
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError) as e:
             logger.error(f"Error loading {filename}: {e}")
         return default
 
     def _save_data(self, filename: str, data: Any):
         """Save data to JSON file."""
         try:
-            with open(filename, 'w') as f:
+            with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
-        except Exception as e:
+        except (OSError, IOError, TypeError, UnicodeEncodeError) as e:
             logger.error(f"Error saving {filename}: {e}")
 
     # Text extraction helper methods
@@ -326,7 +336,6 @@ class ProductivitySkill:
         ]
 
         for pattern in patterns:
-            import re
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 return match.group(1).strip()
@@ -357,7 +366,6 @@ class ProductivitySkill:
         ]
 
         for pattern in patterns:
-            import re
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 return match.group(1).strip()
@@ -383,7 +391,6 @@ class ProductivitySkill:
         ]
 
         for pattern in patterns:
-            import re
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 return match.group(1).strip()
@@ -400,7 +407,6 @@ class ProductivitySkill:
 
     def _extract_task_id(self, text: str) -> Optional[int]:
         """Extract task ID from text."""
-        import re
         match = re.search(r"task (\\d+)", text, re.IGNORECASE)
         if match:
             return int(match.group(1))
@@ -412,7 +418,6 @@ class ProductivitySkill:
 
     def _extract_duration(self, text: str) -> Optional[int]:
         """Extract duration in minutes."""
-        import re
         match = re.search(r"(\\d+) minutes?", text, re.IGNORECASE)
         if match:
             return int(match.group(1))
@@ -431,7 +436,6 @@ class ProductivitySkill:
         ]
 
         for pattern in patterns:
-            import re
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 return match.group(1).strip()

@@ -1,18 +1,22 @@
-import pyautogui
+"""PC control utilities for JARVIS-X."""
+import ctypes
 import subprocess
 import time
-import ctypes
-from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+
+import pyautogui
+from pycaw.pycaw import AudioUtilities
 
 
 def get_volume() -> int:
     """Get the current system volume."""
     try:
-        sessions = AudioUtilities.GetSpeakers()
-        volume = sessions.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        return int(volume.GetMasterVolumeLevelScalar() * 100)
-    except Exception:
+        sessions = AudioUtilities.GetAllSessions()
+        for session in sessions:
+            volume = session.SimpleAudioVolume
+            if volume:
+                return int(volume.GetMasterVolume() * 100)
+        return 50  # Default fallback
+    except (OSError, AttributeError, TypeError):
         return -1
 
 
@@ -22,11 +26,14 @@ def set_volume(level: int) -> str:
         if not 0 <= level <= 100:
             return "Volume level must be between 0 and 100."
 
-        sessions = AudioUtilities.GetSpeakers()
-        volume = sessions.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume.SetMasterVolumeLevelScalar(level / 100, None)
-        return f"Volume set to {level}%"
-    except Exception:
+        sessions = AudioUtilities.GetAllSessions()
+        for session in sessions:
+            volume = session.SimpleAudioVolume
+            if volume:
+                volume.SetMasterVolume(level / 100, None)
+                return f"Volume set to {level}%"
+        return "No audio sessions found."
+    except (OSError, AttributeError, TypeError):
         return "Failed to set volume."
 
 
@@ -40,29 +47,35 @@ def change_volume(change: int) -> str:
         new_volume = current_volume + change
         return set_volume(new_volume)
 
-    except Exception:
+    except (ValueError, TypeError):
         return "Failed to change volume."
 
 
 def mute_volume() -> str:
     """Mute the system volume."""
     try:
-        sessions = AudioUtilities.GetSpeakers()
-        volume = sessions.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume.SetMute(1, None)
-        return "Volume muted."
-    except Exception:
+        sessions = AudioUtilities.GetAllSessions()
+        for session in sessions:
+            volume = session.SimpleAudioVolume
+            if volume:
+                volume.SetMute(1, None)
+                return "Volume muted."
+        return "No audio sessions found."
+    except (OSError, AttributeError, TypeError):
         return "Failed to mute volume."
 
 
 def unmute_volume() -> str:
     """Unmute the system volume."""
     try:
-        sessions = AudioUtilities.GetSpeakers()
-        volume = sessions.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume.SetMute(0, None)
-        return "Volume unmuted."
-    except Exception:
+        sessions = AudioUtilities.GetAllSessions()
+        for session in sessions:
+            volume = session.SimpleAudioVolume
+            if volume:
+                volume.SetMute(0, None)
+                return "Volume unmuted."
+        return "No audio sessions found."
+    except (OSError, AttributeError, TypeError):
         return "Failed to unmute volume."
 
 
@@ -71,7 +84,7 @@ def lock_workstation() -> str:
     try:
         ctypes.windll.user32.LockWorkStation()
         return "Workstation locked."
-    except Exception:
+    except (OSError, AttributeError):
         return "Failed to lock workstation."
 
 
@@ -99,7 +112,7 @@ def type_text(text: str) -> str:
         pyautogui.typewrite(text, interval=0.05)
         return f"Typed: {text[:50]}..."
 
-    except Exception:
+    except (OSError, ValueError, TypeError):
         return "Failed to type text."
 
 
@@ -116,7 +129,7 @@ def press_key(key: str) -> str:
         pyautogui.press(key_lower)
         return f"Pressed: {key}"
 
-    except Exception:
+    except (OSError, ValueError, TypeError):
         return "Failed to press key."
 
 
@@ -127,7 +140,8 @@ def open_app(app_name: str) -> str:
 
         # Check whitelist
         if app_lower not in ALLOWED_APPS:
-            return f"Application '{app_name}' not allowed. Available: chrome, notepad, calculator, vscode."
+            return (f"Application '{app_name}' not allowed. "
+                   f"Available: chrome, notepad, calculator, vscode.")
 
         executable = ALLOWED_APPS[app_lower]
         subprocess.Popen(executable, shell=True)
@@ -135,5 +149,5 @@ def open_app(app_name: str) -> str:
 
         return f"Opened {app_name}."
 
-    except Exception:
+    except (OSError, subprocess.SubprocessError, FileNotFoundError):
         return f"Failed to open {app_name}."

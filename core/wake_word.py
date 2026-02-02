@@ -1,7 +1,5 @@
 """Wake word detection functionality."""
 import re
-import threading
-import time
 
 
 class WakeWordDetector:
@@ -12,8 +10,14 @@ class WakeWordDetector:
         self.wake_word = wake_word.lower()
         self.is_listening = False
         self.wake_detected = False
-        self.sleep_words = ["go to sleep", "sleep mode", "stop listening", "jarvis sleep", "सो जाओ", "सोने का समय", "बंद करो"]
-        self.wake_words = ["jarvis", "hey jarvis", "jarvis wake up", "जार्विस", "हे जार्विस", "जार्विस जागो"]
+        self.sleep_words = [
+            "go to sleep", "sleep mode", "stop listening", "jarvis sleep",
+            "सो जाओ", "सोने का समय", "बंद करो"
+        ]
+        self.wake_words = [
+            "jarvis", "hey jarvis", "jarvis wake up",
+            "जार्विस", "हे जार्विस", "जार्विस जागो"
+        ]
 
     def is_wake_word(self, text: str) -> bool:
         """Check if the wake word is present as a full word in the text.

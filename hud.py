@@ -1,11 +1,13 @@
-import customtkinter as ctk  # type: ignore
+"""JARVIS HUD interface components for the AI assistant."""
 import threading
-import time
-from datetime import datetime
 import tkinter as tk
+from datetime import datetime
+
+import customtkinter as ctk  # type: ignore
 
 
-class JarvisOverlay:
+class JarvisOverlay:  # pylint: disable=too-many-instance-attributes
+    """Overlay window for JARVIS assistant interface."""
     def __init__(self, assistant_callback=None):
         self.assistant_callback = assistant_callback
         self.is_enabled = True
@@ -111,19 +113,19 @@ class JarvisOverlay:
         self.wake_indicator.pack(pady=2)
 
     def _start_status_animation(self):
-        def animate():
-            colors = ['#00ffff', '#0088ff', '#0066cc', '#0088ff']
-            i = 0
-            while True:
-                if self.is_listening:
-                    color = colors[i % len(colors)]
-                    self.root.after(0, lambda c=color: self.status_label.configure(fg=c))
-                    i += 1
-                time.sleep(0.5)
+        self.colors = ['#00ffff', '#0088ff', '#0066cc', '#0088ff']
+        self.color_index = 0
+        self._animate_status()
 
-        threading.Thread(target=animate, daemon=True).start()
+    def _animate_status(self):
+        if self.is_listening:
+            color = self.colors[self.color_index % len(self.colors)]
+            self.status_label.configure(fg=color)
+            self.color_index += 1
+        self.root.after(500, self._animate_status)
 
     def toggle_enable(self):
+        """Toggle enable/disable state of the assistant."""
         self.is_enabled = not self.is_enabled
         if self.is_enabled:
             self.enable_btn.configure(fg="#00ff00")
@@ -135,6 +137,7 @@ class JarvisOverlay:
             self.add_system_message("JARVIS disabled")
 
     def toggle_sleep(self):
+        """Toggle sleep mode for the assistant."""
         if not self.is_enabled:
             return
 
@@ -148,7 +151,8 @@ class JarvisOverlay:
             self.status_label.configure(text="🤖 JARVIS - Ready")
             self.add_system_message("JARVIS is awake")
 
-    def send_message(self, event=None):
+    def send_message(self, _event=None):
+        """Send user message to assistant."""
         if not self.is_enabled or self.is_sleeping:
             return
 
@@ -164,15 +168,18 @@ class JarvisOverlay:
 
     def _process_command(self, command):
         self.set_listening(True)
-        try:
-            response = self.assistant_callback(command)
-            self.add_message("JARVIS", response)
-        except Exception as e:
-            self.add_message("JARVIS", f"Error: {str(e)}")
-        finally:
-            self.set_listening(False)
+        if self.assistant_callback:
+            try:
+                response = self.assistant_callback(command)
+                self.add_message("JARVIS", response)
+            except (ValueError, TypeError, AttributeError, RuntimeError) as e:
+                self.add_message("JARVIS", f"Error: {str(e)}")
+        else:
+            self.add_message("JARVIS", "No assistant callback configured")
+        self.set_listening(False)
 
     def set_listening(self, listening):
+        """Set the listening state and update UI accordingly."""
         self.is_listening = listening
         if listening:
             self.root.after(0, lambda: self.status_label.configure(text="🤖 JARVIS - Listening..."))
@@ -180,6 +187,7 @@ class JarvisOverlay:
             self.root.after(0, lambda: self.status_label.configure(text="🤖 JARVIS - Ready"))
 
     def add_message(self, sender, message):
+        """Add a message to the chat display."""
         timestamp = datetime.now().strftime("%H:%M")
         formatted_msg = f"[{timestamp}] {sender}: {message}\n"
 
@@ -192,6 +200,7 @@ class JarvisOverlay:
         self.root.after(0, update_chat)
 
     def add_system_message(self, message):
+        """Add a system message to the chat display."""
         timestamp = datetime.now().strftime("%H:%M")
         formatted_msg = f"[{timestamp}] System: {message}\n"
 
@@ -204,6 +213,7 @@ class JarvisOverlay:
         self.root.after(0, update_chat)
 
     def wake_up(self):
+        """Wake up the assistant from sleep mode."""
         if self.is_sleeping:
             self.is_sleeping = False
             self.sleep_btn.configure(fg="#666666")
@@ -213,10 +223,12 @@ class JarvisOverlay:
         return False
 
     def start(self):
+        """Start the overlay main loop."""
         self.root.mainloop()
 
 
-class JarvisHUD:
+class JarvisHUD:  # pylint: disable=too-many-instance-attributes
+    """Main HUD interface for JARVIS assistant."""
     def __init__(self):
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -265,19 +277,18 @@ class JarvisHUD:
         self.conversation_log.pack(fill="both", expand=True, padx=10, pady=10)
 
     def _start_animation(self):
-        """Start the pulsing animation in a separate thread."""
-        def animate():
-            progress = 0
-            direction = 1
-            while True:
-                progress += direction * 0.02
-                if progress >= 1 or progress <= 0:
-                    direction *= -1
-                self.circle.set(progress)
-                time.sleep(0.05)
+        """Start the pulsing animation."""
+        self.progress = 0
+        self.direction = 1
+        self._animate_circle()
 
-        animation_thread = threading.Thread(target=animate, daemon=True)
-        animation_thread.start()
+    def _animate_circle(self):
+        """Animate the progress circle with pulsing effect."""
+        self.progress += self.direction * 0.02
+        if self.progress >= 1 or self.progress <= 0:
+            self.direction *= -1
+        self.circle.set(self.progress)
+        self.root.after(50, self._animate_circle)
 
     def update_status(self, text: str):
         """Update the status label."""

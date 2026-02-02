@@ -119,9 +119,8 @@ def test_installation():
         print("✅ Core dependencies working!")
 
         # Test API manager
-        from core.api_manager import SyncAPIManager
-        api_manager = SyncAPIManager()
-        print("✅ API manager working!")
+        from core.api_manager import APIManager
+        print("✅ API manager can be imported!")
 
         # Test skills
         from skills.entertainment import EntertainmentSkill

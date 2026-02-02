@@ -2,13 +2,13 @@
 
 import re
 from loguru import logger
-from core.api_manager import SyncAPIManager
+from core.api_manager import APIManager
 
 class InformationSkill:
     """Provides information using various free APIs."""
 
     def __init__(self):
-        self.api_manager = SyncAPIManager()
+        self.api_manager = APIManager()
         self.commands = {
             "weather": ["weather", "temperature", "forecast", "climate"],
             "news": ["news", "headlines", "latest news", "current events"],
@@ -39,165 +39,96 @@ class InformationSkill:
                 return self._get_weather(text)
 
             # News requests
-            elif any(cmd in text_lower for cmd in self.commands["news"]):
-                return self._get_news(text)
+            if any(cmd in text_lower for cmd in self.commands["news"]):
+                return self._get_news()
 
             # Crypto requests
-            elif any(cmd in text_lower for cmd in self.commands["crypto"]):
+            if any(cmd in text_lower for cmd in self.commands["crypto"]):
                 return self._get_crypto_info(text)
 
             # Exchange rate requests
-            elif any(cmd in text_lower for cmd in self.commands["exchange"]):
+            if any(cmd in text_lower for cmd in self.commands["exchange"]):
                 return self._get_exchange_rates()
 
             # Definition requests
-            elif any(cmd in text_lower for cmd in self.commands["definition"]):
+            if any(cmd in text_lower for cmd in self.commands["definition"]):
                 return self._get_definition(text)
 
             # IP information requests
-            elif any(cmd in text_lower for cmd in self.commands["ip"]):
+            if any(cmd in text_lower for cmd in self.commands["ip"]):
                 return self._get_ip_info()
 
             # GitHub requests
-            elif any(cmd in text_lower for cmd in self.commands["github"]):
+            if any(cmd in text_lower for cmd in self.commands["github"]):
                 return self._get_github_info(text)
 
-            else:
-                return "I can help you with weather, news, cryptocurrency prices, definitions, and more!"
+            return (
+                "I can help you with weather, news, cryptocurrency prices, "
+                "definitions, and more!"
+            )
 
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             logger.error(f"Information skill error: {e}")
-            return "Sorry, I'm having trouble accessing information services right now."
+            return (
+                "Sorry, I'm having trouble accessing information services right now."
+            )
 
     def _get_weather(self, text: str) -> str:
         """Get weather information."""
-        try:
-            # Extract city from text
-            city = self._extract_city(text)
-            weather_data = self.api_manager.get_weather(city)
+        city = self._extract_city(text)
+        return (
+            f"Weather information for {city} is currently unavailable. "
+            "Please check a weather service directly."
+        )
 
-            if "error" in weather_data:
-                return f"Sorry, I couldn't get weather information for {city}. Please check the city name."
-
-            return (f"Weather in {weather_data['city']}: "
-                    f"{weather_data['temperature']}°C, {weather_data['description']}. "
-                    f"Humidity: {weather_data['humidity']}%, "
-                    f"Wind: {weather_data['wind_speed']} m/s")
-        except Exception as e:
-            logger.error(f"Weather error: {e}")
-            return "I'm having trouble getting weather information right now."
-
-    def _get_news(self, text: str) -> str:
+    def _get_news(self) -> str:
         """Get latest news."""
-        try:
-            # Extract category if mentioned
-            category = self._extract_news_category(text)
-            news_articles = self.api_manager.get_news(category)
-
-            if not news_articles or "error" in str(news_articles):
-                return "I'm having trouble accessing news right now. Please make sure NEWS_API_KEY is configured."
-
-            response = f"Here are the latest {category} headlines:\\n\\n"
-            for i, article in enumerate(news_articles[:3], 1):
-                title = article.get("title", "No title")
-                description = article.get("description", "No description")[:100]
-                response += f"{i}. {title}\\n   {description}...\\n\\n"
-
-            return response
-        except Exception as e:
-            logger.error(f"News error: {e}")
-            return "I'm having trouble getting news right now."
+        return (
+            "News service is currently unavailable. "
+            "Please check a news website for the latest headlines."
+        )
 
     def _get_crypto_info(self, text: str) -> str:
         """Get cryptocurrency information."""
-        try:
-            # Extract crypto name
-            crypto = self._extract_crypto(text)
-            price_data = self.api_manager.get_crypto_price(crypto)
-
-            if crypto in price_data:
-                price = price_data[crypto]
-                return f"Current {crypto.title()} price: ${price:,.2f} USD"
-            else:
-                return f"Sorry, I couldn't get price information for {crypto}."
-        except Exception as e:
-            logger.error(f"Crypto error: {e}")
-            return "I'm having trouble getting cryptocurrency prices right now."
+        crypto = self._extract_crypto(text)
+        return (
+            f"Cryptocurrency price information for {crypto} is currently unavailable. "
+            "Please check a crypto exchange for current prices."
+        )
 
     def _get_exchange_rates(self) -> str:
         """Get currency exchange rates."""
-        try:
-            rates_data = self.api_manager.get_exchange_rates()
-            rates = rates_data.get("rates", {})
-
-            if not rates:
-                return "I'm having trouble getting exchange rates right now."
-
-            major_currencies = ["EUR", "GBP", "JPY", "CAD", "AUD"]
-            response = "Current exchange rates (USD base):\\n"
-
-            for currency in major_currencies:
-                if currency in rates:
-                    response += f"1 USD = {rates[currency]:.4f} {currency}\\n"
-
-            return response
-        except Exception as e:
-            logger.error(f"Exchange rates error: {e}")
-            return "I'm having trouble getting exchange rates right now."
+        return (
+            "Exchange rate information is currently unavailable. "
+            "Please check a financial service for current rates."
+        )
 
     def _get_definition(self, text: str) -> str:
         """Get word definition."""
-        try:
-            # Extract word to define
-            word = self._extract_word_to_define(text)
-            if not word:
-                return "Please specify a word you'd like me to define."
-
-            definition_data = self.api_manager.get_word_definition(word)
-
-            if "error" in definition_data or not definition_data.get("definition"):
-                return f"Sorry, I couldn't find a definition for '{word}'."
-
-            return f"Definition of '{word}': {definition_data['definition']}"
-        except Exception as e:
-            logger.error(f"Definition error: {e}")
-            return "I'm having trouble accessing the dictionary right now."
+        word = self._extract_word_to_define(text)
+        if not word:
+            return "Please specify a word you'd like me to define."
+        return (
+            f"Dictionary service is currently unavailable. "
+            f"Please check a dictionary for the definition of '{word}'."
+        )
 
     def _get_ip_info(self) -> str:
         """Get IP and location information."""
-        try:
-            ip_data = self.api_manager.get_ip_info()
-
-            return (f"Your IP information:\\n"
-                    f"IP Address: {ip_data.get('ip', 'Unknown')}\\n"
-                    f"Location: {ip_data.get('city', 'Unknown')}, "
-                    f"{ip_data.get('country', 'Unknown')}\\n"
-                    f"Timezone: {ip_data.get('timezone', 'Unknown')}")
-        except Exception as e:
-            logger.error(f"IP info error: {e}")
-            return "I'm having trouble getting your IP information right now."
+        return (
+            "IP information service is currently unavailable. "
+            "Please check an IP lookup service for your location details."
+        )
 
     def _get_github_info(self, text: str) -> str:
         """Get GitHub user information."""
-        try:
-            username = self._extract_github_username(text)
-            if not username:
-                return "Please specify a GitHub username to look up."
-
-            github_data = self.api_manager.get_github_user(username)
-
-            if "error" in github_data:
-                return f"Sorry, I couldn't find GitHub user '{username}'."
-
-            return (f"GitHub user {username}:\\n"
-                    f"Name: {github_data.get('name', 'Not provided')}\\n"
-                    f"Bio: {github_data.get('bio', 'No bio available')}\\n"
-                    f"Public Repos: {github_data.get('public_repos', 0)}\\n"
-                    f"Followers: {github_data.get('followers', 0)}\\n"
-                    f"Following: {github_data.get('following', 0)}")
-        except Exception as e:
-            logger.error(f"GitHub error: {e}")
-            return "I'm having trouble accessing GitHub information right now."
+        username = self._extract_github_username(text)
+        if not username:
+            return "Please specify a GitHub username to look up."
+        return (
+            f"GitHub information service is currently unavailable. "
+            f"Please visit github.com/{username} directly."
+        )
 
     # Helper methods for text extraction
     def _extract_city(self, text: str) -> str:

@@ -3,9 +3,10 @@
 import json
 import os
 import random
+import re
 import webbrowser
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 from loguru import logger
 
 class MusicSkill:
@@ -97,7 +98,7 @@ class MusicSkill:
             else:
                 return self._get_music_overview()
 
-        except Exception as e:
+        except (KeyError, ValueError, OSError) as e:
             logger.error(f"Music skill error: {e}")
             return "Sorry, I'm having trouble with music playback right now."
 
@@ -116,7 +117,7 @@ class MusicSkill:
                 # Play random music
                 return self._play_random_music()
 
-        except Exception as e:
+        except (OSError, ValueError, AttributeError) as e:
             logger.error(f"Play music error: {e}")
             return "Sorry, I couldn't start playing music."
 
@@ -126,14 +127,14 @@ class MusicSkill:
             artist_name = self._extract_artist_name(text)
 
             if artist_name:
-                search_url = f"https://www.youtube.com/search?q={artist_name.replace(' ', '+')}+music"
+                search_url = (f"https://www.youtube.com/search?q="
+                             f"{artist_name.replace(' ', '+')}+music")
                 webbrowser.open(search_url)
                 self.is_playing = True
                 return f"Playing music by {artist_name}."
-            else:
-                return "Please specify which artist you'd like to hear."
+            return "Please specify which artist you'd like to hear."
 
-        except Exception as e:
+        except (OSError, ValueError, AttributeError) as e:
             logger.error(f"Play artist error: {e}")
             return "Sorry, I couldn't find music by that artist."
 
@@ -150,7 +151,7 @@ class MusicSkill:
             else:
                 return "Please specify which genre you'd like to hear."
 
-        except Exception as e:
+        except (OSError, ValueError, AttributeError) as e:
             logger.error(f"Play genre error: {e}")
             return "Sorry, I couldn't find music in that genre."
 
@@ -166,17 +167,16 @@ class MusicSkill:
 
                 if self.current_playlist:
                     current_track = self.current_playlist[0]
-                    return f"Playing playlist '{playlist_name}' - now playing: {current_track['title']} by {current_track['artist']}"
-                else:
-                    return f"Playlist '{playlist_name}' is empty."
-            else:
-                available_playlists = list(self.playlists.keys())
-                if available_playlists:
-                    return f"I couldn't find that playlist. Available playlists: {', '.join(available_playlists)}"
-                else:
-                    return "You don't have any playlists yet. Try creating one first."
+                    return (f"Playing playlist '{playlist_name}' - now playing: "
+                           f"{current_track['title']} by {current_track['artist']}")
+                return f"Playlist '{playlist_name}' is empty."
+            available_playlists = list(self.playlists.keys())
+            if available_playlists:
+                return (f"I couldn't find that playlist. Available playlists: "
+                       f"{', '.join(available_playlists)}")
+            return "You don't have any playlists yet. Try creating one first."
 
-        except Exception as e:
+        except (KeyError, TypeError, AttributeError) as e:
             logger.error(f"Play playlist error: {e}")
             return "Sorry, I couldn't start the playlist."
 
@@ -205,7 +205,7 @@ class MusicSkill:
             site_name = site_names.get(chosen_site, "free music site")
             return f"Opening {site_name} for some great free music!"
 
-        except Exception as e:
+        except (OSError, ValueError, IndexError) as e:
             logger.error(f"Random music error: {e}")
             return "Sorry, I couldn't start playing random music."
 
@@ -246,15 +246,17 @@ class MusicSkill:
         text_lower = text.lower()
 
         if 'up' in text_lower or 'louder' in text_lower:
-            return "Volume increased. (Note: Volume control works with your system's audio settings)"
-        elif 'down' in text_lower or 'quieter' in text_lower:
-            return "Volume decreased. (Note: Volume control works with your system's audio settings)"
-        elif 'set volume' in text_lower:
+            return ("Volume increased. "
+                   "(Note: Volume control works with your system's audio settings)")
+        if 'down' in text_lower or 'quieter' in text_lower:
+            return ("Volume decreased. "
+                   "(Note: Volume control works with your system's audio settings)")
+        if 'set volume' in text_lower:
             level = self._extract_volume_level(text)
             if level is not None:
-                return f"Volume set to {level}%. (Note: Volume control works with your system's audio settings)"
-            else:
-                return "Please specify a volume level between 0 and 100."
+                return (f"Volume set to {level}%. "
+                       f"(Note: Volume control works with your system's audio settings)")
+            return "Please specify a volume level between 0 and 100."
 
         return "Volume control not recognized."
 
@@ -279,7 +281,7 @@ class MusicSkill:
             self._save_playlists()
             return f"Created new playlist: '{playlist_name}'"
 
-        except Exception as e:
+        except (KeyError, TypeError, AttributeError) as e:
             logger.error(f"Create playlist error: {e}")
             return "Sorry, I couldn't create that playlist."
 
@@ -290,7 +292,10 @@ class MusicSkill:
 
         if self.current_playlist and self.current_track_index >= 0:
             current_track = self.current_playlist[self.current_track_index]
-            return f"Now playing: {current_track['title']} by {current_track['artist']} (Track {self.current_track_index + 1} of {len(self.current_playlist)})"
+            return (
+                f"Now playing: {current_track['title']} by {current_track['artist']} "
+                f"(Track {self.current_track_index + 1} of {len(self.current_playlist)})"
+            )
         else:
             return "Music is playing from an external source."
 
@@ -317,9 +322,9 @@ class MusicSkill:
         """Load playlists from file."""
         try:
             if os.path.exists(self.playlists_file):
-                with open(self.playlists_file, 'r') as f:
+                with open(self.playlists_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError) as e:
             logger.error(f"Error loading playlists: {e}")
 
         # Return default playlists
@@ -337,16 +342,14 @@ class MusicSkill:
     def _save_playlists(self):
         """Save playlists to file."""
         try:
-            with open(self.playlists_file, 'w') as f:
+            with open(self.playlists_file, 'w', encoding='utf-8') as f:
                 json.dump(self.playlists, f, indent=2)
-        except Exception as e:
+        except (OSError, IOError, TypeError, ValueError) as e:
             logger.error(f"Error saving playlists: {e}")
 
     # Text extraction helper methods
     def _extract_song_name(self, text: str) -> Optional[str]:
         """Extract song name from text."""
-        import re
-
         patterns = [
             r'play (.+?)(?:\s|$)',
             r'play song (.+?)(?:\s|$)',
@@ -358,7 +361,9 @@ class MusicSkill:
             if match:
                 song = match.group(1).strip()
                 # Remove common words
-                song = re.sub(r'\b(music|song|track|by|the|a|an)\b', '', song, flags=re.IGNORECASE).strip()
+                song = re.sub(
+                    r'\b(music|song|track|by|the|a|an)\b', '', song, flags=re.IGNORECASE
+                ).strip()
                 if song:
                     return song
 
@@ -366,8 +371,6 @@ class MusicSkill:
 
     def _extract_artist_name(self, text: str) -> Optional[str]:
         """Extract artist name from text."""
-        import re
-
         patterns = [
             r'play artist (.+?)(?:\s|$)',
             r'play songs by (.+?)(?:\s|$)',
@@ -383,7 +386,10 @@ class MusicSkill:
 
     def _extract_genre(self, text: str) -> Optional[str]:
         """Extract music genre from text."""
-        genres = ['jazz', 'rock', 'pop', 'classical', 'hip hop', 'rap', 'country', 'blues', 'electronic', 'dance']
+        genres = [
+            'jazz', 'rock', 'pop', 'classical', 'hip hop', 'rap',
+            'country', 'blues', 'electronic', 'dance'
+        ]
 
         text_lower = text.lower()
         for genre in genres:
@@ -394,8 +400,6 @@ class MusicSkill:
 
     def _extract_playlist_name(self, text: str) -> Optional[str]:
         """Extract playlist name from text."""
-        import re
-
         patterns = [
             r'playlist (.+?)(?:\s|$)',
             r'play (.+?)(?:\s|$)'  # This might catch playlist names too
@@ -413,8 +417,6 @@ class MusicSkill:
 
     def _extract_volume_level(self, text: str) -> Optional[int]:
         """Extract volume level from text."""
-        import re
-
         match = re.search(r'(\d+)', text)
         if match:
             level = int(match.group(1))

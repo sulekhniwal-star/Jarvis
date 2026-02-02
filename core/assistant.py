@@ -69,7 +69,7 @@ class JarvisAssistant:
 
             # Start UI in separate thread
             threading.Thread(target=self._run_ui, daemon=True).start()
-        except Exception as e:  # pylint: disable=broad-except
+        except (tk.TclError, ImportError) as e:
             print(f"UI setup failed: {e}")
 
     def _run_ui(self):
@@ -77,7 +77,7 @@ class JarvisAssistant:
         try:
             if self.overlay:
                 self.overlay.start()
-        except Exception as e:  # pylint: disable=broad-except
+        except (tk.TclError, RuntimeError) as e:
             print(f"UI error: {e}")
 
     def process_text_command(self, command: str) -> str:
@@ -102,7 +102,7 @@ class JarvisAssistant:
             else:
                 return "I'm sleeping. Say 'Jarvis' to wake me up."
 
-        except Exception as e:  # pylint: disable=broad-except
+        except (ValueError, TypeError, json.JSONDecodeError) as e:
             return f"Error processing command: {str(e)}"
 
     def _process_command(self, command: str) -> str:
@@ -215,7 +215,8 @@ class JarvisAssistant:
         # Test TTS
         try:
             self.tts.speak("Testing voice system.")
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # Keep broad for diagnostics, but log
+            print(f"TTS test failed: {e}")
             failed_systems.append("voice system")
 
         # Test Gemini API
@@ -240,7 +241,8 @@ class JarvisAssistant:
             intent = self.intent_classifier.classify("what time is it")
             if intent != "time":
                 failed_systems.append("intent classifier")
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # Keep broad for diagnostics, but log
+            print(f"Intent classifier test failed: {e}")
             failed_systems.append("intent classifier")
 
         # Report results

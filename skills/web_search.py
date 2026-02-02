@@ -19,5 +19,9 @@ def search_web(query: str) -> str:
 
         return formatted.strip()
 
-    except Exception:
-        return "I couldn't find reliable results right now."
+    except (ConnectionError, TimeoutError) as e:
+        print(f"Web search failed: {e}")
+        return "I couldn't connect to the internet to perform the search."
+    except Exception as e:
+        print(f"An unexpected error occurred during web search: {e}")
+        return "I couldn't find reliable results right now due to an unexpected error."

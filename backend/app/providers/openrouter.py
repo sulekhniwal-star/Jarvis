@@ -6,7 +6,7 @@ Gemini 2.0 Flash, Claude 3.5 Sonnet, DeepSeek V3/R1, Llama 3.3, etc.
 
 import json
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 import httpx
 import structlog
 
@@ -31,7 +31,10 @@ def extract_json_from_response(text: str) -> Dict[str, Any]:
         else:
             raw_json = text
 
-    return json.loads(raw_json)
+    parsed = json.loads(raw_json)
+    if isinstance(parsed, dict):
+        return cast(Dict[str, Any], parsed)
+    return {"raw": str(parsed)}
 
 
 class OpenRouterProvider(AIProvider):
@@ -85,7 +88,8 @@ class OpenRouterProvider(AIProvider):
                 )
 
             data = res.json()
-            return data["choices"][0]["message"]["content"]
+            content = data["choices"][0]["message"]["content"]
+            return str(content) if content is not None else ""
 
     async def generate_plan(self, task_title: str, task_description: str) -> Dict[str, Any]:
         """Generates structured execution plan and task steps using OpenRouter."""

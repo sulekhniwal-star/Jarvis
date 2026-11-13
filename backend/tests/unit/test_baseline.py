@@ -40,3 +40,4 @@ def test_security_defaults():
     """Verify safety constraints: paid calls disabled by default, single tenant."""
     default_paid_calls = False
     assert default_paid_calls is False, "Paid calls must default to False to guarantee ₹0 initial spend."
+

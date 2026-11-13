@@ -5,11 +5,17 @@ filesystem sandbox containment, and AES-256 encrypted backup/restore round-trip.
 """
 
 import os
+from pathlib import Path
 import sqlite3
+import sys
 import tempfile
 import pytest
 from httpx import AsyncClient
 from cryptography.fernet import InvalidToken
+
+_repo_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
 
 from app.models.memory import Memory
 from app.services.memory_service import MemoryService, SecurityViolationError, contains_secret

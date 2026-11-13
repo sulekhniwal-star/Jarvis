@@ -1,68 +1,84 @@
-# Security Policy
+# Project Jarvis — Security Policy
 
-## Security objectives
+**Document Version:** 1.0  
+**Verification Date:** 2026-11-13  
+**Status:** Mandatory Operational Baseline
 
-Protect owner identity, source code, credentials, project data,
-execution infrastructure, and approval authority.
+---
 
-## Mandatory controls
+## 1. Core Security Mandates
 
--   Strong owner authentication; MFA where supported.
--   Telegram allowlist based on immutable user ID, not display name.
--   GitHub App with only required repository permissions.
--   Short-lived installation tokens.
--   Secrets stored in a dedicated secret manager or protected deployment
-    environment.
--   No secrets in prompts, memory, logs, artifacts, or worker
-    environment unless strictly necessary.
--   Separate control and execution planes.
--   Workers run non-root with CPU/RAM/disk/time limits.
--   No Docker socket mount into coding workers.
--   Network egress restricted by default.
--   Validate every tool request in deterministic code.
--   Audit privileged actions.
--   Encrypt traffic and managed storage.
--   Dependency and container image scanning.
--   Backup and restore testing.
--   Emergency stop and credential revocation.
+1. **Principle of Least Privilege:** Every component, service, API token, and worker is granted only the absolute minimum set of capabilities required to complete its immediate task.
+2. **Deterministic Gating:** The AI model is treated as an untrusted proposal engine. All privileged operations (filesystem mutation, git pushes, network connections) must be verified and authorized by deterministic Python code outside the model's control.
+3. **No Direct Production Access:** Jarvis has zero access to production deployment pipelines, live cloud servers, production databases, or billing cards.
+4. **Mandatory Human-in-the-Loop:** High-consequence actions (spending, external communication, PR merging, deletion, credential alteration) require explicit, authenticated human approval.
+5. **No Self-Modification of Security Controls:** The autonomous agent can never modify its own security policies, permission matrices, approval workflows, or authentication middleware.
 
-## Prompt injection
+---
 
--   Treat repository files, issue descriptions, web pages, emails,
-    documents, and model outputs as untrusted.
--   Do not follow instructions in external content that attempt to
-    override system policy.
--   Tool authorization is based on server-side policy, never model
-    claims.
--   Keep secrets outside model context.
--   Require human approval for sensitive actions.
--   Use isolated browser and worker sessions where practical.
+## 2. Secrets Management & Protection
 
-## Secure development
+### Secret Storage
 
--   Branch protection.
--   Code review.
--   Dependency lockfiles.
--   Secret scanning.
--   Static analysis.
--   Security tests.
--   No direct edits to production.
--   Review security-sensitive changes independently.
+- Master secrets are passed exclusively via system environment variables (`SECRET_KEY`, `MASTER_ENCRYPTION_KEY`).
+- Integration secrets stored in the database (GitHub App private key, Telegram bot token) are encrypted at rest using AES-256-GCM via `cryptography.fernet`.
+- No plaintext credentials, private keys, or passwords may exist in repository code, commit history, or documentation.
 
-## Incident response
+### Ephemeral Token Lifetimes
 
-1.  Trigger kill switch.
-2.  Stop queue dispatch and workers.
-3.  Revoke GitHub/provider credentials.
-4.  Preserve audit logs and relevant artifacts.
-5.  Determine scope and affected data.
-6.  Rotate exposed secrets.
-7.  Restore from known-good state if needed.
-8.  Document incident and remediation.
-9.  Resume only after owner approval.
+- **GitHub App Installation Tokens:** Maximum 60 minutes, repository-scoped.
+- **Dashboard JWT Session Tokens:** Maximum 24 hours, stored in secure `HttpOnly`, `SameSite=Strict` cookies.
+- **Approval Tokens:** Maximum 30 minutes, single-use, invalidated on parameter mismatch.
 
-## Residual risk
+### Secret Redaction Policy
 
-No design can guarantee that AI-generated code or prompt-injection
-detection is perfect. Use least privilege and isolation so model failure
-does not become unrestricted system access.
+All output streams (Uvicorn logs, task execution logs, model prompts, and Telegram messages) pass through an active redaction filter matching:
+
+- GitHub App / PAT tokens: `gh[pousr]_[A-Za-z0-9_]{36,255}`
+- JWT tokens: `ey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}`
+- Google Gemini API Keys: `AIza[0-9A-Za-z-_]{35}`
+- Generic API Keys / Secrets: Standard high-entropy strings and hex keys.
+
+---
+
+## 3. Worker Sandbox Security Standard
+
+When running tasks in local or containerized environments:
+
+- **Execution User:** Non-root (`UID: 1000`, `GID: 1000`).
+- **Linux Capabilities:** All dropped (`--cap-drop=ALL`).
+- **Privilege Escalation:** Disabled (`--security-opt=no-new-privileges:true`).
+- **Filesystem:** Read-only root filesystem (`--read-only`), ephemeral writable workspace on tmpfs.
+- **Resource Limits:** Max 2 GB RAM, max 1.5 CPU cores, max 100 PIDs.
+- **Network Egress:** Disabled (`--network=none`) during test execution unless explicitly required for dependency fetching.
+- **Host Mounts:** STRICTLY FORBIDDEN. Never mount host paths or the Docker socket (`/var/run/docker.sock`).
+
+---
+
+## 4. Emergency Kill-Switch & Revocation Protocol
+
+In the event of anomalous behavior, runaway loops, or a suspected security incident:
+
+1. **Dashboard Emergency Stop:** A prominent "EMERGENCY SHUTDOWN" button on the dashboard immediately transitions the system to `LOCKED` state.
+2. **Telegram Stop Command:** Sending `/emergency_stop` or `/kill` from the authorized Telegram ID triggers immediate shutdown.
+3. **Execution Effects:**
+   - Active background execution jobs are terminated (`SIGKILL`).
+   - GitHub installation tokens are invalidated via GitHub API.
+   - Pending approvals are cancelled.
+   - New task intake is blocked.
+   - All AI gateway calls are rejected.
+
+---
+
+## 5. Security Incident Reporting & Auditing
+
+- All security-relevant events are persisted to the append-only `audit_events` database table.
+- Any unauthorized access attempt (unlisted Telegram ID, failed login attempt, tampered approval) triggers an immediate high-priority alert to the owner via Telegram.
+
+---
+
+## 6. Policy Sign-off
+
+- **DevSecOps Engineer:** Approved
+- **Status:** Active
+- **Date:** 2026-11-13

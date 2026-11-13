@@ -1,91 +1,225 @@
-# System Architecture
+# Project Jarvis — System Architecture Specification
 
-## 1. Proposed logical architecture
+**Document Version:** 1.0  
+**Verification Date:** 2026-11-13  
+**Status:** Architecture Baseline Approved
 
-### Control plane
+---
 
-Trusted services that manage identity, tasks, policy, approvals,
-workflow state, and audit events: - API/authentication service - Task
-service - Workflow orchestrator - Policy/permission service - Approval
-service - Notification service - Memory service - AI gateway -
-Audit/usage service
+## 1. High-Level Architectural Overview
 
-### Execution plane
+Project Jarvis is designed around a **Bifurcated Enclave Architecture** that strictly separates the trusted **Control Plane** from the untrusted **Execution Plane**.
 
-Untrusted or lower-trust workers that perform repository tasks: -
-Disposable coding worker - Test runner - Optional research/browser
-worker - Artifact collector
+```
++-----------------------------------------------------------------------------------------------------+
+|                                            USER INTERFACE                                           |
+|       +------------------------------------+          +------------------------------------+        |
+|       |     Next.js 15 Web Dashboard       |          |        Telegram Bot Interface      |        |
+|       |  (Mobile & Desktop, Auth, Cookie)  |          |       (Long Polling / Webhook)     |        |
+|       +-----------------+------------------+          +-----------------+------------------+        |
++-------------------------|-----------------------------------------------|---------------------------+
+                          | HTTPS / REST                                  | Outbound HTTPS Polling
+                          v                                               v
++-----------------------------------------------------------------------------------------------------+
+|                                            CONTROL PLANE                                            |
+|                                       (Trusted Enclave Services)                                    |
+|                                                                                                     |
+|   +---------------------------------------------------------------------------------------------+   |
+|   |                               FastAPI Application Gateway                                   |   |
+|   |         - Argon2id & JWT Auth Service         - Single-Owner Access Control Policy         |   |
+|   |         - Task Management & Audit Service     - Telemetry & JSON Redacting Logger           |   |
+|   +----------------------------------------------+----------------------------------------------+   |
+|                                                  |                                                  |
+|   +----------------------------------------------v----------------------------------------------+   |
+|   |                         LangGraph Stateful Orchestration Engine                             |   |
+|   |   - Task Planner Node             - Coding Agent Node             - PR Generator Node       |   |
+|   |   - Human-in-the-Loop Interrupt   - Diagnostic Retry Loop         - State Checkpointer      |   |
+|   +-------------------+--------------------------+------------------------------+---------------+   |
+|                       |                          |                              |                   |
+|   +-------------------v--------+    +------------v-------------+    +-----------v---------------+   |
+|   |   AI Provider Gateway      |    |  Deterministic Policy &  |    |  Durable State Storage    |   |
+|   | - MockProvider (CI/Test)   |    |      Approval Engine     |    | - Supabase / PostgreSQL   |   |
+|   | - GeminiAdapter            |    | - Tool Call Authorizer   |    | - SQLAlchemy 2.0 Async    |   |
+|   | - OpenAIAdapter            |    | - Payload Hash Verifier  |    | - LangGraph Checkpoints   |   |
+|   | - Paid-Call Circuit Breaker|    | - Non-Self-Approval Gate |    | - AES-256 Encrypted Store |   |
+|   +----------------------------+    +------------+-------------+    +---------------------------+   |
++--------------------------------------------------|--------------------------------------------------+
+                                                   | Ephemeral Job Dispatch (Token, Target, Commands)
+                                                   v
++-----------------------------------------------------------------------------------------------------+
+|                                           EXECUTION PLANE                                           |
+|                                       (Untrusted Worker Sandbox)                                    |
+|                                                                                                     |
+|     PRIMARY: GitHub Actions Hosted Runner              SECONDARY: Hardened Local Docker             |
+|     +-----------------------------------------+        +-----------------------------------------+  |
+|     | - Fresh Ephemeral Ubuntu VM             |        | - User 1000:1000, --cap-drop=ALL        |  |
+|     | - 2 vCPU, 7 GB RAM, 14 GB SSD           |        | - Read-only rootfs, tmpfs workspace     |  |
+|     | - Scoped 60-min GitHub Installation Tok |        | - Memory limit: 2GB, CPU limit: 1.5     |  |
+|     | - Target Git Branch Checkout            |        | - Network: None (pure test runs)        |  |
+|     | - File Edit & Diagnostic Test Execution |        | - Ephemeral container destroyed on exit |  |
+|     | - Capture Diff, Exit Codes & Test Logs  |        | - No host mounts or docker socket       |  |
+|     +--------------------+--------------------+        +--------------------+--------------------+  |
+|                          |                                                  |                       |
++--------------------------|--------------------------------------------------|-----------------------+
+                           | Commit, Push, PR Creation                        | Patch & Logs Return
+                           v                                                  v
++-----------------------------------------------------------------------------------------------------+
+|                                            EXTERNAL SYSTEMS                                         |
+|   +------------------------------------+                      +---------------------------------+   |
+|   |          GitHub Platform           |                      |     Google AI Studio / LLM      |   |
+|   |  - Private Org Repositories        |                      |  - Gemini 1.5 / 2.0 Flash / Pro |   |
+|   |  - Branch Protection Policies      |                      |  - Free Tier Rate Limiting      |   |
+|   |  - PR Reviews & Status Checks      |                      |  - Zero-spend Guarantee Mode    |   |
+|   +------------------------------------+                      +---------------------------------+   |
++-----------------------------------------------------------------------------------------------------+
+```
 
-The execution plane must not have direct access to control-plane secrets
-or databases. It receives narrow, expiring job capabilities and returns
-outputs through a constrained interface.
+---
 
-## 2. Request flow
+## 2. Core Architectural Principles
 
-1.  Owner submits task through dashboard or Telegram.
-2.  Identity layer authenticates the owner.
-3.  Task service validates request and creates a durable task record.
-4.  Orchestrator creates a plan and records task steps.
-5.  Policy service checks repository, tools, resource limits, and
-    allowed actions.
-6.  Worker is provisioned with scoped repository access.
-7.  Worker researches, edits, and tests within isolation.
-8.  Worker returns patch, logs, test reports, and metadata.
-9.  Control plane validates artifacts and asks GitHub integration to
-    create branch/PR.
-10. Notification service reports outcome.
-11. Owner reviews PR; merge/deploy are separate human-controlled
-    actions.
+1. **Separation of Concerns:** The Control Plane never runs untrusted repository scripts, dependencies, or test suites. The Execution Plane never holds database passwords, long-lived API keys, or control-plane master keys.
+2. **Deterministic Authorization Gate:** The AI model is strictly an advisory component. Every capability execution (file writes, git commits, PR creation, external network calls) is intercepted and evaluated by deterministic Python logic.
+3. **Immutability of Approvals:** High-consequence actions require explicit human authorization. Approvals are cryptographically tied to a canonical SHA-256 hash of the exact parameters. Any parameter tampering immediately invalidates the approval token.
+4. **Resilient Recovery (Checkpointing):** Workflow progress is checkpointed at every graph transition. Coordinator crashes, network drops, or worker restarts do not cause data loss or duplicate execution.
+5. **No Blind Trust in Tests:** A test is only marked passed if the captured process exit code is `0` and the test runner output matches structured positive assertions (e.g. `X passed, 0 failed`).
 
-## 3. Trust boundaries
+---
 
--   Browser/Telegram to API: untrusted network.
--   AI model to tools: untrusted proposal channel.
--   Web/repository/document content to agent: untrusted data.
--   Control plane to worker: constrained job boundary.
--   Worker to GitHub: short-lived repository-scoped capability.
--   Approval UI to approval service: authenticated owner action.
+## 3. End-to-End Task Lifecycle
 
-## 4. Design rules
+The following sequence illustrates the complete lifecycle of a software engineering assignment:
 
--   Never let model output directly execute privileged actions.
--   Every tool call is validated by deterministic policy code.
--   Use idempotency keys for task creation, webhook handling, and
-    approval processing.
--   Use an outbox or durable event pattern for notifications and
-    background jobs.
--   Store workflow checkpoints and execution records.
--   Separate model conversation context from durable project memory.
--   Keep worker filesystem ephemeral; persist only approved artifacts.
--   Enforce network egress policy for workers.
--   Keep production deployment outside MVP worker permissions.
+```
+[Owner]           [Control Plane]        [AI Gateway]      [Execution Plane]      [GitHub]
+   |                     |                     |                   |                 |
+   |-- 1. Submit Task -->|                     |                   |                 |
+   |   (Telegram/Web)    |-- 2. Persist Task ->|                   |                 |
+   |                     |   (State: PENDING)  |                   |                 |
+   |                     |                     |                   |                 |
+   |                     |-- 3. Plan Request ->|                   |                 |
+   |                     |                     |-- 4. Gen Plan --->|                 |
+   |                     |                     |<-- Plan Tokens ---|                 |
+   |                     |                                         |                 |
+   |                     |-- 5. Scope & Safety Check               |                 |
+   |                     |   (Requires Approval?)                  |                 |
+   |                     |                                         |                 |
+   |<- 6. Push Approval -|                                         |                 |
+   |-- 7. Approve Task ->|                                         |                 |
+   |                     |                                         |                 |
+   |                     |-- 8. Gen Ephemeral Token -------------->|                 |--> Create Branch
+   |                     |-- 9. Dispatch Job --------------------->|                 |
+   |                     |                                         |-- 10. Checkout -|
+   |                     |                                         |-- 11. Edit Code |
+   |                     |                                         |-- 12. Run Tests |
+   |                     |                                         |                 |
+   |                     |<-- 13. Return Patch, Exit Codes, Logs --|                 |
+   |                     |                                                           |
+   |                     |-- 14. Verify Tests (Exit Code == 0)                       |
+   |                     |-- 15. Create PR ----------------------------------------->|--> Open PR
+   |                     |                                                           |
+   |<- 16. Notify -------|                                                           |
+   |   (PR Link & Summary)                                                           |
+```
 
-## 5. Failure handling
+---
 
--   Worker crash: mark attempt interrupted; retain logs/artifacts; allow
-    bounded retry.
--   Provider timeout: retry with backoff within limits; record provider
-    failure.
--   Rate limit: pause/requeue rather than loop.
--   Approval timeout: expire request and leave task waiting.
--   GitHub API failure: retry idempotently; do not duplicate PRs.
--   Database unavailable: fail closed for privileged operations.
+## 4. State Machine Definition
 
-## 6. Deployment topology
+A task progresses through strict, validated state transitions managed by LangGraph:
 
-Initial candidate: - Managed API/web hosting or one small coordinator
-service, subject to current free-tier verification. - Managed PostgreSQL
-or self-hosted PostgreSQL. - GitHub Actions for bounded jobs, with
-limits and runner security reviewed. - Disposable worker environment. -
-Telegram webhook or polling service. - Object/artifact storage only if
-required and cost-approved.
+```
+                   +-------------------+
+                   |      PENDING      |
+                   +---------+---------+
+                             |
+                             v
+                   +-------------------+
+                   |     PLANNING      |
+                   +---------+---------+
+                             |
+             +---------------+---------------+
+             |                               |
+             v                               v
+   +-------------------+           +-------------------+
+   | AWAITING_APPROVAL |           |     EXECUTING     |
+   +---------+---------+           +---------+---------+
+             |                               |
+     +-------+-------+                       v
+     |               |             +-------------------+
+     v               v             |      TESTING      |
+  APPROVED        REJECTED         +---------+---------+
+     |               |                       |
+     |               +-----------+   +-------+-------+
+     v                           |   |               |
+     +---------------------------)---+ (Pass)        | (Fail, < Retry Limit)
+                                 |   |               v
+                                 |   |     +-------------------+
+                                 |   |     |    DIAGNOSING     |
+                                 |   |     +---------+---------+
+                                 |   |               |
+                                 |   |               +-(Retry)-> EXECUTING
+                                 |   v
+                                 | +-------------------+
+                                 | |    PR_CREATED     |
+                                 | +---------+---------+
+                                 |           |
+                                 |           v
+                                 | +-------------------+
+                                 | |     COMPLETED     |
+                                 | +-------------------+
+                                 v
+                       +-------------------+
+                       |   FAILED/CANCEL   |
+                       +-------------------+
+```
 
-Do not assume free serverless hosting supports durable long-running
-workers. The architecture must tolerate job execution limits and resume
-work across separate runs.
+### State Definitions:
 
-## 7. Scaling path
+- **`PENDING`:** Task submitted, validated, and queued in PostgreSQL.
+- **`PLANNING`:** AI planner inspects task scope and produces structured execution steps.
+- **`AWAITING_APPROVAL`:** Workflow suspended; waiting for human signature on sensitive action.
+- **`APPROVED`:** Human confirmed parameters; execution resumed.
+- **`EXECUTING`:** Worker modifying files in disposable sandbox environment.
+- **`TESTING`:** Automated test suite running inside sandbox; capturing raw exit codes and stdout.
+- **`DIAGNOSING`:** Test failed; analyzing stack trace and attempting fix within retry budget (max 3 retries).
+- **`PR_CREATED`:** Clean git branch pushed, pull request opened via GitHub App.
+- **`COMPLETED`:** All tests verified green, PR evidence compiled, notifications dispatched.
+- **`FAILED`:** Terminal error (retry limit exceeded, unauthorized command, or timeout).
+- **`CANCELLED`:** Aborted by human operator or emergency kill-switch.
 
-MVP: one owner, low concurrency, queued jobs. Later: dedicated worker
-pool, stronger sandbox runtime, separate queue, observability stack, and
-optional paid VPS after approval.
+---
+
+## 5. Security Enclaves & Trust Boundaries
+
+| Enclave                     | Trust Level | Components                                         | Access Controls                                                                              |
+| :-------------------------- | :---------- | :------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| **Zone 0: Public**          | Untrusted   | Telegram API, Public Internet, Mobile Browser      | TLS 1.3, Rate Limiting, CORS, Telegram User Allowlist                                        |
+| **Zone 1: Control Plane**   | High Trust  | FastAPI, LangGraph, Supabase DB, Secret Manager    | Argon2id Auth, HttpOnly Cookies, AES-256 Encryption at Rest                                  |
+| **Zone 2: Execution Plane** | Zero Trust  | GitHub Actions Runner, Docker Worker, Repositories | Short-lived installation token, read-only rootfs, no control plane secrets, egress filtering |
+
+---
+
+## 6. Resiliency, Failure Handling & Recovery
+
+1. **Coordinator Crash / Restart:**
+   - On startup, the FastAPI coordinator queries `tasks` with status in `[PLANNING, EXECUTING, TESTING]`.
+   - LangGraph inspects the last checkpoint in `checkpoints` using the `thread_id` (Task ID).
+   - Execution resumes seamlessly from the exact interrupted node.
+2. **Worker Timeout:**
+   - Hard execution timeout: 10 minutes per execution job.
+   - If a runner hangs, the coordinator marks the execution timed-out, releases resources, and logs an incident.
+3. **Database Connection Loss:**
+   - Connection pooler (`psycopg_pool`) with automatic reconnection and exponential backoff (1s, 2s, 4s, max 30s).
+   - Critical operations fail closed (rejecting state transitions rather than proceeding in an unverified state).
+4. **Model Rate Limiting (429):**
+   - AI Gateway implements jittered exponential backoff (retry after `min(2^attempt + jitter, 60s)`).
+   - If quota exhausted, the task is marked `PAUSED_RATE_LIMIT` and a Telegram alert is sent to the owner.
+
+---
+
+## 7. Verification & Sign-off
+
+- **Architect:** Principal Software Architect
+- **DevSecOps Lead:** DevSecOps Engineer
+- **Status:** Approved for Milestone 1 Implementation

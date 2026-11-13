@@ -45,7 +45,7 @@ class OpenRouterProvider(AIProvider):
         base_url: Optional[str] = None,
         timeout_seconds: float = 60.0
     ):
-        self.api_key = api_key or settings.OPENROUTER_API_KEY
+        self.api_key = api_key if api_key is not None else settings.OPENROUTER_API_KEY
         self.model = model or settings.OPENROUTER_MODEL
         self.base_url = (base_url or settings.OPENROUTER_BASE_URL).rstrip("/")
         self.timeout_seconds = timeout_seconds

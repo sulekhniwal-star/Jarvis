@@ -119,3 +119,4 @@ if __name__ == "__main__":
         asyncio.run(run_bot())
     except KeyboardInterrupt:
         logger.info("Interrupted by user.")
+

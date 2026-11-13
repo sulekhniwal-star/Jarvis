@@ -129,3 +129,4 @@ class SoundController {
 }
 
 export const hudSound = new SoundController();
+

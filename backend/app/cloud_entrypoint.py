@@ -23,7 +23,7 @@ load_dotenv(_repo_root / ".env")
 import uvicorn
 from app.main import app
 from app.core.config import settings
-from app.core.database import async_session_factory, engine
+from app.core.database import async_session_factory, engine, resolved_database_url
 from app.models.base import Base
 from app.services.auth_service import ensure_owner_user_exists
 from app.services.telegram_service import TelegramService
@@ -76,6 +76,7 @@ async def run_telegram_worker(owner_id: str):
 
 async def main():
     logger.info("Starting Jarvis 24/7 Cloud Architecture...")
+    logger.info(f"Target Database: {resolved_database_url}")
 
     # 1. Initialize DB tables
     async with engine.begin() as conn:

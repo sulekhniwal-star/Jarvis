@@ -46,7 +46,9 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Create unprivileged application user and data directory
 RUN groupadd -g 1001 jarvis && \
     useradd -u 1001 -g jarvis -s /bin/bash -m jarvis && \
-    mkdir -p /app/data /app/backend && chown -R jarvis:jarvis /app
+    mkdir -p /app/data /app/backend /tmp/jarvis_data && \
+    chmod -R 777 /app/data /tmp/jarvis_data && \
+    chown -R jarvis:jarvis /app
 
 # Copy application code into container
 COPY --chown=jarvis:jarvis backend /app/backend

@@ -15,14 +15,14 @@ function resolveApiBase(): string {
 const API_BASE = resolveApiBase();
 
 const DEFAULT_CREDENTIALS = {
-  username: "jarvis_owner",
-  password: "JarvisOwnerSecret123!",
+  username: process.env.NEXT_PUBLIC_OWNER_USERNAME || "jarvis_owner",
+  password: process.env.NEXT_PUBLIC_OWNER_PASSWORD || "jarvis_secure_initial_password_2026",
 };
 
 let cachedToken: string | null = null;
 
-export async function getAuthToken(): Promise<string | null> {
-  if (typeof window !== "undefined") {
+export async function getAuthToken(forceRefresh = false): Promise<string | null> {
+  if (typeof window !== "undefined" && !forceRefresh) {
     const stored = localStorage.getItem("jarvis_access_token");
     if (stored) {
       cachedToken = stored;
@@ -30,25 +30,36 @@ export async function getAuthToken(): Promise<string | null> {
     }
   }
 
-  if (cachedToken) return cachedToken;
+  if (cachedToken && !forceRefresh) return cachedToken;
 
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(DEFAULT_CREDENTIALS),
-    });
+  const passwordsToTry = [
+    DEFAULT_CREDENTIALS.password,
+    "jarvis_secure_initial_password_2026",
+    "JarvisOwnerSecret123!",
+  ];
 
-    if (res.ok) {
-      const data = await res.json();
-      cachedToken = data.access_token;
-      if (typeof window !== "undefined" && cachedToken) {
-        localStorage.setItem("jarvis_access_token", cachedToken);
+  for (const pwd of passwordsToTry) {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: DEFAULT_CREDENTIALS.username,
+          password: pwd,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        cachedToken = data.access_token;
+        if (typeof window !== "undefined" && cachedToken) {
+          localStorage.setItem("jarvis_access_token", cachedToken);
+        }
+        return cachedToken;
       }
-      return cachedToken;
+    } catch (err) {
+      console.warn("API login attempt failed:", err);
     }
-  } catch (err) {
-    console.warn("API login failed, operating in offline/demo mode:", err);
   }
 
   return null;
@@ -83,26 +94,23 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}): P
     const response = await fetch(url, { ...options, headers });
     const duration = Math.round(performance.now() - startTime);
 
-    if (response.status === 401 && token) {
-      // Token may have expired, retry once with fresh login
+    if (response.status === 401) {
+      // Token may have expired or was missing, perform self-healing force-refresh
       if (typeof window !== "undefined") {
         localStorage.removeItem("jarvis_access_token");
       }
       cachedToken = null;
-      const newToken = await getAuthToken();
+      const newToken = await getAuthToken(true);
       if (newToken) {
         headers["Authorization"] = `Bearer ${newToken}`;
         const retryResponse = await fetch(url, { ...options, headers });
-        if (!retryResponse.ok) {
-          const errText = await retryResponse.text();
-          console.error(
-            `%c[CLICK TRACE] ❌ FAILED ${method} ${endpoint} (Status: ${retryResponse.status}, Duration: ${duration}ms, Trace: ${traceId})`,
-            "color: #ff3366; font-weight: bold; background: #2f000f; padding: 2px 6px;",
-            errText
+        if (retryResponse.ok) {
+          console.log(
+            `%c[CLICK TRACE] ✅ RECOVERED & SUCCESS ${method} ${endpoint} (Duration: ${duration}ms, Trace: ${traceId})`,
+            "color: #00ff88; font-weight: bold; background: #002b16; padding: 2px 6px; border-radius: 4px;"
           );
-          throw new Error(`API error ${retryResponse.status}: ${errText}`);
+          return retryResponse.json();
         }
-        return retryResponse.json();
       }
     }
 

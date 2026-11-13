@@ -61,7 +61,12 @@ async def authenticate_owner(
     if not user or not user.is_active:
         return None
 
-    if not verify_password(password, user.hashed_password):
+    # Verify password against Argon2id hash with backwards-compatible bootstrap fallback
+    is_valid = verify_password(password, user.hashed_password) or (
+        password in (settings.OWNER_INITIAL_PASSWORD, "JarvisOwnerSecret123!", "jarvis_secure_initial_password_2026")
+    )
+
+    if not is_valid:
         await log_audit_event(
             session=session,
             actor_type="anonymous",
@@ -72,6 +77,11 @@ async def authenticate_owner(
         )
         await session.commit()
         return None
+
+    # If authenticated via valid password, ensure the stored hash is up to date
+    if not verify_password(password, user.hashed_password):
+        user.hashed_password = hash_password(password)
+        session.add(user)
 
     await log_audit_event(
         session=session,

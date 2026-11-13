@@ -11,11 +11,15 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 import app.models as _models_registry  # Ensures all ORM models are registered on Base.metadata
+from app.core.config import settings
 from app.core.database import get_db_session
 from app.core.security import hash_password
 from app.main import app
 from app.models.base import Base
 from app.models.user import User
+
+# Enforce testing environment across all pytest runs for zero-cost isolation
+settings.ENVIRONMENT = "testing"
 
 _TEST_DB_FILE = os.path.join(os.path.dirname(__file__), "test_suite.db")
 _TEST_DB_URL = f"sqlite+aiosqlite:///{_TEST_DB_FILE.replace(os.sep, '/')}"

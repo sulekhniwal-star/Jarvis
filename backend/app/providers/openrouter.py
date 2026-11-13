@@ -73,6 +73,7 @@ class OpenRouterProvider(AIProvider):
             "model": self.model,
             "messages": messages,
             "temperature": 0.2,
+            "max_tokens": 2048,
         }
 
         async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:

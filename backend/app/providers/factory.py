@@ -10,6 +10,10 @@ from app.providers.openrouter import OpenRouterProvider
 
 def get_ai_provider() -> AIProvider:
     """Returns the configured AI Provider instance."""
+    # Automated tests always use deterministic MockAIProvider at zero cost
+    if settings.ENVIRONMENT == "testing":
+        return MockAIProvider()
+
     provider_name = settings.DEFAULT_AI_PROVIDER.lower()
     if provider_name == "openrouter":
         return OpenRouterProvider()

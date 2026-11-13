@@ -4,12 +4,14 @@ Verifies filesystem path traversal defense, command allowlists, shell injection 
 honest test parsing, and end-to-end coding agent execution on a real test codebase.
 """
 
-from pathlib import Path
-import pytest
 import sys
+from pathlib import Path
+
+import pytest
+
 from app.providers.mock import MockAIProvider
-from app.workers.command_policy import CommandPolicyViolation, validate_and_tokenize_command
 from app.workers.coding_agent import CodingAgent
+from app.workers.command_policy import CommandPolicyViolation, validate_and_tokenize_command
 from app.workers.filesystem import SandboxedFilesystem, SecurityException
 from app.workers.runner import LocalSandboxRunner
 from app.workers.test_parser import parse_test_results
@@ -84,7 +86,9 @@ def test_honest_test_parser():
     assert pass_res["passed_count"] == 5
 
     # Real failure
-    fail_res = parse_test_results(1, "FAILED tests/test_calc.py::test_div", "AssertionError: 1 != 2")
+    fail_res = parse_test_results(
+        1, "FAILED tests/test_calc.py::test_div", "AssertionError: 1 != 2"
+    )
     assert fail_res["passed"] is False
     assert fail_res["exit_code"] == 1
     assert fail_res["failed_count"] >= 1
@@ -110,9 +114,7 @@ async def test_end_to_end_coding_agent_on_real_codebase(tmp_path: Path):
 
     # Broken code: divide crashes on b == 0
     (src_dir / "calculator.py").write_text(
-        "def calculate(a, b):\n"
-        "    return a / b\n",
-        encoding="utf-8"
+        "def calculate(a, b):\n    return a / b\n", encoding="utf-8"
     )
 
     # Unit test asserting calculate(10, 0) == 0
@@ -125,7 +127,7 @@ async def test_end_to_end_coding_agent_on_real_codebase(tmp_path: Path):
         "    assert calculate(10, 2) == 5\n\n"
         "def test_calculate_zero_division():\n"
         "    assert calculate(10, 0) == 0\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     # 2. Instantiate sandbox runner and coding agent
@@ -142,7 +144,7 @@ async def test_end_to_end_coding_agent_on_real_codebase(tmp_path: Path):
         task_title="Fix ZeroDivisionError in calculate function",
         task_description="When b is 0, calculate should return 0 instead of crashing.",
         test_command=test_cmd,
-        max_retries=2
+        max_retries=2,
     )
 
     # 4. Verify outcomes and real execution evidence
@@ -156,4 +158,3 @@ async def test_end_to_end_coding_agent_on_real_codebase(tmp_path: Path):
     modified_content = (src_dir / "calculator.py").read_text(encoding="utf-8")
     assert "if b == 0:" in modified_content
     assert "return 0" in modified_content
-

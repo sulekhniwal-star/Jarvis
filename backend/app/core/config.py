@@ -3,16 +3,13 @@ Project Jarvis — Application Configuration.
 Uses Pydantic v2 BaseSettings to load and validate environment variables.
 """
 
-from typing import List
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=("../.env", ".env"),
-        env_file_encoding="utf-8",
-        extra="ignore"
+        env_file=("../.env", ".env"), env_file_encoding="utf-8", extra="ignore"
     )
 
     # Core settings
@@ -24,12 +21,12 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = Field(
         default="development_insecure_secret_key_change_in_production_min_32_chars",
-        description="Master secret key for JWT session tokens"
+        description="Master secret key for JWT session tokens",
     )
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     MASTER_ENCRYPTION_KEY: str = Field(
         default="e1NoZWxsT3ZlcnJpZGVLZXlGb3JMb2NhbERldkV4YW1wbGU9PQ==",
-        description="Fernet 32-byte URL-safe base64 key for encrypting database secrets"
+        description="Fernet 32-byte URL-safe base64 key for encrypting database secrets",
     )
 
     # Single-Tenant Owner Credentials
@@ -39,7 +36,7 @@ class Settings(BaseSettings):
     # Persistence
     DATABASE_URL: str = Field(
         default="sqlite+aiosqlite:///./jarvis.db",
-        description="Async SQLAlchemy database connection string"
+        description="Async SQLAlchemy database connection string",
     )
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
@@ -66,6 +63,7 @@ class Settings(BaseSettings):
     # GitHub Integration
     GITHUB_TOKEN: str = ""
     GITHUB_TARGET_ORG: str = "sulekhniwal-star"
+    GITHUB_WEBHOOK_SECRET: str = ""
 
     # Observability & Tracing (Sentry / Distributed Tracing)
     SENTRY_DSN: str = ""
@@ -73,7 +71,7 @@ class Settings(BaseSettings):
     SENTRY_TRACES_SAMPLE_RATE: float = 1.0
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = [
+    BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
@@ -82,4 +80,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

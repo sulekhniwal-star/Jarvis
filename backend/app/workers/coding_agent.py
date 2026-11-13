@@ -4,7 +4,8 @@ Coordinates file inspection, code edits, test execution, and diagnostic self-hea
 inside an isolated sandbox runner.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
 
 from app.providers.base import AIProvider
@@ -23,8 +24,8 @@ class CodingAgent:
         task_title: str,
         task_description: str,
         test_command: str = "pytest",
-        max_retries: int = 3
-    ) -> Dict[str, Any]:
+        max_retries: int = 3,
+    ) -> dict[str, Any]:
         """
         Executes an end-to-end coding workflow:
         1. Inspects workspace files.
@@ -34,7 +35,7 @@ class CodingAgent:
         5. If failed, executes diagnostic retry loop.
         6. Compiles honest evidence report.
         """
-        logs: List[str] = []
+        logs: list[str] = []
         logs.append(f"[CodingAgent] Starting execution for task: '{task_title}'")
 
         # 1. Workspace inspection
@@ -42,7 +43,7 @@ class CodingAgent:
         logs.append(f"[CodingAgent] Discovered {len(files)} files in sandboxed workspace.")
 
         # Read context
-        context: Dict[str, str] = {}
+        context: dict[str, str] = {}
         for f in files[:5]:  # Scope first few files
             try:
                 context[f] = self.runner.fs.read_file(f)
@@ -51,7 +52,14 @@ class CodingAgent:
 
         # 2. Generate solution
         solution = await self.provider.generate_code_solution(task_description, context)
-        changes = solution.get("changes", [])
+        raw_changes = solution.get("changes") or solution.get("patches") or []
+        changes = []
+        for item in raw_changes:
+            path = item.get("file_path") or item.get("path")
+            content = item.get("content") or item.get("modified_code", "")
+            if path:
+                changes.append({"file_path": path, "content": content})
+
         logs.append(f"[CodingAgent] Applying {len(changes)} file changes...")
 
         # 3. Apply changes into sandbox
@@ -68,13 +76,49 @@ class CodingAgent:
         logs.append(f"[CodingAgent] Test result: {test_result['summary']}")
 
         retries_used = 0
-        # 5. Diagnostic retry loop
+        all_modified_files: set[str] = {str(c["file_path"]) for c in changes if c.get("file_path")}
+
+        # 5. Diagnostic retry loop with active code repair
         while not test_result["passed"] and retries_used < max_retries:
             retries_used += 1
-            logs.append(f"[CodingAgent] Tests failed. Starting diagnostic retry {retries_used}/{max_retries}...")
+            logs.append(
+                f"[CodingAgent] Tests failed. Starting diagnostic retry {retries_used}/{max_retries}..."
+            )
 
-            # In later provider integration, error trace is fed to provider:
-            # retry_solution = await self.provider.generate_code_solution(f"Fix this test error: {test_result['raw_output']}")
+            # Refresh context with failing files
+            retry_context: dict[str, str] = {}
+            for path in all_modified_files:
+                try:
+                    retry_context[path] = self.runner.fs.read_file(path)
+                except Exception:
+                    pass
+
+            error_prompt = (
+                f"The following automated test failed during task execution:\n"
+                f"Task: {task_title}\n"
+                f"Error Evidence:\n{test_result.get('raw_output', '')[:1500]}\n"
+                f"Please produce a corrected patch that fixes the error and passes the test."
+            )
+
+            try:
+                retry_solution = await self.provider.generate_code_solution(
+                    error_prompt, retry_context
+                )
+                raw_retry_changes = (
+                    retry_solution.get("changes") or retry_solution.get("patches") or []
+                )
+                for item in raw_retry_changes:
+                    p = item.get("file_path") or item.get("path")
+                    c = item.get("content") or item.get("modified_code", "")
+                    if p and c:
+                        self.runner.fs.write_file(p, c)
+                        all_modified_files.add(p)
+                        logs.append(
+                            f"[CodingAgent] Applied diagnostic fix to '{p}' ({len(c)} bytes)"
+                        )
+            except Exception as patch_err:
+                logs.append(f"[CodingAgent] Diagnostic patch generation failed: {patch_err}")
+
             # Re-test
             test_result = await self.runner.run_tests(test_command)
             logs.append(f"[CodingAgent] Retry {retries_used} result: {test_result['summary']}")
@@ -87,7 +131,6 @@ class CodingAgent:
             "status": status_label,
             "test_evidence": test_result,
             "retries_used": retries_used,
-            "files_modified": [c.get("file_path") for c in changes],
-            "execution_logs": logs
+            "files_modified": sorted(all_modified_files),
+            "execution_logs": logs,
         }
-

@@ -39,6 +39,7 @@ import {
   approveTaskApi,
   rejectTaskApi,
   emergencyStopApi,
+  resumeSystemApi,
   fetchFleetRepos,
   fetchRepoAudit,
   improveProjectApi,
@@ -127,6 +128,18 @@ export default function DashboardPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  // Load Fleet Repositories with rate-limit protection (cached)
+  const loadFleet = async () => {
+    try {
+      const repos = await fetchFleetRepos();
+      if (repos && repos.length > 0) {
+        setFleetRepos(repos);
+      }
+    } catch (err) {
+      console.debug("Fleet discovery cycle:", err);
+    }
+  };
+
   // Live Polling of Backend Telemetry, Tasks, and Approvals
   const loadData = async () => {
     try {
@@ -136,6 +149,8 @@ export default function DashboardPage() {
         setTelemetry(telem);
         if (telem.status === "LOCKED") {
           setIsEmergencyLocked(true);
+        } else if (telem.status === "OPERATIONAL") {
+          setIsEmergencyLocked(false);
         }
       }
 
@@ -148,22 +163,25 @@ export default function DashboardPage() {
       // 3. Approvals
       const remoteApprovals = await fetchApprovals();
       setPendingApprovals(remoteApprovals);
-
-      // 4. Fleet Repositories
-      const repos = await fetchFleetRepos();
-      if (repos && repos.length > 0) {
-        setFleetRepos(repos);
-      }
     } catch (err) {
       console.debug("Backend polling cycle:", err);
     }
   };
 
+  // Fleet poll timer: runs once on mount, then every 60 seconds
+  useEffect(() => {
+    loadFleet();
+    const fleetTimer = setInterval(loadFleet, 60000);
+    return () => clearInterval(fleetTimer);
+  }, []);
+
+  // Telemetry poll timer: dynamic interval based on HUD operational mode
   useEffect(() => {
     loadData();
-    const timer = setInterval(loadData, 3000);
+    const pollInterval = hudMode === "SURGE" ? 2000 : hudMode === "STEALTH" ? 10000 : 4000;
+    const timer = setInterval(loadData, pollInterval);
     return () => clearInterval(timer);
-  }, []);
+  }, [hudMode]);
 
   const handleCreateTask = async () => {
     if (!taskTitle.trim() || !taskDesc.trim() || isEmergencyLocked || isDispatching) return;
@@ -254,6 +272,19 @@ export default function DashboardPage() {
         )
       );
       setPendingApprovals([]);
+    }
+  };
+
+  const handleResumeSystem = async () => {
+    hudSound.playDispatch();
+    try {
+      await resumeSystemApi();
+      setIsEmergencyLocked(false);
+      showToast("🟢 DEFCON 4: SYSTEM RESTORED TO OPERATIONAL STATUS");
+      loadData();
+    } catch (err: any) {
+      console.error("Resume system error:", err);
+      showToast(`Resume failed: ${err.message || "Network Error"}`);
     }
   };
 
@@ -434,17 +465,15 @@ export default function DashboardPage() {
 
         {/* System Defense State / Clock */}
         <div
-          className={`tech-border p-3 rounded-lg flex items-center gap-3 ${
-            isEmergencyLocked
-              ? "border-rose-500/80 bg-rose-950/40 glow-rose-box"
-              : "border-cyan-500/40"
-          }`}
+          className={`tech-border p-3 rounded-lg flex items-center gap-3 ${isEmergencyLocked
+            ? "border-rose-500/80 bg-rose-950/40 glow-rose-box"
+            : "border-cyan-500/40"
+            }`}
         >
           <div className="w-10 h-10 rounded border border-cyan-500/40 bg-cyan-950/40 flex items-center justify-center flex-shrink-0">
             <Radio
-              className={`w-5 h-5 ${
-                isEmergencyLocked ? "text-rose-400 animate-bounce" : "text-cyan-400"
-              }`}
+              className={`w-5 h-5 ${isEmergencyLocked ? "text-rose-400 animate-bounce" : "text-cyan-400"
+                }`}
             />
           </div>
           <div>
@@ -452,9 +481,8 @@ export default function DashboardPage() {
               DEFCON // CLOCK
             </p>
             <p
-              className={`text-sm font-extrabold font-mono tracking-wider ${
-                isEmergencyLocked ? "text-rose-400 glow-rose" : "text-cyan-300 glow-cyan"
-              }`}
+              className={`text-sm font-extrabold font-mono tracking-wider ${isEmergencyLocked ? "text-rose-400 glow-rose" : "text-cyan-300 glow-cyan"
+                }`}
             >
               {isEmergencyLocked ? "DEFCON 1: LOCKED" : "DEFCON 4: NOMINAL"}
             </p>
@@ -589,14 +617,21 @@ export default function DashboardPage() {
                   <button
                     key={mode}
                     onClick={() => {
-                      hudSound.playModeSwitch();
+                      if (mode === "STEALTH") {
+                        hudSound.enabled = false;
+                        setSoundEnabled(false);
+                      } else {
+                        hudSound.enabled = true;
+                        setSoundEnabled(true);
+                        hudSound.playModeSwitch();
+                      }
                       setHudMode(mode);
+                      showToast(`HUD Protocol Shifted: ${mode} MODE`);
                     }}
-                    className={`py-1 text-[10px] font-bold rounded transition-all ${
-                      hudMode === mode
-                        ? "bg-cyan-400 text-slate-950 shadow-[0_0_8px_#00f0ff]"
-                        : "bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-900/50"
-                    }`}
+                    className={`py-1 text-[10px] font-bold rounded transition-all ${hudMode === mode
+                      ? "bg-cyan-400 text-slate-950 shadow-[0_0_8px_#00f0ff]"
+                      : "bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-900/50"
+                      }`}
                   >
                     {mode}
                   </button>
@@ -783,15 +818,14 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 text-xs">
                       <span className="text-cyan-500 font-bold">{task.id.slice(0, 8)}</span>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded font-extrabold border uppercase tracking-wider ${
-                          task.status === "COMPLETED"
-                            ? "bg-cyan-950 text-cyan-300 border-cyan-400 shadow-[0_0_6px_#00f0ff]"
-                            : task.status === "AWAITING_APPROVAL"
+                        className={`text-[10px] px-2 py-0.5 rounded font-extrabold border uppercase tracking-wider ${task.status === "COMPLETED"
+                          ? "bg-cyan-950 text-cyan-300 border-cyan-400 shadow-[0_0_6px_#00f0ff]"
+                          : task.status === "AWAITING_APPROVAL"
                             ? "bg-amber-950 text-amber-300 border-amber-500 animate-pulse"
                             : task.status === "CANCELLED"
-                            ? "bg-rose-950 text-rose-400 border-rose-800"
-                            : "bg-cyan-950/80 text-cyan-400 border-cyan-600 animate-pulse"
-                        }`}
+                              ? "bg-rose-950 text-rose-400 border-rose-800"
+                              : "bg-cyan-950/80 text-cyan-400 border-cyan-600 animate-pulse"
+                          }`}
                       >
                         {task.status}
                       </span>
@@ -894,13 +928,21 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleEmergencyStop}
-              disabled={isEmergencyLocked}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-mono font-black text-xs rounded uppercase tracking-wider transition-all shadow-[0_0_12px_#f43f5e] disabled:opacity-50 whitespace-nowrap"
-            >
-              {isEmergencyLocked ? "SYSTEM LOCKED" : "ENGAGE LOCKDOWN"}
-            </button>
+            {isEmergencyLocked ? (
+              <button
+                onClick={handleResumeSystem}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-xs rounded uppercase tracking-wider transition-all shadow-[0_0_15px_#10b981] whitespace-nowrap animate-pulse"
+              >
+                DISENGAGE LOCKDOWN // RESUME OPERATIONAL
+              </button>
+            ) : (
+              <button
+                onClick={handleEmergencyStop}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-mono font-black text-xs rounded uppercase tracking-wider transition-all shadow-[0_0_12px_#f43f5e] whitespace-nowrap"
+              >
+                ENGAGE LOCKDOWN
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -954,13 +996,12 @@ export default function DashboardPage() {
           {fleetRepos.map((repo) => (
             <div
               key={repo.name}
-              className={`tech-border rounded-lg p-3.5 space-y-2.5 transition-all hover:border-cyan-400 font-mono ${
-                repo.priority_tier.includes("P0")
-                  ? "border-cyan-400/80 bg-cyan-950/30 glow-cyan-box"
-                  : repo.priority_tier.includes("P1")
+              className={`tech-border rounded-lg p-3.5 space-y-2.5 transition-all hover:border-cyan-400 font-mono ${repo.priority_tier.includes("P0")
+                ? "border-cyan-400/80 bg-cyan-950/30 glow-cyan-box"
+                : repo.priority_tier.includes("P1")
                   ? "border-blue-500/60 bg-[#020d1c]/80"
                   : "border-cyan-900/60 bg-[#020b18]/70"
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

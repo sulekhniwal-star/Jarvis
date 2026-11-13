@@ -7,7 +7,9 @@ Integrates with Sentry for end-to-end distributed tracing.
 
 import time
 import uuid
+
 import structlog
+
 from app.core.config import settings
 
 logger = structlog.get_logger("jarvis.tracer")
@@ -30,7 +32,9 @@ if settings.SENTRY_DSN:
             ],
             send_default_pii=False,
         )
-        logger.info("Sentry APM & Error Tracing initialized", environment=settings.SENTRY_ENVIRONMENT)
+        logger.info(
+            "Sentry APM & Error Tracing initialized", environment=settings.SENTRY_ENVIRONMENT
+        )
     except Exception as e:
         logger.warning(f"Could not initialize Sentry: {e}")
 
@@ -115,6 +119,7 @@ class TraceAndAuditMiddleware:
             if settings.SENTRY_DSN:
                 try:
                     import sentry_sdk
+
                     sentry_sdk.set_tag("trace_id", trace_id)
                     sentry_sdk.capture_exception(exc)
                 except Exception:
@@ -122,28 +127,35 @@ class TraceAndAuditMiddleware:
 
             if not response_started:
                 import json
-                error_body = json.dumps({
-                    "detail": f"Internal execution error: {str(exc)}",
-                    "trace_id": trace_id,
-                    "duration_ms": duration_ms,
-                    "status": "error"
-                }).encode("utf-8")
 
-                await send({
-                    "type": "http.response.start",
-                    "status": 500,
-                    "headers": [
-                        (b"content-type", b"application/json"),
-                        (b"access-control-allow-origin", b"*"),
-                        (b"access-control-allow-methods", b"*"),
-                        (b"access-control-allow-headers", b"*"),
-                        (b"x-trace-id", trace_id.encode("utf-8")),
-                        (b"x-response-time-ms", str(duration_ms).encode("utf-8")),
-                    ],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": error_body,
-                })
+                error_body = json.dumps(
+                    {
+                        "detail": f"Internal execution error: {exc!s}",
+                        "trace_id": trace_id,
+                        "duration_ms": duration_ms,
+                        "status": "error",
+                    }
+                ).encode("utf-8")
+
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 500,
+                        "headers": [
+                            (b"content-type", b"application/json"),
+                            (b"access-control-allow-origin", b"*"),
+                            (b"access-control-allow-methods", b"*"),
+                            (b"access-control-allow-headers", b"*"),
+                            (b"x-trace-id", trace_id.encode("utf-8")),
+                            (b"x-response-time-ms", str(duration_ms).encode("utf-8")),
+                        ],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": error_body,
+                    }
+                )
             else:
                 raise exc

@@ -5,14 +5,7 @@ and generate self-improvement pull requests while strictly forbidding modificati
 """
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-import os
-import re
-
-from app.workers.command_policy import validate_and_tokenize_command
-from app.workers.filesystem import SandboxedFilesystem, SecurityException
-from app.workers.runner import LocalSandboxRunner
-from app.workers.test_parser import parse_test_results
+from typing import Any
 
 # Files that autonomous self-improvement workflows are NEVER permitted to modify
 PROTECTED_CORE_COMPONENTS = {
@@ -27,7 +20,6 @@ PROTECTED_CORE_COMPONENTS = {
 
 class ProtectedComponentViolation(Exception):
     """Raised when an autonomous agent attempts to modify a protected security file."""
-    pass
 
 
 class SelfImprovementService:
@@ -42,16 +34,16 @@ class SelfImprovementService:
         return any(p in norm for p in PROTECTED_CORE_COMPONENTS)
 
     @staticmethod
-    def analyze_codebase_health(repo_root: Path | str) -> Dict[str, Any]:
+    def analyze_codebase_health(repo_root: Path | str) -> dict[str, Any]:
         """
         Performs read-only inspection of the repository.
         Returns metrics on file counts, test coverage inventory, and TODO annotations.
         """
         root = Path(repo_root).resolve()
-        py_files: List[str] = []
-        test_files: List[str] = []
-        todo_items: List[Dict[str, Any]] = []
-        protected_inventory: List[str] = []
+        py_files: list[str] = []
+        test_files: list[str] = []
+        todo_items: list[dict[str, Any]] = []
+        protected_inventory: list[str] = []
 
         for p in root.rglob("*.py"):
             rel = str(p.relative_to(root)).replace("\\", "/")
@@ -69,11 +61,9 @@ class SelfImprovementService:
                 content = p.read_text(encoding="utf-8", errors="ignore")
                 for line_idx, line in enumerate(content.splitlines(), start=1):
                     if "# TODO" in line or "# FIXME" in line:
-                        todo_items.append({
-                            "file": rel,
-                            "line": line_idx,
-                            "annotation": line.strip()
-                        })
+                        todo_items.append(
+                            {"file": rel, "line": line_idx, "annotation": line.strip()}
+                        )
             except Exception:
                 pass
 
@@ -84,7 +74,7 @@ class SelfImprovementService:
             "protected_components": protected_inventory,
             "open_annotations_count": len(todo_items),
             "open_annotations": todo_items[:10],
-            "health_status": "HEALTHY" if len(test_files) >= 5 else "NEEDS_TESTS"
+            "health_status": "HEALTHY" if len(test_files) >= 5 else "NEEDS_TESTS",
         }
 
     @staticmethod
@@ -104,15 +94,19 @@ class SelfImprovementService:
         branch_name: str,
         title: str,
         description: str,
-        changed_files: List[str],
+        changed_files: list[str],
         test_passed: bool,
-        test_output: str
-    ) -> Dict[str, Any]:
+        test_output: str,
+    ) -> dict[str, Any]:
         """
         Generates structured Pull Request data requiring human approval before merge.
         Embeds honest test execution evidence.
         """
-        badge = "![Tests Passed](https://img.shields.io/badge/Tests-PASSED-brightgreen)" if test_passed else "![Tests Failed](https://img.shields.io/badge/Tests-FAILED-red)"
+        badge = (
+            "![Tests Passed](https://img.shields.io/badge/Tests-PASSED-brightgreen)"
+            if test_passed
+            else "![Tests Failed](https://img.shields.io/badge/Tests-FAILED-red)"
+        )
 
         body = (
             f"## Autonomous Self-Improvement Proposal\n\n"
@@ -133,5 +127,5 @@ class SelfImprovementService:
             "base": "main",
             "body": body,
             "requires_human_approval": True,
-            "tests_verified": test_passed
+            "tests_verified": test_passed,
         }

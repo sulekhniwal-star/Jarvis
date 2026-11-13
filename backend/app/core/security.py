@@ -4,8 +4,9 @@ Implements Argon2id password hashing, JWT session encoding/decoding,
 and Fernet AES-256-GCM symmetric encryption for stored integration secrets.
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -19,7 +20,7 @@ _pwd_hasher = PasswordHasher(
     memory_cost=65536,  # 64 MB
     parallelism=4,
     hash_len=32,
-    salt_len=16
+    salt_len=16,
 )
 
 
@@ -37,18 +38,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(
-    subject: str,
-    expires_delta: Optional[timedelta] = None,
-    extra_claims: Optional[Dict[str, Any]] = None
+    subject: str, expires_delta: timedelta | None = None, extra_claims: dict[str, Any] | None = None
 ) -> str:
     """Generates an HMAC-SHA256 signed JWT access token."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if expires_delta:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "sub": str(subject),
         "iat": int(now.timestamp()),
         "exp": int(expire.timestamp()),
@@ -60,7 +59,7 @@ def create_access_token(
     return encoded_jwt
 
 
-def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
+def decode_access_token(token: str) -> dict[str, Any] | None:
     """Decodes and validates a JWT access token."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
@@ -76,6 +75,7 @@ def _get_fernet() -> Fernet:
     if len(key) != 44:
         import base64
         import hashlib
+
         padded = base64.urlsafe_b64encode(hashlib.sha256(key).digest())
         return Fernet(padded)
     return Fernet(key)
@@ -95,4 +95,3 @@ def decrypt_secret(encrypted_secret: str) -> str:
         return ""
     fernet = _get_fernet()
     return fernet.decrypt(encrypted_secret.encode()).decode()
-

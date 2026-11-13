@@ -5,7 +5,7 @@ Verifies HMAC-SHA256 signature and processes repository and pull request events.
 
 import hashlib
 import hmac
-from typing import Any, Dict
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,11 +16,7 @@ from app.services.audit_service import log_audit_event
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
 
-def verify_github_signature(
-    raw_body: bytes,
-    signature_header: str,
-    secret: str
-) -> bool:
+def verify_github_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
     """
     Validates the GitHub HMAC-SHA256 signature using constant-time comparison.
     Format: 'sha256=<hex_digest>'
@@ -44,7 +40,7 @@ async def github_webhook(
     x_hub_signature_256: str = Header(None, alias="X-Hub-Signature-256"),
     x_github_event: str = Header(None, alias="X-GitHub-Event"),
     x_github_delivery: str = Header(None, alias="X-GitHub-Delivery"),
-    session: AsyncSession = Depends(get_db_session)
+    session: AsyncSession = Depends(get_db_session),
 ):
     """
     Ingests GitHub webhook events with mandatory cryptographic signature validation.
@@ -52,7 +48,16 @@ async def github_webhook(
     raw_body = await request.body()
 
     # Secret verification
-    webhook_secret = settings.__dict__.get("GITHUB_WEBHOOK_SECRET") or "development_test_webhook_secret_key"
+    webhook_secret = settings.GITHUB_WEBHOOK_SECRET
+    if not webhook_secret:
+        if settings.ENVIRONMENT in ("development", "testing"):
+            webhook_secret = "development_test_webhook_secret_key"
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="GITHUB_WEBHOOK_SECRET is not configured on this server.",
+            )
+
     if not verify_github_signature(raw_body, x_hub_signature_256, webhook_secret):
         await log_audit_event(
             session=session,
@@ -60,12 +65,11 @@ async def github_webhook(
             actor_id="github_webhook",
             action="WEBHOOK_SIGNATURE_VERIFICATION_FAILED",
             target_type="webhook",
-            metadata={"delivery_id": x_github_delivery}
+            metadata={"delivery_id": x_github_delivery},
         )
         await session.commit()
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid GitHub webhook signature."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid GitHub webhook signature."
         )
 
     payload = await request.json()
@@ -79,11 +83,7 @@ async def github_webhook(
         action=f"GITHUB_EVENT_{x_github_event.upper()}",
         target_type="repository",
         target_id=repository,
-        metadata={
-            "action": action,
-            "event": x_github_event,
-            "delivery_id": x_github_delivery
-        }
+        metadata={"action": action, "event": x_github_event, "delivery_id": x_github_delivery},
     )
     await session.commit()
 
@@ -91,6 +91,5 @@ async def github_webhook(
         "status": "processed",
         "event": x_github_event,
         "action": action,
-        "delivery_id": x_github_delivery
+        "delivery_id": x_github_delivery,
     }
-

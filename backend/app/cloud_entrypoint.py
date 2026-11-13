@@ -8,7 +8,6 @@ stays alive 24/7 even when your laptop is turned off.
 import asyncio
 import logging
 import os
-import signal
 import sys
 from pathlib import Path
 
@@ -18,20 +17,19 @@ sys.path.insert(0, str(_repo_root / "backend"))
 sys.path.insert(0, str(_repo_root))
 
 from dotenv import load_dotenv
+
 load_dotenv(_repo_root / ".env")
 
 import uvicorn
-from app.main import app
+
 from app.core.config import settings
 from app.core.database import async_session_factory, engine, resolved_database_url
+from app.main import app
 from app.models.base import Base
 from app.services.auth_service import ensure_owner_user_exists
 from app.services.telegram_service import TelegramService
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("jarvis.cloud_daemon")
 
 
@@ -42,7 +40,9 @@ async def run_telegram_worker(owner_id: str):
         return
 
     svc = TelegramService()
-    logger.info(f"Telegram Cloud Worker active. Target owner ID: {settings.AUTHORIZED_TELEGRAM_USER_ID}")
+    logger.info(
+        f"Telegram Cloud Worker active. Target owner ID: {settings.AUTHORIZED_TELEGRAM_USER_ID}"
+    )
 
     try:
         await svc.set_bot_commands()
@@ -59,9 +59,7 @@ async def run_telegram_worker(owner_id: str):
                     async with async_session_factory() as session:
                         try:
                             await svc.handle_incoming_update(
-                                update_data=update,
-                                session=session,
-                                owner_user_id=owner_id
+                                update_data=update, session=session, owner_user_id=owner_id
                             )
                         except Exception as err:
                             logger.error(f"Error handling Telegram update: {err}")
@@ -90,23 +88,13 @@ async def main():
 
     # 3. Configure uvicorn server
     port = int(os.environ.get("PORT", "8000"))
-    config = uvicorn.Config(
-        app=app,
-        host="0.0.0.0",
-        port=port,
-        log_level="info",
-        access_log=False
-    )
+    config = uvicorn.Config(app=app, host="0.0.0.0", port=port, log_level="info", access_log=False)
     server = uvicorn.Server(config)
 
     # 4. Run both the API server and the Telegram listener concurrently
     logger.info(f"Launching API on 0.0.0.0:{port} + 24/7 Telegram Worker...")
-    await asyncio.gather(
-        server.serve(),
-        run_telegram_worker(owner_id)
-    )
+    await asyncio.gather(server.serve(), run_telegram_worker(owner_id))
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-

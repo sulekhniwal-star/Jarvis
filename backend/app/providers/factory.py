@@ -20,4 +20,3 @@ def get_ai_provider() -> AIProvider:
     if provider_name == "mock":
         return MockAIProvider()
     return MockAIProvider()
-

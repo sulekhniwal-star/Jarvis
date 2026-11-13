@@ -4,9 +4,9 @@ Enforces strict directory boundary isolation, blocking directory traversal,
 symbolic link attacks, and access outside the assigned workspace.
 """
 
-from pathlib import Path
 import re
-from typing import List
+from pathlib import Path
+
 from fastapi import HTTPException, status
 
 
@@ -62,8 +62,7 @@ class SandboxedFilesystem:
         safe_path = self.resolve_safe_path(relative_path)
         if not safe_path.exists() or not safe_path.is_file():
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"File not found: '{relative_path}'"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found: '{relative_path}'"
             )
         return safe_path.read_text(encoding="utf-8")
 
@@ -74,16 +73,15 @@ class SandboxedFilesystem:
         safe_path.write_text(content, encoding="utf-8")
         return len(content)
 
-    def list_files(self, sub_dir: str = "") -> List[str]:
+    def list_files(self, sub_dir: str = "") -> list[str]:
         """Lists files inside the sandboxed workspace relative to workspace root."""
         target_dir = self.resolve_safe_path(sub_dir) if sub_dir else self.workspace_root
         if not target_dir.exists() or not target_dir.is_dir():
             return []
 
-        results: List[str] = []
+        results: list[str] = []
         for p in target_dir.rglob("*"):
             if p.is_file():
                 rel = p.relative_to(self.workspace_root).as_posix()
                 results.append(rel)
         return sorted(results)
-

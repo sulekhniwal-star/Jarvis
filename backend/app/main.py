@@ -3,16 +3,17 @@ Project Jarvis — FastAPI Application Entry Point.
 """
 
 from contextlib import asynccontextmanager
+
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import structlog
 
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.core.database import async_session_factory, engine
+from app.middleware.trace_middleware import TraceAndAuditMiddleware
 from app.models.base import Base
 from app.services.auth_service import ensure_owner_user_exists
-from app.middleware.trace_middleware import TraceAndAuditMiddleware
 
 logger = structlog.get_logger()
 
@@ -64,9 +65,4 @@ app.include_router(api_v1_router, prefix="")
 
 @app.get("/")
 async def root():
-    return {
-        "name": settings.APP_NAME,
-        "version": "0.1.0-m1",
-        "status": "online"
-    }
-
+    return {"name": settings.APP_NAME, "version": "0.1.0-m1", "status": "online"}

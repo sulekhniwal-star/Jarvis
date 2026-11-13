@@ -12,13 +12,13 @@ _TEST_DB_URL = f"sqlite+aiosqlite:///{_TEST_DB_FILE.replace(os.sep, '/')}"
 os.environ["ENVIRONMENT"] = "testing"
 os.environ["DATABASE_URL"] = _TEST_DB_URL
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from unittest.mock import MagicMock
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-import app.models as _models_registry  # Ensures all ORM models are registered on Base.metadata
 from app.core.config import settings
 
 # Force override on loaded settings object
@@ -36,10 +36,7 @@ test_engine = create_async_engine(
     connect_args={"check_same_thread": False},
 )
 test_session_factory = async_sessionmaker(
-    bind=test_engine,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False
+    bind=test_engine, expire_on_commit=False, autocommit=False, autoflush=False
 )
 
 
@@ -68,14 +65,14 @@ async def setup_test_database():
             hashed_password=hash_password("SuperSecretPassword123!"),
             display_name="Test Owner",
             role="owner",
-            is_active=True
+            is_active=True,
         )
         user2 = User(
             username="owner_m5",
             hashed_password=hash_password("Pass12345678!"),
             display_name="Owner M5",
             role="owner",
-            is_active=True
+            is_active=True,
         )
         session.add_all([user1, user2])
         await session.commit()

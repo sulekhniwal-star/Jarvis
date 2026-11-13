@@ -6,14 +6,16 @@ Scans and redacts credentials before committing to the append-only ledger.
 
 import json
 import re
-from typing import Any, Dict, Optional
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.audit import AuditEvent
 
 # Secret redaction pattern matching JWTs, GitHub tokens, Gemini keys, and passwords
 _REDACT_PATTERN = re.compile(
     r"(gh[pousr]_[A-Za-z0-9_]{16,}|ey[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{2,}\.[A-Za-z0-9_-]{6,}|AIza[0-9A-Za-z-_]{35}|password=['\"][^'\"]+['\"])",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 
@@ -30,8 +32,8 @@ async def log_audit_event(
     actor_id: str,
     action: str,
     target_type: str,
-    target_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None
+    target_id: str | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> AuditEvent:
     """Appends an immutable audit event to the database ledger."""
     meta_str = None
@@ -45,7 +47,7 @@ async def log_audit_event(
         action=action,
         target_type=target_type,
         target_id=target_id,
-        metadata_json=meta_str
+        metadata_json=meta_str,
     )
     session.add(event)
     await session.flush()

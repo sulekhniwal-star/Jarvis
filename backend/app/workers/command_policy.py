@@ -5,19 +5,10 @@ command chaining, and unauthorized network or system utilities.
 """
 
 import shlex
-from typing import List
+
 from fastapi import HTTPException, status
 
-ALLOWED_EXECUTABLES = {
-    "pytest",
-    "python",
-    "git",
-    "npm",
-    "node",
-    "ruff",
-    "flake8",
-    "mypy"
-}
+ALLOWED_EXECUTABLES = {"pytest", "python", "git", "npm", "pnpm", "node", "ruff", "flake8", "mypy"}
 
 FORBIDDEN_PATTERNS = {
     "curl",
@@ -34,7 +25,7 @@ FORBIDDEN_PATTERNS = {
     "powershell",
     "cmd",
     "/dev/tcp",
-    "/dev/udp"
+    "/dev/udp",
 }
 
 FORBIDDEN_SHELL_CHARACTERS = {";", "&&", "||", "|", "`", "$", ">", "<", "\n"}
@@ -45,7 +36,7 @@ class CommandPolicyViolation(HTTPException):
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
 
-def validate_and_tokenize_command(command_line: str) -> List[str]:
+def validate_and_tokenize_command(command_line: str) -> list[str]:
     """
     Parses a command string into tokenized arguments.
     Enforces allowlist and forbids shell meta-characters.
@@ -63,7 +54,7 @@ def validate_and_tokenize_command(command_line: str) -> List[str]:
     try:
         tokens = shlex.split(command_line, posix=False)
     except Exception as e:
-        raise CommandPolicyViolation(f"Malformed command line: {str(e)}")
+        raise CommandPolicyViolation(f"Malformed command line: {e!s}")
 
     if not tokens:
         raise CommandPolicyViolation("Command produced no executable tokens.")
@@ -79,10 +70,13 @@ def validate_and_tokenize_command(command_line: str) -> List[str]:
     for token in tokens[1:]:
         token_lower = token.lower()
         for forbidden in FORBIDDEN_PATTERNS:
-            if forbidden == token_lower or f"/{forbidden}" in token_lower or f"\\{forbidden}" in token_lower:
+            if (
+                forbidden == token_lower
+                or f"/{forbidden}" in token_lower
+                or f"\\{forbidden}" in token_lower
+            ):
                 raise CommandPolicyViolation(
                     f"Forbidden argument or utility '{forbidden}' detected in command tokens."
                 )
 
     return tokens
-

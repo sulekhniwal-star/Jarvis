@@ -16,23 +16,20 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(
-    req: LoginRequest,
-    session: AsyncSession = Depends(get_db_session)
-):
+async def login(req: LoginRequest, session: AsyncSession = Depends(get_db_session)):
     """Authenticates the system owner and returns a signed bearer token."""
     user = await authenticate_owner(session, req.username, req.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials or unauthorized user."
+            detail="Invalid credentials or unauthorized user.",
         )
 
     token = create_access_token(subject=user.id)
     return TokenResponse(
         access_token=token,
         token_type="bearer",
-        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -40,4 +37,3 @@ async def login(
 async def get_me(current_user: User = Depends(get_current_user)):
     """Returns the authenticated owner profile."""
     return current_user
-

@@ -51,15 +51,13 @@ jobs:
           AUTHORIZED_TELEGRAM_USER_ID: ${{ secrets.AUTHORIZED_TELEGRAM_USER_ID }}
           DATABASE_URL: "sqlite+aiosqlite:///backend/jarvis.db"
           ENVIRONMENT: "production"
+          PYTHONPATH: "backend"
         run: |
-          backend/.venv/bin/python -c "
+          python -c "
           import asyncio
           from app.services.self_improvement import SelfImprovementService
           report = SelfImprovementService.analyze_codebase_health('.')
           print('Jarvis Codebase Health Report:', report)
-          " || python -c "
-          from pathlib import Path
-          print('Jarvis Autonomous Cloud Verification Complete.')
           "
 
       - name: Send Telegram Notification

@@ -3,14 +3,13 @@ Project Jarvis — Security Boundaries & Cryptographic Test Suite.
 Verifies Argon2id, Fernet encryption, payload tampering detection, and secret redaction.
 """
 
-import pytest
 from app.core.security import (
     create_access_token,
     decode_access_token,
     decrypt_secret,
     encrypt_secret,
     hash_password,
-    verify_password
+    verify_password,
 )
 from app.services.approval_service import compute_payload_hash
 from app.services.audit_service import redact_sensitive_text
@@ -66,4 +65,3 @@ def test_secret_redaction_filter():
     assert "ghp_" not in redacted
     assert "eyJhbGci" not in redacted
     assert "[REDACTED]" in redacted
-

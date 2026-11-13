@@ -3,8 +3,6 @@ Project Jarvis — Architectural Baseline Unit Test.
 Verifies system constants, state enum transitions, and security boundaries.
 """
 
-import pytest
-
 
 def test_task_lifecycle_states():
     """Verify all required task lifecycle states exist in the architecture contract."""
@@ -39,5 +37,6 @@ def test_mock_ai_provider_fixture(mock_ai_provider):
 def test_security_defaults():
     """Verify safety constraints: paid calls disabled by default, single tenant."""
     default_paid_calls = False
-    assert default_paid_calls is False, "Paid calls must default to False to guarantee ₹0 initial spend."
-
+    assert default_paid_calls is False, (
+        "Paid calls must default to False to guarantee ₹0 initial spend."
+    )

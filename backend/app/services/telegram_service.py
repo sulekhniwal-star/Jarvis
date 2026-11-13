@@ -5,15 +5,15 @@ and emergency kill-switch commands with strict single-user allowlist enforcement
 """
 
 import re
-from typing import Any, Dict, List, Optional
-from fastapi import HTTPException
+from typing import Any
+
 import httpx
-from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
+from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.task import Task
-from app.schemas.task import TaskCreate, TaskPriority, TaskStatus
+from app.schemas.task import TaskCreate, TaskPriority
 from app.services.approval_service import evaluate_approval
 from app.services.audit_service import log_audit_event
 from app.services.memory_service import MemoryService, SecurityViolationError
@@ -48,12 +48,14 @@ BOT_COMMANDS = [
 class TelegramService:
     def __init__(
         self,
-        bot_token: Optional[str] = None,
-        authorized_user_id: Optional[str] = None,
-        http_client: Optional[httpx.AsyncClient] = None
+        bot_token: str | None = None,
+        authorized_user_id: str | None = None,
+        http_client: httpx.AsyncClient | None = None,
     ):
         self.bot_token = bot_token or settings.TELEGRAM_BOT_TOKEN or "mock_telegram_bot_token"
-        self.authorized_user_id = str(authorized_user_id or settings.AUTHORIZED_TELEGRAM_USER_ID or "")
+        self.authorized_user_id = str(
+            authorized_user_id or settings.AUTHORIZED_TELEGRAM_USER_ID or ""
+        )
         self.base_url = f"https://api.telegram.org/bot{self.bot_token}"
         self._client = http_client or httpx.AsyncClient(timeout=15.0)
         self._owns_client = http_client is None
@@ -68,38 +70,27 @@ class TelegramService:
             return False
         return str(user_id) == self.authorized_user_id
 
-    async def set_bot_commands(self) -> Dict[str, Any]:
+    async def set_bot_commands(self) -> dict[str, Any]:
         """Registers the official command menu with Telegram Bot API."""
         url = f"{self.base_url}/setMyCommands"
         res = await self._client.post(url, json={"commands": BOT_COMMANDS})
         return res.json()
 
-    async def get_updates(
-        self,
-        offset: Optional[int] = None,
-        timeout: int = 30
-    ) -> Dict[str, Any]:
+    async def get_updates(self, offset: int | None = None, timeout: int = 30) -> dict[str, Any]:
         """Fetches pending updates via long polling."""
         url = f"{self.base_url}/getUpdates"
-        params: Dict[str, Any] = {"timeout": timeout}
+        params: dict[str, Any] = {"timeout": timeout}
         if offset is not None:
             params["offset"] = offset
         res = await self._client.get(url, params=params, timeout=timeout + 10.0)
         return res.json()
 
     async def send_message(
-        self,
-        chat_id: str,
-        text: str,
-        parse_mode: str = "MarkdownV2"
-    ) -> Dict[str, Any]:
+        self, chat_id: str, text: str, parse_mode: str = "MarkdownV2"
+    ) -> dict[str, Any]:
         """Dispatches an outbound notification to Telegram."""
         url = f"{self.base_url}/sendMessage"
-        payload = {
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": parse_mode
-        }
+        payload = {"chat_id": chat_id, "text": text, "parse_mode": parse_mode}
         res = await self._client.post(url, json=payload)
         return res.json()
 
@@ -108,9 +99,9 @@ class TelegramService:
         chat_id: str,
         task_id: str,
         title: str,
-        pr_url: Optional[str] = None,
-        test_summary: str = "5 passed (exit code 0)"
-    ) -> Dict[str, Any]:
+        pr_url: str | None = None,
+        test_summary: str = "5 passed (exit code 0)",
+    ) -> dict[str, Any]:
         """Dispatches a task completion report with PR link and test badge."""
         msg = (
             f"✅ *Task Completed Successfully*\n\n"
@@ -120,7 +111,7 @@ class TelegramService:
         )
         if pr_url:
             msg += f"\n🔗 *Pull Request:* [View on GitHub]({escape_markdown_v2(pr_url)})\n"
-        msg += f"\n_Review diff and approve merge via Dashboard._"
+        msg += "\n_Review diff and approve merge via Dashboard._"
 
         return await self.send_message(chat_id, msg)
 
@@ -130,8 +121,8 @@ class TelegramService:
         approval_id: str,
         action_type: str,
         payload_summary: str,
-        dashboard_url: str = "http://localhost:3000"
-    ) -> Dict[str, Any]:
+        dashboard_url: str = "http://localhost:3000",
+    ) -> dict[str, Any]:
         """Dispatches a high-priority approval notification."""
         msg = (
             f"⚠️ *Human Approval Required*\n\n"
@@ -145,10 +136,10 @@ class TelegramService:
 
     async def handle_incoming_update(
         self,
-        update_data: Dict[str, Any],
+        update_data: dict[str, Any],
         session: AsyncSession,
-        owner_user_id: str = "owner_default"
-    ) -> Optional[str]:
+        owner_user_id: str = "owner_default",
+    ) -> str | None:
         """
         Processes an incoming Telegram update.
         Rejects unauthorized users silently and dispatches valid commands.
@@ -161,14 +152,14 @@ class TelegramService:
 
         # 1. Identity allowlist check
         if not self.is_authorized_user(sender_id):
-            logger.warn("Rejected unauthorized Telegram message", sender_id=sender_id)
+            logger.warning("Rejected unauthorized Telegram message", sender_id=sender_id)
             await log_audit_event(
                 session=session,
                 actor_type="unauthorized_telegram",
                 actor_id=sender_id,
                 action="UNAUTHORIZED_TELEGRAM_MESSAGE_DROPPED",
                 target_type="telegram",
-                metadata={"text_snippet": text[:30]}
+                metadata={"text_snippet": text[:30]},
             )
             await session.commit()
             return None
@@ -200,14 +191,16 @@ class TelegramService:
             return "help_handled"
 
         elif cmd == "/tasks":
-            tasks, total = await list_tasks(session, limit=5)
+            tasks, total = await list_tasks(session, page_size=5)
             if not tasks:
                 await self.send_message(chat_id, "ℹ️ No tasks currently in the system.")
                 return "tasks_empty"
 
             lines = ["📋 *Recent Tasks*\n"]
             for t in tasks:
-                lines.append(f"• `{t.id[:8]}` — *{escape_markdown_v2(t.title[:40])}* [{escape_markdown_v2(t.status)}]")
+                lines.append(
+                    f"• `{t.id[:8]}` — *{escape_markdown_v2(t.title[:40])}* [{escape_markdown_v2(t.status)}]"
+                )
             await self.send_message(chat_id, "\n".join(lines))
             return "tasks_handled"
 
@@ -215,15 +208,13 @@ class TelegramService:
             parts = text.split(maxsplit=1)
             prompt = parts[1].strip() if len(parts) > 1 else ""
             if not prompt:
-                await self.send_message(chat_id, "Usage: `/task <description of coding assignment>`")
+                await self.send_message(
+                    chat_id, "Usage: `/task <description of coding assignment>`"
+                )
                 return "task_empty"
 
             # Create persistent task
-            task_in = TaskCreate(
-                title=prompt[:80],
-                description=prompt,
-                priority=TaskPriority.HIGH
-            )
+            task_in = TaskCreate(title=prompt[:80], description=prompt, priority=TaskPriority.HIGH)
             task = await create_task(session, task_in, user_id=owner_user_id)
             await session.commit()
 
@@ -241,16 +232,18 @@ class TelegramService:
             parts = text.split(maxsplit=1)
             if len(parts) > 1:
                 task_id = parts[1].strip()
-                task = await get_task_by_id(session, task_id)
-                if not task:
-                    await self.send_message(chat_id, f"❌ Task `{escape_markdown_v2(task_id)}` not found.")
+                queried_task = await get_task_by_id(session, task_id)
+                if not queried_task:
+                    await self.send_message(
+                        chat_id, f"❌ Task `{escape_markdown_v2(task_id)}` not found."
+                    )
                     return "task_not_found"
                 reply = (
                     f"📊 *Task Status*\n\n"
-                    f"*ID:* `{escape_markdown_v2(task.id)}`\n"
-                    f"*Title:* {escape_markdown_v2(task.title)}\n"
-                    f"*Status:* `{escape_markdown_v2(task.status)}`\n"
-                    f"*Steps:* {len(task.steps)}"
+                    f"*ID:* `{escape_markdown_v2(queried_task.id)}`\n"
+                    f"*Title:* {escape_markdown_v2(queried_task.title)}\n"
+                    f"*Status:* `{escape_markdown_v2(queried_task.status)}`\n"
+                    f"*Steps:* {len(queried_task.steps)}"
                 )
                 await self.send_message(chat_id, reply)
                 return "status_handled"
@@ -262,7 +255,9 @@ class TelegramService:
             parts = text.split(maxsplit=1)
             content = parts[1].strip() if len(parts) > 1 else ""
             if ":" not in content:
-                await self.send_message(chat_id, "Usage: `/remember <key>: <preference or convention>`")
+                await self.send_message(
+                    chat_id, "Usage: `/remember <key>: <preference or convention>`"
+                )
                 return "remember_invalid_format"
             key, val = content.split(":", 1)
             try:
@@ -272,15 +267,17 @@ class TelegramService:
                     category="preference",
                     key=key.strip(),
                     content=val.strip(),
-                    actor_id=sender_id
+                    actor_id=sender_id,
                 )
                 await self.send_message(
                     chat_id,
-                    f"🧠 *Preference Saved to Memory*\n\n*Key:* `{escape_markdown_v2(mem.key)}`\n*Content:* {escape_markdown_v2(mem.content)}"
+                    f"🧠 *Preference Saved to Memory*\n\n*Key:* `{escape_markdown_v2(mem.key)}`\n*Content:* {escape_markdown_v2(mem.content)}",
                 )
                 return "remember_handled"
             except SecurityViolationError as e:
-                await self.send_message(chat_id, f"🚫 *Security Block:* {escape_markdown_v2(str(e))}")
+                await self.send_message(
+                    chat_id, f"🚫 *Security Block:* {escape_markdown_v2(str(e))}"
+                )
                 return "remember_security_blocked"
 
         elif cmd == "/approve":
@@ -295,10 +292,13 @@ class TelegramService:
                     approval_id=approval_id,
                     decision="APPROVED",
                     decided_by_user_id=owner_user_id,
-                    reason="Approved via authorized Telegram command"
+                    reason="Approved via authorized Telegram command",
                 )
                 await session.commit()
-                await self.send_message(chat_id, f"✅ *Approval Granted*\nAction `{escape_markdown_v2(appr.action_type)}` approved.")
+                await self.send_message(
+                    chat_id,
+                    f"✅ *Approval Granted*\nAction `{escape_markdown_v2(appr.action_type)}` approved.",
+                )
                 return "approve_handled"
             except HTTPException as e:
                 await self.send_message(chat_id, f"❌ *Error:* {escape_markdown_v2(e.detail)}")
@@ -316,10 +316,13 @@ class TelegramService:
                     approval_id=approval_id,
                     decision="REJECTED",
                     decided_by_user_id=owner_user_id,
-                    reason="Rejected via Telegram command"
+                    reason="Rejected via Telegram command",
                 )
                 await session.commit()
-                await self.send_message(chat_id, f"🛑 *Action Rejected*\nAction `{escape_markdown_v2(appr.action_type)}` rejected.")
+                await self.send_message(
+                    chat_id,
+                    f"🛑 *Action Rejected*\nAction `{escape_markdown_v2(appr.action_type)}` rejected.",
+                )
                 return "reject_handled"
             except HTTPException as e:
                 await self.send_message(chat_id, f"❌ *Error:* {escape_markdown_v2(e.detail)}")
@@ -338,5 +341,7 @@ class TelegramService:
             await self.send_message(chat_id, reply)
             return "emergency_stop_handled"
 
-        await self.send_message(chat_id, "❓ Unknown command. Type /help to see available commands.")
+        await self.send_message(
+            chat_id, "❓ Unknown command. Type /help to see available commands."
+        )
         return "unrecognized_command"

@@ -5,6 +5,7 @@ Project Jarvis — Health and Readiness Probes.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db_session
 
 router = APIRouter(tags=["Health"])
@@ -24,7 +25,5 @@ async def readiness(session: AsyncSession = Depends(get_db_session)):
         return {"status": "ready", "database": "connected"}
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Database unreachable: {str(e)}"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database unreachable: {e!s}"
         )
-

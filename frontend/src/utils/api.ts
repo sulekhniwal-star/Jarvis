@@ -32,34 +32,26 @@ export async function getAuthToken(forceRefresh = false): Promise<string | null>
 
   if (cachedToken && !forceRefresh) return cachedToken;
 
-  const passwordsToTry = [
-    DEFAULT_CREDENTIALS.password,
-    "jarvis_secure_initial_password_2026",
-    "JarvisOwnerSecret123!",
-  ];
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: DEFAULT_CREDENTIALS.username,
+        password: DEFAULT_CREDENTIALS.password,
+      }),
+    });
 
-  for (const pwd of passwordsToTry) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: DEFAULT_CREDENTIALS.username,
-          password: pwd,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        cachedToken = data.access_token;
-        if (typeof window !== "undefined" && cachedToken) {
-          localStorage.setItem("jarvis_access_token", cachedToken);
-        }
-        return cachedToken;
+    if (res.ok) {
+      const data = await res.json();
+      cachedToken = data.access_token;
+      if (typeof window !== "undefined" && cachedToken) {
+        localStorage.setItem("jarvis_access_token", cachedToken);
       }
-    } catch (err) {
-      console.warn("API login attempt failed:", err);
+      return cachedToken;
     }
+  } catch (err) {
+    console.warn("API login attempt failed:", err);
   }
 
   return null;
@@ -267,7 +259,7 @@ export async function createTaskApi(title: string, description: string, priority
 
 export async function fetchApprovals(): Promise<any[]> {
   try {
-    const res = await apiRequest("/approvals?status=PENDING");
+    const res = await apiRequest("/approvals?status=AWAITING_APPROVAL");
     return Array.isArray(res) ? res : res.items || [];
   } catch (err) {
     console.debug("Approvals endpoint unreachable:", err);
@@ -299,6 +291,12 @@ export async function rejectTaskApi(taskId: string): Promise<any> {
 
 export async function emergencyStopApi(): Promise<any> {
   return await apiRequest("/system/emergency-stop", {
+    method: "POST",
+  });
+}
+
+export async function resumeSystemApi(): Promise<any> {
+  return await apiRequest("/system/resume", {
     method: "POST",
   });
 }

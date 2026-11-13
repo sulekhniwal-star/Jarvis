@@ -4,14 +4,14 @@ Verifies read-only repository health inspection, protected security component gu
 and end-to-end self-enhancement workflows with mandatory human approval gating.
 """
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
 import pytest
 
 from app.services.self_improvement import (
-    SelfImprovementService,
     ProtectedComponentViolation,
-    PROTECTED_CORE_COMPONENTS
+    SelfImprovementService,
 )
 from app.workers.runner import LocalSandboxRunner
 
@@ -72,9 +72,7 @@ async def test_end_to_end_supervised_self_improvement_workflow():
         # 1. Create a module to improve: utils.py
         utils_py = workspace / "utils.py"
         utils_py.write_text(
-            "def calculate_total(prices):\n"
-            "    return sum(prices)\n",
-            encoding="utf-8"
+            "def calculate_total(prices):\n    return sum(prices)\n", encoding="utf-8"
         )
 
         test_utils_py = workspace / "test_utils.py"
@@ -86,7 +84,7 @@ async def test_end_to_end_supervised_self_improvement_workflow():
             "def test_calculate_total():\n"
             "    assert calculate_total([10, 20, 30]) == 60\n"
             "    assert calculate_total([]) == 0\n",
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
         # 2. Validate target is non-protected
@@ -107,6 +105,7 @@ async def test_end_to_end_supervised_self_improvement_workflow():
 
         # 4. Verify tests pass via runner using active python venv
         import sys
+
         test_cmd = f"{sys.executable} -m pytest test_utils.py"
         test_res = await runner.execute_command(test_cmd)
         assert test_res.exit_code == 0
@@ -118,7 +117,7 @@ async def test_end_to_end_supervised_self_improvement_workflow():
             description="Enhanced `calculate_total` with PEP 484 type annotations.",
             changed_files=["utils.py"],
             test_passed=(test_res.exit_code == 0),
-            test_output=test_res.stdout
+            test_output=test_res.stdout,
         )
 
         # 6. Verify PR enforcement rules

@@ -5,32 +5,32 @@ filesystem sandbox containment, and AES-256 encrypted backup/restore round-trip.
 """
 
 import os
-from pathlib import Path
 import sqlite3
 import sys
 import tempfile
+from pathlib import Path
+
 import pytest
-from httpx import AsyncClient
 from cryptography.fernet import InvalidToken
+from httpx import AsyncClient
 
 _repo_root = Path(__file__).resolve().parent.parent.parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
-from app.models.memory import Memory
-from app.services.memory_service import MemoryService, SecurityViolationError, contains_secret
-from app.workers.command_policy import validate_and_tokenize_command, CommandPolicyViolation
-from app.workers.filesystem import SandboxedFilesystem, SecurityException
 from scripts.backup_db import create_backup, generate_backup_key
 from scripts.restore_db import restore_backup
+
+from app.services.memory_service import MemoryService, SecurityViolationError, contains_secret
+from app.workers.command_policy import CommandPolicyViolation, validate_and_tokenize_command
+from app.workers.filesystem import SandboxedFilesystem, SecurityException
 from tests.conftest import test_session_factory as _session_factory
 
 
 @pytest.fixture
 async def auth_headers(client: AsyncClient):
     res = await client.post(
-        "/api/v1/auth/login",
-        json={"username": "test_owner", "password": "SuperSecretPassword123!"}
+        "/api/v1/auth/login", json={"username": "test_owner", "password": "SuperSecretPassword123!"}
     )
     assert res.status_code == 200
     token = res.json()["access_token"]
@@ -63,7 +63,7 @@ async def test_memory_secret_scanning_rejection():
                     category="preference",
                     key="leak_test",
                     content=f"Remember to use key: {secret}",
-                    actor_id="test_owner"
+                    actor_id="test_owner",
                 )
 
 
@@ -83,7 +83,7 @@ async def test_memory_decision_lineage_and_superseding():
             category="decision",
             key="database_backend",
             content="Use SQLite file for early local prototype.",
-            actor_id="test_owner"
+            actor_id="test_owner",
         )
         assert m1.status == "active"
         assert m1.superseded_by is None
@@ -96,7 +96,7 @@ async def test_memory_decision_lineage_and_superseding():
             category="decision",
             key="database_backend",
             content="Adopt Supabase Managed PostgreSQL for multi-tenant cloud release.",
-            actor_id="test_owner"
+            actor_id="test_owner",
         )
         assert m2.status == "active"
 
@@ -111,7 +111,7 @@ async def test_memory_decision_lineage_and_superseding():
             scope_type="project",
             scope_id="proj-123",
             category="decision",
-            key="database_backend"
+            key="database_backend",
         )
         assert len(active_list) == 1
         assert active_list[0].id == m2.id
@@ -128,8 +128,8 @@ async def test_memory_api_endpoints(client: AsyncClient, auth_headers: dict):
             "scope_type": "shared",
             "category": "convention",
             "key": "python_formatter",
-            "content": "Use Ruff for linting and formatting at 100 char line limit."
-        }
+            "content": "Use Ruff for linting and formatting at 100 char line limit.",
+        },
     )
     assert create_res.status_code == 201
     mem_id = create_res.json()["id"]
@@ -142,8 +142,8 @@ async def test_memory_api_endpoints(client: AsyncClient, auth_headers: dict):
             "scope_type": "shared",
             "category": "preference",
             "key": "api_key",
-            "content": "Secret is ghp_123456789012345678901234567890123456"
-        }
+            "content": "Secret is ghp_123456789012345678901234567890123456",
+        },
     )
     assert secret_res.status_code == 400
 
@@ -188,7 +188,7 @@ def test_filesystem_sandbox_blocks_directory_traversal():
             "..\\..\\Windows\\System32\\cmd.exe",
             "/etc/shadow",
             "C:\\Users\\Administrator\\.ssh\\id_rsa",
-            "nested/../../../outside.py"
+            "nested/../../../outside.py",
         ]
 
         for p in malicious_paths:

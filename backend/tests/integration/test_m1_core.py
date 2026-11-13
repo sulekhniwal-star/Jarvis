@@ -7,15 +7,12 @@ Uses StaticPool in-memory SQLite and httpx AsyncClient for 100% offline, determi
 import pytest
 from httpx import AsyncClient
 
-from app.main import app
-
 
 @pytest.fixture
 async def auth_headers(client: AsyncClient):
     """Logs in as the test owner and returns Authorization header."""
     res = await client.post(
-        "/api/v1/auth/login",
-        json={"username": "test_owner", "password": "SuperSecretPassword123!"}
+        "/api/v1/auth/login", json={"username": "test_owner", "password": "SuperSecretPassword123!"}
     )
     assert res.status_code == 200
     token = res.json()["access_token"]
@@ -38,8 +35,7 @@ async def test_health_endpoints(client: AsyncClient):
 async def test_auth_login_failure(client: AsyncClient):
     """Verify unauthorized login attempt fails with 401."""
     res = await client.post(
-        "/api/v1/auth/login",
-        json={"username": "test_owner", "password": "WrongPassword!"}
+        "/api/v1/auth/login", json={"username": "test_owner", "password": "WrongPassword!"}
     )
     assert res.status_code == 401
 
@@ -59,7 +55,7 @@ async def test_task_creation_and_steps_planning(client: AsyncClient, auth_header
         "title": "Fix memory leak in buffer pool",
         "description": "Buffer objects are not released during high connection turnover.",
         "priority": "HIGH",
-        "idempotency_key": "unique-task-001"
+        "idempotency_key": "unique-task-001",
     }
     res = await client.post("/api/v1/tasks", json=payload, headers=auth_headers)
     assert res.status_code == 201
@@ -82,12 +78,12 @@ async def test_task_retrieval_and_listing(client: AsyncClient, auth_headers: dic
     await client.post(
         "/api/v1/tasks",
         json={"title": "Task One", "description": "Description one", "priority": "LOW"},
-        headers=auth_headers
+        headers=auth_headers,
     )
     await client.post(
         "/api/v1/tasks",
         json={"title": "Task Two", "description": "Description two", "priority": "HIGH"},
-        headers=auth_headers
+        headers=auth_headers,
     )
 
     list_res = await client.get("/api/v1/tasks", headers=auth_headers)
@@ -101,7 +97,7 @@ async def test_task_cancellation(client: AsyncClient, auth_headers: dict):
     res = await client.post(
         "/api/v1/tasks",
         json={"title": "Task to cancel", "description": "This will be cancelled."},
-        headers=auth_headers
+        headers=auth_headers,
     )
     task_id = res.json()["id"]
 
@@ -117,7 +113,6 @@ async def test_unauthenticated_requests_blocked(client: AsyncClient):
     assert res.status_code == 401
 
     post_res = await client.post(
-        "/api/v1/tasks",
-        json={"title": "Unauthorized", "description": "Should fail"}
+        "/api/v1/tasks", json={"title": "Unauthorized", "description": "Should fail"}
     )
     assert post_res.status_code == 401

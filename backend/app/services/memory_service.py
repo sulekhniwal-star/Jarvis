@@ -6,8 +6,9 @@ Maintains historical decision lineage via supersession links.
 """
 
 import re
-from typing import Any, Dict, List, Optional
-from sqlalchemy import desc, select, update
+from typing import Any
+
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.memory import Memory
@@ -15,14 +16,16 @@ from app.services.audit_service import log_audit_event
 
 # Patterns matching sensitive secrets, API keys, tokens, or private keys
 _SECRET_PATTERNS = [
-    re.compile(r"gh[pous]_[A-Za-z0-9_]{36,255}"),                 # GitHub tokens
+    re.compile(r"gh[pous]_[A-Za-z0-9_]{36,255}"),  # GitHub tokens
     re.compile(r"eyJ[A-Za-z0-9-_]{10,}\.eyJ[A-Za-z0-9-_]{2,}\.[A-Za-z0-9-_]+"),  # JWT
-    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),            # Private keys
-    re.compile(r"AKIA[0-9A-Z]{16}"),                              # AWS Access Key
-    re.compile(r"AIza[0-9A-Za-z-_]{35}"),                         # Google API key
-    re.compile(r"sk-[a-zA-Z0-9_-]{20,}"),                         # OpenAI / Anthropic / generic secret key
-    re.compile(r"\b[0-9]{8,10}:[a-zA-Z0-9_-]{35}\b"),             # Telegram Bot token
-    re.compile(r"(?i)(password|secret|api[_-]?key)\s*[:=]\s*['\"][^\s'\"]{6,}['\"]"),  # Inline credentials
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),  # Private keys
+    re.compile(r"AKIA[0-9A-Z]{16}"),  # AWS Access Key
+    re.compile(r"AIza[0-9A-Za-z-_]{35}"),  # Google API key
+    re.compile(r"sk-[a-zA-Z0-9_-]{20,}"),  # OpenAI / Anthropic / generic secret key
+    re.compile(r"\b[0-9]{8,10}:[a-zA-Z0-9_-]{35}\b"),  # Telegram Bot token
+    re.compile(
+        r"(?i)(password|secret|api[_-]?key)\s*[:=]\s*['\"][^\s'\"]{6,}['\"]"
+    ),  # Inline credentials
 ]
 
 
@@ -35,7 +38,6 @@ def contains_secret(text: str) -> bool:
 
 class SecurityViolationError(Exception):
     """Raised when an operation violates security policy (e.g. attempting to store secrets)."""
-    pass
 
 
 class MemoryService:
@@ -50,10 +52,10 @@ class MemoryService:
         category: str,
         key: str,
         content: str,
-        scope_id: Optional[str] = None,
+        scope_id: str | None = None,
         source: str = "owner_instruction",
         confidence: float = 1.0,
-        actor_id: str = "owner"
+        actor_id: str = "owner",
     ) -> Memory:
         """
         Stores a memory record.
@@ -70,7 +72,7 @@ class MemoryService:
                 action="MEMORY_SECRET_STORAGE_BLOCKED",
                 target_type="memory",
                 target_id=f"{scope_type}:{key}",
-                metadata={"reason": "Contains credential or secret pattern"}
+                metadata={"reason": "Contains credential or secret pattern"},
             )
             await session.commit()
             raise SecurityViolationError(
@@ -78,15 +80,12 @@ class MemoryService:
             )
 
         # 2. Look for existing active record for the same key & scope
-        stmt = (
-            select(Memory)
-            .where(
-                Memory.scope_type == scope_type,
-                Memory.scope_id == scope_id,
-                Memory.category == category,
-                Memory.key == key,
-                Memory.status == "active"
-            )
+        stmt = select(Memory).where(
+            Memory.scope_type == scope_type,
+            Memory.scope_id == scope_id,
+            Memory.category == category,
+            Memory.key == key,
+            Memory.status == "active",
         )
         res = await session.execute(stmt)
         existing = res.scalar_one_or_none()
@@ -100,7 +99,7 @@ class MemoryService:
             content=content,
             source=source,
             confidence=confidence,
-            status="active"
+            status="active",
         )
         session.add(new_memory)
         await session.flush()  # Generate new_memory.id
@@ -122,8 +121,8 @@ class MemoryService:
                 "scope_id": scope_id,
                 "category": category,
                 "key": key,
-                "superseded_previous_id": existing.id if existing else None
-            }
+                "superseded_previous_id": existing.id if existing else None,
+            },
         )
         await session.commit()
         await session.refresh(new_memory)
@@ -132,11 +131,11 @@ class MemoryService:
     @staticmethod
     async def get_active_memories(
         session: AsyncSession,
-        scope_type: Optional[str] = None,
-        scope_id: Optional[str] = None,
-        category: Optional[str] = None,
-        key: Optional[str] = None
-    ) -> List[Memory]:
+        scope_type: str | None = None,
+        scope_id: str | None = None,
+        category: str | None = None,
+        key: str | None = None,
+    ) -> list[Memory]:
         """
         Queries active memory records matching the filter criteria.
         """
@@ -156,33 +155,25 @@ class MemoryService:
         return list(result.scalars().all())
 
     @staticmethod
-    async def get_context_for_project(
-        session: AsyncSession,
-        project_id: str
-    ) -> Dict[str, Any]:
+    async def get_context_for_project(session: AsyncSession, project_id: str) -> dict[str, Any]:
         """
         Retrieves combined long-term memory context for a project:
         - Project-specific conventions, architecture decisions, and lessons learned.
         - Shared owner preferences (overridden by project-specific conventions if key collides).
         """
         # Fetch shared active preferences
-        shared_stmt = select(Memory).where(
-            Memory.scope_type == "shared",
-            Memory.status == "active"
-        )
+        shared_stmt = select(Memory).where(Memory.scope_type == "shared", Memory.status == "active")
         shared_res = await session.execute(shared_stmt)
         shared_records = shared_res.scalars().all()
 
         # Fetch project-specific active memories
         proj_stmt = select(Memory).where(
-            Memory.scope_type == "project",
-            Memory.scope_id == project_id,
-            Memory.status == "active"
+            Memory.scope_type == "project", Memory.scope_id == project_id, Memory.status == "active"
         )
         proj_res = await session.execute(proj_stmt)
         proj_records = proj_res.scalars().all()
 
-        context: Dict[str, Any] = {
+        context: dict[str, Any] = {
             "preferences": {},
             "conventions": {},
             "decisions": {},
@@ -204,10 +195,8 @@ class MemoryService:
 
     @staticmethod
     async def archive_memory(
-        session: AsyncSession,
-        memory_id: str,
-        actor_id: str = "owner"
-    ) -> Optional[Memory]:
+        session: AsyncSession, memory_id: str, actor_id: str = "owner"
+    ) -> Memory | None:
         """Marks a memory record as archived so it is excluded from active prompts."""
         stmt = select(Memory).where(Memory.id == memory_id)
         result = await session.execute(stmt)
@@ -222,7 +211,7 @@ class MemoryService:
             actor_id=actor_id,
             action="ARCHIVE_MEMORY",
             target_type="memory",
-            target_id=memory.id
+            target_id=memory.id,
         )
         await session.commit()
         await session.refresh(memory)

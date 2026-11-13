@@ -4,15 +4,14 @@ Supports PostgreSQL (Supabase/Docker) and SQLite (Local/Test).
 Automatically validates and ensures filesystem paths for SQLite with resilient fallback.
 """
 
-import os
 import logging
+import os
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine
-)
+from typing import Any
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from app.core.config import settings
 
 logger = logging.getLogger("jarvis.database")
@@ -53,22 +52,26 @@ def resolve_database_url(url: str) -> str:
             logger.info(f"Database successfully relocated to: {fallback_file}")
             return f"sqlite+aiosqlite:///{fallback_file.as_posix()}"
         except Exception as fallback_exc:
-            logger.error(f"Fallback directory creation failed: {fallback_exc}. Using local directory.")
+            logger.error(
+                f"Fallback directory creation failed: {fallback_exc}. Using local directory."
+            )
             return "sqlite+aiosqlite:///./jarvis_master.db"
 
 
 resolved_database_url = resolve_database_url(settings.DATABASE_URL)
 
 # Engine configuration
-engine_kwargs = {"echo": settings.DEBUG}
+engine_kwargs: dict[str, Any] = {"echo": settings.DEBUG}
 if "sqlite" in resolved_database_url:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 else:
-    engine_kwargs.update({
-        "pool_size": settings.DATABASE_POOL_SIZE,
-        "max_overflow": settings.DATABASE_MAX_OVERFLOW,
-        "pool_pre_ping": True,
-    })
+    engine_kwargs.update(
+        {
+            "pool_size": settings.DATABASE_POOL_SIZE,
+            "max_overflow": settings.DATABASE_MAX_OVERFLOW,
+            "pool_pre_ping": True,
+        }
+    )
 
 engine = create_async_engine(resolved_database_url, **engine_kwargs)
 

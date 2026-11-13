@@ -3,7 +3,6 @@ Project Jarvis — GitHub Fleet & Project Audit API Endpoints.
 Allows Jarvis to inspect, research, audit, and auto-improve user repositories.
 """
 
-from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,16 +18,19 @@ router = APIRouter(prefix="/projects", tags=["Project Auditor"])
 
 
 @router.get("/repos")
-async def list_user_repos():
+async def list_user_repos(current_user: User = Depends(get_current_user)):
     """
     Discovers all user repositories from GitHub, categorized by priority.
     """
     auditor = ProjectAuditorService()
-    return await auditor.list_fleet_repositories()
+    try:
+        return await auditor.list_fleet_repositories()
+    finally:
+        await auditor.close()
 
 
 @router.get("/audit/{repo_name}")
-async def audit_repository(repo_name: str):
+async def audit_repository(repo_name: str, current_user: User = Depends(get_current_user)):
     """
     Runs a deep architectural research and AI gap analysis on a target repository.
     """
@@ -38,22 +40,28 @@ async def audit_repository(repo_name: str):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to audit repository '{repo_name}': {str(e)}"
+            detail=f"Failed to audit repository '{repo_name}': {e!s}",
         )
+    finally:
+        await auditor.close()
 
 
 @router.post("/improve/{repo_name}")
 async def auto_improve_project(
     repo_name: str,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    session: AsyncSession = Depends(get_db_session),
 ):
     """
     Dispatches a high-priority autonomous coding task in Jarvis to
     complete unfinished features and improve the target repository.
     """
     auditor = ProjectAuditorService()
-    report = await auditor.audit_repository_deep(repo_name)
+    try:
+        report = await auditor.audit_repository_deep(repo_name)
+    finally:
+        await auditor.close()
+
     analysis = report.get("analysis", {})
     summary = analysis.get("summary", "Complete missing components and improve repo health.")
 
@@ -65,7 +73,7 @@ async def auto_improve_project(
             f"Missing Components:\n{analysis.get('missing_components', [])}\n\n"
             f"Implementation Directive: Review code, write missing tests, and prepare pull request."
         ),
-        priority=TaskPriority.HIGH if "jarvis" not in repo_name.lower() else TaskPriority.CRITICAL
+        priority=TaskPriority.HIGH if "jarvis" not in repo_name.lower() else TaskPriority.CRITICAL,
     )
 
     task = await create_task(session, task_in, user_id=current_user.id)
@@ -75,19 +83,19 @@ async def auto_improve_project(
         "task_id": task.id,
         "repo_name": repo_name,
         "priority": task.priority,
-        "planned_steps": len(task.steps)
+        "planned_steps": len(task.steps),
     }
 
 
 @router.post("/self-improve")
 async def self_improve_jarvis(
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db_session)
 ):
     """
     Highest priority directive: Triggers self-audit and improvement on Project Jarvis itself.
     """
     from pathlib import Path
+
     repo_path = Path(__file__).resolve().parent.parent.parent.parent
 
     # 1. Run local health self-analysis
@@ -102,7 +110,7 @@ async def self_improve_jarvis(
             f"Components Analyzed: {len(health_report.get('components', []))}\n"
             f"Action: Implement architectural hardening, security audit checks, and optimize response pipelines."
         ),
-        priority=TaskPriority.CRITICAL
+        priority=TaskPriority.CRITICAL,
     )
 
     task = await create_task(session, task_in, user_id=current_user.id)
@@ -112,5 +120,5 @@ async def self_improve_jarvis(
         "status": "SELF_IMPROVEMENT_DISPATCHED",
         "task_id": task.id,
         "health_score": health_report.get("health_score"),
-        "priority": "CRITICAL"
+        "priority": "CRITICAL",
     }

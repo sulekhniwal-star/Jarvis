@@ -4,7 +4,8 @@ Builds the LangGraph StateGraph, defines conditional routing,
 and sets up durable checkpointers with human-in-the-loop interrupt support.
 """
 
-from typing import Literal, Optional
+from typing import Literal
+
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
@@ -17,7 +18,7 @@ from app.orchestrator.nodes import (
     intake_node,
     planner_node,
     pr_generator_node,
-    test_runner_node
+    test_runner_node,
 )
 from app.orchestrator.state import TaskGraphState
 
@@ -57,7 +58,7 @@ def route_after_diagnoser(state: TaskGraphState) -> Literal["executor", "failed"
     return "failed"
 
 
-def build_task_workflow(checkpointer: Optional[BaseCheckpointSaver] = None):
+def build_task_workflow(checkpointer: BaseCheckpointSaver | None = None):
     """Constructs and compiles the complete task lifecycle graph."""
     builder = StateGraph(TaskGraphState)
 
@@ -76,42 +77,23 @@ def build_task_workflow(checkpointer: Optional[BaseCheckpointSaver] = None):
     builder.add_edge("intake", "planner")
 
     builder.add_conditional_edges(
-        "planner",
-        route_after_planner,
-        {
-            "approval_gate": "approval_gate",
-            "executor": "executor"
-        }
+        "planner", route_after_planner, {"approval_gate": "approval_gate", "executor": "executor"}
     )
 
     builder.add_conditional_edges(
         "approval_gate",
         route_after_approval_gate,
-        {
-            "executor": "executor",
-            "failed": "failed",
-            "__end__": END
-        }
+        {"executor": "executor", "failed": "failed", "__end__": END},
     )
 
     builder.add_edge("executor", "tester")
 
     builder.add_conditional_edges(
-        "tester",
-        route_after_tester,
-        {
-            "pr_generator": "pr_generator",
-            "diagnoser": "diagnoser"
-        }
+        "tester", route_after_tester, {"pr_generator": "pr_generator", "diagnoser": "diagnoser"}
     )
 
     builder.add_conditional_edges(
-        "diagnoser",
-        route_after_diagnoser,
-        {
-            "executor": "executor",
-            "failed": "failed"
-        }
+        "diagnoser", route_after_diagnoser, {"executor": "executor", "failed": "failed"}
     )
 
     builder.add_edge("pr_generator", END)
@@ -121,8 +103,4 @@ def build_task_workflow(checkpointer: Optional[BaseCheckpointSaver] = None):
     saver = checkpointer if checkpointer is not None else MemorySaver()
 
     # Compile with human-in-the-loop interrupt configuration
-    return builder.compile(
-        checkpointer=saver,
-        interrupt_before=["approval_gate"]
-    )
-
+    return builder.compile(checkpointer=saver, interrupt_before=["approval_gate"])

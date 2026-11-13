@@ -3,12 +3,12 @@ Project Jarvis — Task Schemas.
 """
 
 from datetime import datetime
-from enum import Enum
-from typing import List, Optional
+from enum import StrEnum
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     PENDING = "PENDING"
     PLANNING = "PLANNING"
     AWAITING_APPROVAL = "AWAITING_APPROVAL"
@@ -22,7 +22,7 @@ class TaskStatus(str, Enum):
     CANCELLED = "CANCELLED"
 
 
-class TaskPriority(str, Enum):
+class TaskPriority(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -33,14 +33,14 @@ class TaskCreate(BaseModel):
     title: str = Field(..., min_length=3, max_length=255)
     description: str = Field(..., min_length=5)
     priority: TaskPriority = TaskPriority.MEDIUM
-    project_id: Optional[str] = None
-    idempotency_key: Optional[str] = Field(None, max_length=100)
+    project_id: str | None = None
+    idempotency_key: str | None = None
 
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str] = Field(None, min_length=5)
-    priority: Optional[TaskPriority] = None
+    title: str | None = Field(None, min_length=3, max_length=255)
+    description: str | None = Field(None, min_length=5)
+    priority: TaskPriority | None = None
 
 
 class TaskStepResponse(BaseModel):
@@ -49,12 +49,12 @@ class TaskStepResponse(BaseModel):
     id: str
     sequence: int
     name: str
-    description: Optional[str] = None
-    tool_name: Optional[str] = None
+    description: str | None = None
+    tool_name: str | None = None
     status: str
-    result_summary: Optional[str] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    result_summary: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
 class TaskResponse(BaseModel):
@@ -65,17 +65,17 @@ class TaskResponse(BaseModel):
     description: str
     status: TaskStatus
     priority: TaskPriority
-    project_id: Optional[str] = None
-    error_message: Optional[str] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    project_id: str | None = None
+    error_message: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
-    steps: List[TaskStepResponse] = []
+    steps: list[TaskStepResponse] = []
 
 
 class TaskListResponse(BaseModel):
-    items: List[TaskResponse]
+    items: list[TaskResponse]
     total: int
     page: int
     page_size: int

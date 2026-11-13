@@ -3,7 +3,7 @@ Project Jarvis — Audit Schemas.
 """
 
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -13,10 +13,9 @@ class AuditEventResponse(BaseModel):
     actor_id: str
     action: str
     target_type: str
-    target_id: Optional[str] = None
-    metadata_json: Optional[str] = None
+    target_id: str | None = None
+    metadata_json: str | None = None
     created_at: datetime
 
     class Config:
         from_attributes = True
-

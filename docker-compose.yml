@@ -3,8 +3,8 @@ version: "3.9"
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: ../docker/Dockerfile.backend
+      context: .
+      dockerfile: docker/Dockerfile.backend
     container_name: jarvis-backend
     restart: unless-stopped
     ports:

@@ -4,18 +4,18 @@ Manages repository access validation, branch creation, commits,
 and pull request generation with structured test evidence.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import httpx
 from fastapi import HTTPException, status
-from app.services.audit_service import log_audit_event
 
 
 class GitHubService:
     def __init__(
         self,
         token: str,
-        allowed_repositories: Optional[List[str]] = None,
-        http_client: Optional[httpx.AsyncClient] = None
+        allowed_repositories: list[str] | None = None,
+        http_client: httpx.AsyncClient | None = None,
     ):
         self.token = token
         # Standardized allowed repositories list (e.g. ["my-org/allowed-repo"])
@@ -26,7 +26,7 @@ class GitHubService:
                 "Accept": "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
             },
-            timeout=20.0
+            timeout=20.0,
         )
         self._owns_client = http_client is None
 
@@ -40,6 +40,7 @@ class GitHubService:
         Allows pre-authorized repositories and user's configured GitHub target org.
         """
         from app.core.config import settings
+
         rep_clean = repository.lower().strip()
         if self.allowed_repositories and rep_clean in self.allowed_repositories:
             return True
@@ -53,7 +54,7 @@ class GitHubService:
         if not self.validate_repository_access(repository):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied: Repository '{repository}' is not authorized."
+                detail=f"Access denied: Repository '{repository}' is not authorized.",
             )
 
         url = f"https://api.github.com/repos/{repository}/git/ref/heads/{default_branch}"
@@ -61,7 +62,7 @@ class GitHubService:
         if res.status_code != 200:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to fetch base ref from GitHub: {res.status_code} - {res.text}"
+                detail=f"Failed to fetch base ref from GitHub: {res.status_code} - {res.text}",
             )
         data = res.json()
         return data["object"]["sha"]
@@ -71,34 +72,31 @@ class GitHubService:
         repository: str,
         branch_name: str,
         base_branch: str = "main",
-        base_sha: Optional[str] = None
-    ) -> Dict[str, Any]:
+        base_sha: str | None = None,
+    ) -> dict[str, Any]:
         """Creates a dedicated task feature branch (e.g. jarvis/task-123)."""
         if not self.validate_repository_access(repository):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied: Repository '{repository}' is not authorized."
+                detail=f"Access denied: Repository '{repository}' is not authorized.",
             )
 
         # Do not allow creating branch named 'main' or 'master'
         if branch_name.lower() in ["main", "master", "develop"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Direct creation or push to protected branch '{branch_name}' is forbidden."
+                detail=f"Direct creation or push to protected branch '{branch_name}' is forbidden.",
             )
 
         sha = base_sha or await self.get_default_branch_sha(repository, base_branch)
         url = f"https://api.github.com/repos/{repository}/git/refs"
-        payload = {
-            "ref": f"refs/heads/{branch_name}",
-            "sha": sha
-        }
+        payload = {"ref": f"refs/heads/{branch_name}", "sha": sha}
 
         res = await self._client.post(url, json=payload)
         if res.status_code not in (201, 200):
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to create branch on GitHub: {res.status_code} - {res.text}"
+                detail=f"Failed to create branch on GitHub: {res.status_code} - {res.text}",
             )
         return res.json()
 
@@ -109,22 +107,23 @@ class GitHubService:
         content: str,
         commit_message: str,
         branch: str,
-        sha: Optional[str] = None
-    ) -> Dict[str, Any]:
+        sha: str | None = None,
+    ) -> dict[str, Any]:
         """Creates or updates a file on a target branch."""
         import base64
+
         if not self.validate_repository_access(repository):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied: Repository '{repository}' is not authorized."
+                detail=f"Access denied: Repository '{repository}' is not authorized.",
             )
 
         url = f"https://api.github.com/repos/{repository}/contents/{path}"
         content_b64 = base64.b64encode(content.encode("utf-8")).decode("utf-8")
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "message": commit_message,
             "content": content_b64,
-            "branch": branch
+            "branch": branch,
         }
         if sha:
             payload["sha"] = sha
@@ -137,7 +136,7 @@ class GitHubService:
         if res.status_code not in (200, 201):
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to commit file '{path}' to branch '{branch}': {res.status_code} - {res.text}"
+                detail=f"Failed to commit file '{path}' to branch '{branch}': {res.status_code} - {res.text}",
             )
         return res.json()
 
@@ -147,10 +146,10 @@ class GitHubService:
         title: str,
         head_branch: str,
         base_branch: str = "main",
-        task_id: Optional[str] = None,
-        test_evidence: Optional[Dict[str, Any]] = None,
-        changes_summary: Optional[str] = None
-    ) -> Dict[str, Any]:
+        task_id: str | None = None,
+        test_evidence: dict[str, Any] | None = None,
+        changes_summary: str | None = None,
+    ) -> dict[str, Any]:
         """
         Creates a Pull Request with structured markdown body containing
         plan summary, changed files, and honest test execution results.
@@ -158,7 +157,7 @@ class GitHubService:
         if not self.validate_repository_access(repository):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied: Repository '{repository}' is not authorized."
+                detail=f"Access denied: Repository '{repository}' is not authorized.",
             )
 
         # Construct structured pull request description
@@ -168,7 +167,9 @@ class GitHubService:
             output = test_evidence.get("output", "")
             exit_code = test_evidence.get("exit_code", 0)
             status_badge = "✅ PASSED" if passed else "❌ FAILED"
-            evidence_text = f"**Status:** {status_badge} (Exit code: `{exit_code}`)\n```text\n{output}\n```"
+            evidence_text = (
+                f"**Status:** {status_badge} (Exit code: `{exit_code}`)\n```text\n{output}\n```"
+            )
 
         body = (
             f"## Autonomous Task PR — Project Jarvis\n\n"
@@ -195,24 +196,22 @@ class GitHubService:
         if res.status_code not in (201, 200):
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to create Pull Request: {res.status_code} - {res.text}"
+                detail=f"Failed to create Pull Request: {res.status_code} - {res.text}",
             )
         return res.json()
 
-    async def list_user_repositories(self, affiliation: str = "owner") -> List[Dict[str, Any]]:
+    async def list_user_repositories(self, affiliation: str = "owner") -> list[dict[str, Any]]:
         """Lists all repositories accessible to the authenticated GitHub token."""
         url = "https://api.github.com/user/repos"
-        params = {"per_page": 100, "affiliation": affiliation, "sort": "updated"}
+        params = {"per_page": "100", "affiliation": affiliation, "sort": "updated"}
         res = await self._client.get(url, params=params)
         if res.status_code != 200:
             return []
         return res.json()
 
     async def get_repository_tree(
-        self,
-        repository: str,
-        default_branch: str = "main"
-    ) -> List[Dict[str, Any]]:
+        self, repository: str, default_branch: str = "main"
+    ) -> list[dict[str, Any]]:
         """Fetches recursive tree of repository files."""
         url = f"https://api.github.com/repos/{repository}/git/trees/{default_branch}"
         res = await self._client.get(url, params={"recursive": "1"})
@@ -222,13 +221,11 @@ class GitHubService:
         return data.get("tree", [])
 
     async def get_file_content(
-        self,
-        repository: str,
-        path: str,
-        ref: Optional[str] = None
-    ) -> Optional[str]:
+        self, repository: str, path: str, ref: str | None = None
+    ) -> str | None:
         """Fetches raw or base64 decoded file content from GitHub repository."""
         import base64
+
         url = f"https://api.github.com/repos/{repository}/contents/{path}"
         params = {}
         if ref:
@@ -244,4 +241,3 @@ class GitHubService:
             except Exception:
                 return None
         return None
-

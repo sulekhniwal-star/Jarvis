@@ -6,6 +6,7 @@ pause/resume mechanics, diagnostic retry loops, and checkpoint recovery across r
 
 import pytest
 from langgraph.checkpoint.memory import MemorySaver
+
 from app.orchestrator.state import TaskGraphState
 from app.orchestrator.workflow import build_task_workflow
 
@@ -90,16 +91,16 @@ async def test_human_in_the_loop_approval_pause_and_resume():
     snapshot = app.get_state(config)
     assert "approval_gate" in snapshot.next
     assert paused_state["requires_approval"] is True
-    assert any("[Planner] High-consequence keywords detected." in log for log in paused_state["execution_logs"])
+    assert any(
+        "[Planner] High-consequence keywords detected." in log
+        for log in paused_state["execution_logs"]
+    )
 
     # 2. Simulate Human Owner approving via Dashboard: Update state with APPROVED
     app.update_state(
         config=config,
-        values={
-            "approval_status": "APPROVED",
-            "status": "APPROVED"
-        },
-        as_node="approval_gate"
+        values={"approval_status": "APPROVED", "status": "APPROVED"},
+        as_node="approval_gate",
     )
 
     # 3. Resume execution from checkpoint with None input
@@ -151,9 +152,9 @@ async def test_human_rejection_halts_task():
         values={
             "approval_status": "REJECTED",
             "status": "FAILED",
-            "error_message": "Rejected by owner: Unsafe operation."
+            "error_message": "Rejected by owner: Unsafe operation.",
         },
-        as_node="approval_gate"
+        as_node="approval_gate",
     )
 
     # Resume graph
@@ -197,7 +198,10 @@ async def test_diagnostic_retry_loop():
     # The task should have failed once, diagnosed, retried, and completed!
     assert final_state["status"] == "COMPLETED"
     assert final_state["retry_count"] == 1
-    assert any("[Diagnoser] Test failure detected. Attempting retry 1/3" in log for log in final_state["execution_logs"])
+    assert any(
+        "[Diagnoser] Test failure detected. Attempting retry 1/3" in log
+        for log in final_state["execution_logs"]
+    )
     assert final_state["test_passed"] is True
 
 
@@ -255,11 +259,10 @@ async def test_checkpoint_recovery_after_simulated_restart():
     app_instance_2.update_state(
         config=config,
         values={"approval_status": "APPROVED", "status": "APPROVED"},
-        as_node="approval_gate"
+        as_node="approval_gate",
     )
 
     # Complete execution in new instance
     final_state = await app_instance_2.ainvoke(None, config=config)
     assert final_state["status"] == "COMPLETED"
     assert final_state["pr_url"] is not None
-

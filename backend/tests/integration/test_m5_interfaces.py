@@ -17,8 +17,7 @@ from tests.conftest import test_session_factory as _session_factory
 @pytest.fixture
 async def auth_headers(client: AsyncClient):
     res = await client.post(
-        "/api/v1/auth/login",
-        json={"username": "owner_m5", "password": "Pass12345678!"}
+        "/api/v1/auth/login", json={"username": "owner_m5", "password": "Pass12345678!"}
     )
     token = res.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -30,18 +29,15 @@ async def test_telegram_unauthorized_user_silently_dropped():
     CRITICAL SECURITY TEST:
     Verify incoming messages from unlisted Telegram users are dropped and audited.
     """
-    telegram = TelegramService(
-        bot_token="test_token",
-        authorized_user_id="111222333"
-    )
+    telegram = TelegramService(bot_token="test_token", authorized_user_id="111222333")
 
     unauthorized_update = {
         "update_id": 1,
         "message": {
             "from": {"id": 999999999, "username": "attacker"},  # Unauthorized!
             "chat": {"id": 999999999},
-            "text": "/task Delete all databases"
-        }
+            "text": "/task Delete all databases",
+        },
     }
 
     async with _session_factory() as session:
@@ -61,10 +57,7 @@ async def test_telegram_task_intake_creates_persistent_task():
         sent_messages.append({"chat_id": chat_id, "text": text})
         return {"ok": True}
 
-    telegram = TelegramService(
-        bot_token="test_token",
-        authorized_user_id="111222333"
-    )
+    telegram = TelegramService(bot_token="test_token", authorized_user_id="111222333")
     telegram.send_message = mock_send
 
     authorized_update = {
@@ -72,8 +65,8 @@ async def test_telegram_task_intake_creates_persistent_task():
         "message": {
             "from": {"id": 111222333, "username": "owner"},
             "chat": {"id": 111222333},
-            "text": "/task Implement rate limiting middleware"
-        }
+            "text": "/task Implement rate limiting middleware",
+        },
     }
 
     async with _session_factory() as session:
@@ -82,9 +75,7 @@ async def test_telegram_task_intake_creates_persistent_task():
 
         # Verify task is in database with eager-loaded steps
         stmt = (
-            select(Task)
-            .options(selectinload(Task.steps))
-            .where(Task.title.like("%rate limiting%"))
+            select(Task).options(selectinload(Task.steps)).where(Task.title.like("%rate limiting%"))
         )
         res = await session.execute(stmt)
         task = res.scalar_one_or_none()
@@ -106,10 +97,7 @@ async def test_telegram_emergency_stop():
         sent_messages.append({"chat_id": chat_id, "text": text})
         return {"ok": True}
 
-    telegram = TelegramService(
-        bot_token="test_token",
-        authorized_user_id="111222333"
-    )
+    telegram = TelegramService(bot_token="test_token", authorized_user_id="111222333")
     telegram.send_message = mock_send
 
     # Create an active task first
@@ -123,8 +111,8 @@ async def test_telegram_emergency_stop():
             "message": {
                 "from": {"id": 111222333},
                 "chat": {"id": 111222333},
-                "text": "/emergency_stop"
-            }
+                "text": "/emergency_stop",
+            },
         }
         res = await telegram.handle_incoming_update(stop_update, session)
         assert res == "emergency_stop_handled"

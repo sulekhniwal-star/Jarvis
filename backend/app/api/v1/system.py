@@ -2,8 +2,8 @@
 Project Jarvis — System Control & Emergency Kill-Switch Endpoints.
 """
 
-from fastapi import APIRouter, Depends, status
 import psutil
+from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +12,8 @@ from app.core.database import get_db_session
 from app.models.approval import Approval
 from app.models.task import Task
 from app.models.user import User
-from app.services.auth_service import get_current_user
 from app.services.audit_service import log_audit_event
+from app.services.auth_service import get_current_user
 from app.services.task_service import cancel_task, list_tasks
 
 router = APIRouter(prefix="/system", tags=["System"])
@@ -29,9 +29,7 @@ async def get_system_status():
 
 
 @router.get("/telemetry")
-async def get_system_telemetry(
-    session: AsyncSession = Depends(get_db_session)
-):
+async def get_system_telemetry(session: AsyncSession = Depends(get_db_session)):
     """
     Returns real hardware metrics, live database counts, network I/O,
     and operational state for the HUD dashboard.
@@ -48,8 +46,8 @@ async def get_system_telemetry(
 
     try:
         vm = psutil.virtual_memory()
-        ram_total_gb = round(vm.total / (1024 ** 3), 1)
-        ram_used_gb = round(vm.used / (1024 ** 3), 1)
+        ram_total_gb = round(vm.total / (1024**3), 1)
+        ram_used_gb = round(vm.used / (1024**3), 1)
         ram_percent = vm.percent
     except Exception:
         ram_total_gb = 16.0
@@ -74,7 +72,9 @@ async def get_system_telemetry(
         )
         active_tasks = (await session.execute(active_stmt)).scalar() or 0
 
-        appr_stmt = select(func.count(Approval.id)).where(Approval.status == "PENDING")
+        appr_stmt = select(func.count(Approval.id)).where(
+            Approval.status.in_(["AWAITING_APPROVAL", "PENDING"])
+        )
         pending_approvals = (await session.execute(appr_stmt)).scalar() or 0
         db_connected = True
     except Exception:
@@ -117,8 +117,7 @@ async def get_system_telemetry(
 
 @router.post("/emergency-stop")
 async def emergency_stop(
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db_session)
 ):
     """
     Emergency kill-switch: Immediately halts all active tasks,
@@ -140,21 +139,20 @@ async def emergency_stop(
         actor_id=current_user.id,
         action="EMERGENCY_KILL_SWITCH_ACTIVATED",
         target_type="system",
-        metadata={"tasks_cancelled": cancelled}
+        metadata={"tasks_cancelled": cancelled},
     )
     await session.commit()
 
     return {
         "status": "LOCKED",
         "message": f"Emergency stop executed. Cancelled {cancelled} active tasks.",
-        "tasks_cancelled": cancelled
+        "tasks_cancelled": cancelled,
     }
 
 
 @router.post("/resume")
 async def resume_system(
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db_session)
 ):
     """Restores system to OPERATIONAL mode after review."""
     _SYSTEM_STATE["status"] = "OPERATIONAL"
@@ -163,8 +161,7 @@ async def resume_system(
         actor_type="user",
         actor_id=current_user.id,
         action="SYSTEM_RESUMED",
-        target_type="system"
+        target_type="system",
     )
     await session.commit()
     return {"status": "OPERATIONAL", "message": "System restored to normal operations."}
-

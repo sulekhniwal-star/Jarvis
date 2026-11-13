@@ -2,8 +2,7 @@
 Project Jarvis — Approval Endpoints.
 """
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,16 +16,20 @@ from app.services.auth_service import get_current_user
 router = APIRouter(prefix="/approvals", tags=["Approvals"])
 
 
-@router.get("", response_model=List[ApprovalResponse])
+@router.get("", response_model=list[ApprovalResponse])
 async def list_approvals(
-    status_filter: Optional[str] = Query(None, alias="status"),
+    status_filter: str | None = Query(None, alias="status"),
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    session: AsyncSession = Depends(get_db_session),
 ):
     """Lists approval requests."""
     query = select(Approval).order_by(Approval.created_at.desc())
     if status_filter:
-        query = query.where(Approval.status == status_filter)
+        norm_status = status_filter.upper()
+        if norm_status in ("PENDING", "AWAITING_APPROVAL"):
+            query = query.where(Approval.status.in_(["AWAITING_APPROVAL", "PENDING"]))
+        else:
+            query = query.where(Approval.status == norm_status)
     result = await session.execute(query)
     return list(result.scalars().all())
 
@@ -37,7 +40,7 @@ async def decide_approval(
     approval_id: str,
     decision_in: ApprovalDecision,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session)
+    session: AsyncSession = Depends(get_db_session),
 ):
     """Authorizes or rejects a pending consequential operation."""
     return await evaluate_approval(
@@ -45,6 +48,5 @@ async def decide_approval(
         approval_id=approval_id,
         decision=decision_in.decision,
         decided_by_user_id=current_user.id,
-        reason=decision_in.reason
+        reason=decision_in.reason,
     )
-

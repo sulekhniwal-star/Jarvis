@@ -3,9 +3,10 @@ Project Jarvis — OpenRouter AI Provider Unit Tests.
 Verifies JSON parsing, error handling, configuration loading, and mock HTTP exchanges.
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
 import httpx
+import pytest
 
 from app.providers.openrouter import OpenRouterProvider, extract_json_from_response
 
@@ -51,10 +52,11 @@ async def test_openrouter_generate_plan_mocked_http():
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
         mock_post.return_value = mock_resp
 
-        provider = OpenRouterProvider(api_key="sk-or-v1-testkey12345", model="google/gemini-2.0-flash-001")
+        provider = OpenRouterProvider(
+            api_key="sk-or-v1-testkey12345", model="google/gemini-2.0-flash-001"
+        )
         plan = await provider.generate_plan("Test Task", "Test Description")
 
         assert plan["summary"] == "OpenRouter Plan"
         assert len(plan["steps"]) == 1
         assert plan["steps"][0]["name"] == "Inspect"
-

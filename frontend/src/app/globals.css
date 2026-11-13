@@ -3,14 +3,187 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0c;
-  --foreground: #ededed;
+  --hud-cyan: #00f0ff;
+  --hud-blue: #0ea5e9;
+  --hud-navy: #030d1a;
+  --hud-dark: #020710;
+  --hud-card-bg: rgba(2, 13, 26, 0.75);
+  --hud-border: rgba(0, 240, 255, 0.35);
+  --hud-glow: rgba(0, 240, 255, 0.6);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #c8e6f8;
+  background-color: #01060e;
+  background-image: 
+    radial-gradient(ellipse at 50% 30%, rgba(0, 120, 210, 0.18) 0%, rgba(1, 6, 14, 0.95) 75%),
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Rajdhani", "JetBrains Mono", monospace, sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020914;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.8);
+}
+
+/* Sci-Fi Glows & Holographic Filters */
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.75), 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+.glow-cyan-box {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
+}
+
+.glow-rose-box {
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35), inset 0 0 15px rgba(244, 63, 94, 0.15);
+}
+
+.glow-amber-box {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.35), inset 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+/* Tech Card Corners */
+.tech-border {
+  position: relative;
+  background: rgba(3, 14, 28, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.tech-border::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #00f0ff;
+  border-left: 2px solid #00f0ff;
+  pointer-events: none;
+}
+
+.tech-border::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid #00f0ff;
+  border-right: 2px solid #00f0ff;
+  pointer-events: none;
+}
+
+.tech-border-corner-all::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #00f0ff;
+  border-right: 2px solid #00f0ff;
+  pointer-events: none;
+}
+
+/* Chamfered Corners */
+.clip-chamfer {
+  clip-path: polygon(
+    12px 0%,
+    calc(100% - 12px) 0%,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0% calc(100% - 12px),
+    0% 12px
+  );
+}
+
+.clip-chamfer-top {
+  clip-path: polygon(
+    14px 0%,
+    calc(100% - 14px) 0%,
+    100% 14px,
+    100% 100%,
+    0% 100%,
+    0% 14px
+  );
+}
+
+/* Scanline Effect */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Hologram Animations */
+@keyframes spin-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-counter-clockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-energy {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 12px #00f0ff); }
+}
+
+@keyframes hud-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes wave-bar {
+  0%, 100% { height: 20%; }
+  50% { height: 95%; }
+}
+
+.animate-spin-slow {
+  animation: spin-clockwise 25s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-counter-clockwise 18s linear infinite;
+}
+
+.animate-pulse-energy {
+  animation: pulse-energy 2.8s ease-in-out infinite;
+}
+
+.animate-hud-blink {
+  animation: hud-blink 1.2s infinite;
+}
+
+.animate-radar {
+  animation: radar-sweep 4s linear infinite;
+}

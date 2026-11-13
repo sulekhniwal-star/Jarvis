@@ -231,3 +231,46 @@ export async function emergencyStopApi(): Promise<any> {
     method: "POST",
   });
 }
+
+export interface FleetRepo {
+  name: string;
+  full_name: string;
+  is_private: boolean;
+  language: string;
+  description: string;
+  default_branch: string;
+  priority_tier: string;
+  priority_weight: number;
+  updated_at?: string;
+  open_issues: number;
+  html_url?: string;
+  health_score: number;
+  estimated_completion: number;
+}
+
+export async function fetchFleetRepos(): Promise<FleetRepo[]> {
+  try {
+    const res = await apiRequest("/projects/repos");
+    return Array.isArray(res) ? res : [];
+  } catch (err) {
+    console.debug("Failed to fetch fleet repos:", err);
+    return [];
+  }
+}
+
+export async function fetchRepoAudit(repoName: string): Promise<any> {
+  return await apiRequest(`/projects/audit/${repoName}`);
+}
+
+export async function improveProjectApi(repoName: string): Promise<any> {
+  return await apiRequest(`/projects/improve/${repoName}`, {
+    method: "POST",
+  });
+}
+
+export async function selfImproveJarvisApi(): Promise<any> {
+  return await apiRequest("/projects/self-improve", {
+    method: "POST",
+  });
+}
+

@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     AUTHORIZED_TELEGRAM_USER_ID: str = ""
     TELEGRAM_MODE: str = "polling"
 
+    # GitHub Integration
+    GITHUB_TOKEN: str = ""
+    GITHUB_TARGET_ORG: str = "sulekhniwal-star"
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",

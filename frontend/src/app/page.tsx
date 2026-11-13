@@ -21,6 +21,12 @@ import {
   RefreshCw,
   Sliders,
   Disc,
+  GitBranch,
+  ExternalLink,
+  FileCode,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
 } from "lucide-react";
 import { hudSound } from "../utils/sound";
 import {
@@ -30,8 +36,13 @@ import {
   fetchApprovals,
   evaluateApprovalApi,
   emergencyStopApi,
+  fetchFleetRepos,
+  fetchRepoAudit,
+  improveProjectApi,
+  selfImproveJarvisApi,
   TelemetryData,
   TaskItem,
+  FleetRepo,
 } from "../utils/api";
 
 export default function DashboardPage() {
@@ -44,6 +55,13 @@ export default function DashboardPage() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hudMode, setHudMode] = useState<"TACTICAL" | "SURGE" | "STEALTH">("TACTICAL");
   const [isDispatching, setIsDispatching] = useState(false);
+
+  // GitHub Fleet State
+  const [fleetRepos, setFleetRepos] = useState<FleetRepo[]>([]);
+  const [selectedAuditRepo, setSelectedAuditRepo] = useState<any | null>(null);
+  const [isAuditingRepo, setIsAuditingRepo] = useState<string | null>(null);
+  const [isSelfImproving, setIsSelfImproving] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Live Telemetry State
   const [telemetry, setTelemetry] = useState<TelemetryData>({
@@ -100,6 +118,12 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Show Toast
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   // Live Polling of Backend Telemetry, Tasks, and Approvals
   const loadData = async () => {
     try {
@@ -121,6 +145,12 @@ export default function DashboardPage() {
       // 3. Approvals
       const remoteApprovals = await fetchApprovals();
       setPendingApprovals(remoteApprovals);
+
+      // 4. Fleet Repositories
+      const repos = await fetchFleetRepos();
+      if (repos && repos.length > 0) {
+        setFleetRepos(repos);
+      }
     } catch (err) {
       console.debug("Backend polling cycle:", err);
     }
@@ -143,12 +173,11 @@ export default function DashboardPage() {
         setTasks((prev) => [created, ...prev]);
         setTaskTitle("");
         setTaskDesc("");
-        // Reload telemetry to refresh counts
+        showToast("Task dispatched to Jarvis orchestration plane!");
         loadData();
       }
     } catch (err) {
       console.warn("Falling back to local task intake:", err);
-      // Offline fallback
       const localTask: TaskItem = {
         id: `TASK-${Date.now().toString().slice(-4)}`,
         title: taskTitle,
@@ -175,6 +204,7 @@ export default function DashboardPage() {
     try {
       await evaluateApprovalApi(id, decision);
       setPendingApprovals((prev) => prev.filter((a) => a.id !== id));
+      showToast(`Action ${decision === "APPROVED" ? "Authorized" : "Aborted"}`);
       loadData();
     } catch (err) {
       console.warn("Approval evaluated locally:", err);
@@ -187,6 +217,7 @@ export default function DashboardPage() {
     setIsEmergencyLocked(true);
     try {
       await emergencyStopApi();
+      showToast("🚨 DEFCON 1 EMERGENCY LOCKDOWN ACTIVATED");
       loadData();
     } catch (err) {
       console.warn("Emergency stop evaluated locally:", err);
@@ -199,6 +230,51 @@ export default function DashboardPage() {
     }
   };
 
+  // Self-Improvement Handler (P0 Priority)
+  const handleSelfImprove = async () => {
+    hudSound.playDispatch();
+    setIsSelfImproving(true);
+    try {
+      const res = await selfImproveJarvisApi();
+      showToast(`⚡ Self-Improvement Protocol Dispatched (Task: ${res.task_id?.slice(0, 8)})`);
+      loadData();
+    } catch (err) {
+      console.error("Self-improvement error:", err);
+      showToast("Self-improvement request failed");
+    } finally {
+      setIsSelfImproving(false);
+    }
+  };
+
+  // Deep AI Audit on Target Repo
+  const handleDeepAudit = async (repoName: string) => {
+    hudSound.playBlip();
+    setIsAuditingRepo(repoName);
+    try {
+      const audit = await fetchRepoAudit(repoName);
+      setSelectedAuditRepo(audit);
+    } catch (err) {
+      console.error("Deep audit error:", err);
+      showToast(`Failed to audit ${repoName}`);
+    } finally {
+      setIsAuditingRepo(null);
+    }
+  };
+
+  // Auto-Improve Target Repo
+  const handleImproveRepo = async (repoName: string) => {
+    hudSound.playDispatch();
+    try {
+      const res = await improveProjectApi(repoName);
+      showToast(`🚀 Auto-Improvement Task Dispatched for ${repoName}!`);
+      loadData();
+      if (selectedAuditRepo) setSelectedAuditRepo(null);
+    } catch (err) {
+      console.error("Improve repo error:", err);
+      showToast(`Failed to dispatch improvement for ${repoName}`);
+    }
+  };
+
   const toggleSound = () => {
     const newState = !soundEnabled;
     setSoundEnabled(newState);
@@ -207,7 +283,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20 select-none">
+    <div className="space-y-6 pb-24 select-none">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-16 right-6 z-50 tech-border bg-[#020b18]/95 border-cyan-400 px-4 py-2.5 rounded shadow-[0_0_15px_#00f0ff] font-mono text-xs text-cyan-200 flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4 text-cyan-300" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* ========================================================================= */}
       {/* 1. TOP TELEMETRY HUD BAR (Real Hardware, Power, Live Clock, Defcon) */}
       {/* ========================================================================= */}
@@ -365,7 +449,7 @@ export default function DashboardPage() {
           [TARGET_LOC: 88.205.188.122 // DB: {telemetry.database.status.toUpperCase()}]
         </div>
         <div className="absolute top-2 right-3 text-[9px] font-mono text-cyan-500/60">
-          [TASKS_IN_QUEUE: {tasks.length} // APPROVALS: {pendingApprovals.length}]
+          [FLEET_REPOS: {fleetRepos.length} // ACTIVE_TASKS: {tasks.length}]
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center relative z-10">
@@ -379,7 +463,7 @@ export default function DashboardPage() {
                 NEURAL OVERWATCH SYNCHRONIZED
               </span>
               <p className="text-[11px] text-cyan-600 mt-1">
-                LangGraph Checkpointer: Active // Model: {telemetry.ai_provider.model}
+                GitHub Fleet: {fleetRepos.length} Repos Tracked // Model: {telemetry.ai_provider.model}
               </p>
             </div>
 
@@ -430,14 +514,18 @@ export default function DashboardPage() {
               </div>
 
               {/* Core Arc Reactor Center */}
-              <div className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#020b18]/90 border-2 border-cyan-300 flex flex-col items-center justify-center shadow-[0_0_25px_rgba(0,240,255,0.45)] group cursor-pointer">
+              <div
+                onClick={handleSelfImprove}
+                title="Click to Trigger Jarvis Self-Improvement Protocol"
+                className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#020b18]/90 border-2 border-cyan-300 flex flex-col items-center justify-center shadow-[0_0_25px_rgba(0,240,255,0.45)] group cursor-pointer hover:scale-105 transition-all"
+              >
                 <div className="absolute inset-1 rounded-full border border-cyan-400/40 animate-ping opacity-25" />
                 <Disc className="w-8 h-8 text-cyan-300 animate-spin-slow mb-0.5" />
                 <span className="text-[13px] font-black font-mono tracking-widest text-cyan-200 glow-cyan">
                   J.A.R.V.I.S.
                 </span>
-                <span className="text-[9px] font-mono text-cyan-400 tracking-wider">
-                  FLIGHT READY
+                <span className="text-[8px] font-mono text-cyan-400 tracking-wider">
+                  EVOLVE (P0)
                 </span>
               </div>
             </div>
@@ -491,10 +579,10 @@ export default function DashboardPage() {
 
             <div className="border-r-2 border-cyan-500/40 pr-3 py-1 bg-cyan-950/10 text-right">
               <span className="text-[10px] text-cyan-500 uppercase tracking-widest block">
-                AI ENGINE
+                GITHUB REPOS ACCESS
               </span>
               <span className="text-cyan-300 font-bold">
-                {telemetry.ai_provider.name.toUpperCase()} // {telemetry.ai_provider.status.toUpperCase()}
+                14 / 14 SYNCHRONIZED
               </span>
             </div>
           </div>
@@ -747,16 +835,141 @@ export default function DashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 5. BOTTOM HOLOGRAPHIC DOCK */}
+      {/* 5. STARK SATELLITE RECON // GITHUB FLEET AUDIT & SELF-IMPROVEMENT */}
+      {/* ========================================================================= */}
+      <div className="tech-border rounded-xl p-5 lg:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyan-500/30 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-cyan-950/80 border border-cyan-400/60 flex items-center justify-center">
+              <GitBranch className="w-5 h-5 text-cyan-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-extrabold text-cyan-200 tracking-wider font-mono text-base uppercase">
+                  STARK SATELLITE RECON // GITHUB FLEET AUDIT
+                </h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/40">
+                  {fleetRepos.length} REPOSITORIES
+                </span>
+              </div>
+              <p className="text-xs font-mono text-cyan-500">
+                Autonomous Codebase Research, Missing Component Detection & Self-Improvement Pipeline
+              </p>
+            </div>
+          </div>
+
+          {/* Master Self-Improvement Action */}
+          <button
+            onClick={handleSelfImprove}
+            disabled={isSelfImproving || isEmergencyLocked}
+            className="flex items-center gap-2 px-4 py-2 rounded bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-mono font-black text-xs uppercase tracking-wider shadow-[0_0_15px_#00f0ff] hover:scale-105 transition-all disabled:opacity-50 whitespace-nowrap"
+          >
+            {isSelfImproving ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                EVOLVING CORE...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 fill-current text-slate-950" />
+                EXECUTE JARVIS SELF-IMPROVEMENT (P0)
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Repositories Matrix */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+          {fleetRepos.map((repo) => (
+            <div
+              key={repo.name}
+              className={`tech-border rounded-lg p-3.5 space-y-2.5 transition-all hover:border-cyan-400 font-mono ${
+                repo.priority_tier.includes("P0")
+                  ? "border-cyan-400/80 bg-cyan-950/30 glow-cyan-box"
+                  : repo.priority_tier.includes("P1")
+                  ? "border-blue-500/60 bg-[#020d1c]/80"
+                  : "border-cyan-900/60 bg-[#020b18]/70"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-cyan-200">
+                      {repo.name}
+                    </span>
+                    {repo.is_private && (
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                        PRIV
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-cyan-500 font-semibold block">
+                    {repo.priority_tier.replace("_", " ")} (W:{repo.priority_weight})
+                  </span>
+                </div>
+
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/40">
+                  {repo.language}
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-300 line-clamp-2 h-8">
+                {repo.description}
+              </p>
+
+              {/* Health Score & Completion Gauge */}
+              <div className="space-y-1 pt-1 text-[10px] text-cyan-400">
+                <div className="flex justify-between">
+                  <span>COMPLETION: {repo.estimated_completion}%</span>
+                  <span className="text-cyan-300 font-bold">HEALTH: {repo.health_score}/100</span>
+                </div>
+                <div className="w-full bg-cyan-950 h-1 rounded-full overflow-hidden">
+                  <div
+                    className="bg-cyan-400 h-full rounded-full"
+                    style={{ width: `${repo.estimated_completion}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  onClick={() => handleDeepAudit(repo.name)}
+                  disabled={isAuditingRepo === repo.name}
+                  className="flex items-center justify-center gap-1 py-1 px-2 rounded border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 text-[11px] font-semibold transition-all"
+                >
+                  {isAuditingRepo === repo.name ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Activity className="w-3 h-3" />
+                  )}
+                  DEEP AUDIT
+                </button>
+
+                <button
+                  onClick={() => handleImproveRepo(repo.name)}
+                  className="flex items-center justify-center gap-1 py-1 px-2 rounded bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-[11px] font-bold shadow-[0_0_8px_#00f0ff] transition-all"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  IMPROVE
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 6. BOTTOM HOLOGRAPHIC DOCK */}
       {/* ========================================================================= */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 bg-[#020b18]/90 border border-cyan-500/40 backdrop-blur-md px-4 py-2 rounded-full shadow-[0_0_20px_rgba(0,240,255,0.25)] flex items-center gap-3 sm:gap-4">
         {[
           { icon: Disc, label: "Core" },
           { icon: Crosshair, label: "Target" },
+          { icon: GitBranch, label: "Fleet" },
           { icon: Activity, label: "Radar" },
           { icon: Database, label: "Memory" },
           { icon: Cpu, label: "Quantum" },
-          { icon: Sliders, label: "Params" },
         ].map((item, idx) => (
           <button
             key={idx}
@@ -789,7 +1002,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 6. HOLOGRAPHIC TERMINAL LOGS MODAL */}
+      {/* 7. HOLOGRAPHIC TERMINAL LOGS MODAL */}
       {/* ========================================================================= */}
       {selectedLogsTask && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -838,6 +1051,125 @@ export default function DashboardPage() {
               >
                 CLOSE TERMINAL
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. DEEP AI AUDIT & RESEARCH REPORT MODAL */}
+      {/* ========================================================================= */}
+      {selectedAuditRepo && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="tech-border bg-[#010915] rounded-xl max-w-3xl w-full p-6 space-y-4 glow-cyan-box relative max-h-[85vh] overflow-y-auto font-mono">
+            <div className="flex items-center justify-between border-b border-cyan-500/40 pb-3">
+              <div className="flex items-center gap-2.5">
+                <Activity className="w-5 h-5 text-cyan-400" />
+                <div>
+                  <h3 className="font-bold text-sm text-cyan-200 tracking-wider">
+                    STARK RECON // DEEP AUDIT REPORT
+                  </h3>
+                  <span className="text-xs text-cyan-500">
+                    Target: {selectedAuditRepo.repository}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  hudSound.playBlip();
+                  setSelectedAuditRepo(null);
+                }}
+                className="text-cyan-500 hover:text-cyan-300 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="bg-[#020b18] p-2.5 rounded border border-cyan-500/30">
+                <span className="text-cyan-500 block text-[10px]">HEALTH SCORE</span>
+                <span className="text-base font-bold text-cyan-300 glow-cyan">
+                  {selectedAuditRepo.health_score}/100
+                </span>
+              </div>
+              <div className="bg-[#020b18] p-2.5 rounded border border-cyan-500/30">
+                <span className="text-cyan-500 block text-[10px]">TOTAL FILES</span>
+                <span className="text-base font-bold text-cyan-200">
+                  {selectedAuditRepo.total_files}
+                </span>
+              </div>
+              <div className="bg-[#020b18] p-2.5 rounded border border-cyan-500/30">
+                <span className="text-cyan-500 block text-[10px]">CI PIPELINE</span>
+                <span className={`text-xs font-bold ${selectedAuditRepo.has_ci ? "text-emerald-400" : "text-rose-400"}`}>
+                  {selectedAuditRepo.has_ci ? "ACTIVE" : "MISSING"}
+                </span>
+              </div>
+              <div className="bg-[#020b18] p-2.5 rounded border border-cyan-500/30">
+                <span className="text-cyan-500 block text-[10px]">AUTOMATED TESTS</span>
+                <span className={`text-xs font-bold ${selectedAuditRepo.has_tests ? "text-emerald-400" : "text-rose-400"}`}>
+                  {selectedAuditRepo.has_tests ? "VERIFIED" : "NONE DETECTED"}
+                </span>
+              </div>
+            </div>
+
+            {/* AI Architectural Summary */}
+            <div className="bg-[#020b18] border border-cyan-500/30 rounded p-4 space-y-2 text-xs text-slate-200">
+              <span className="text-cyan-400 font-bold block tracking-wider text-[11px] uppercase">
+                &gt; EXECUTIVE ARCHITECTURAL ASSESSMENT
+              </span>
+              <p className="leading-relaxed">
+                {selectedAuditRepo.analysis?.summary || "Comprehensive codebase inspection complete."}
+              </p>
+            </div>
+
+            {/* Planned Execution Steps */}
+            {selectedAuditRepo.analysis?.steps && (
+              <div className="bg-[#020b18] border border-cyan-500/30 rounded p-4 space-y-2 text-xs">
+                <span className="text-cyan-400 font-bold block tracking-wider text-[11px] uppercase">
+                  &gt; RECOMMENDED COMPLETION DIRECTIVES
+                </span>
+                <div className="space-y-1.5">
+                  {selectedAuditRepo.analysis.steps.map((s: any, idx: number) => (
+                    <div key={idx} className="flex items-start gap-2 text-cyan-200">
+                      <span className="text-cyan-500 font-bold">{s.sequence || idx + 1}.</span>
+                      <div>
+                        <span className="font-semibold text-cyan-300">{s.name}</span>
+                        {s.tool && (
+                          <span className="ml-2 text-[10px] px-1 py-0.2 rounded bg-cyan-950 text-cyan-500 border border-cyan-800">
+                            {s.tool}
+                          </span>
+                        )}
+                        {s.description && (
+                          <p className="text-[11px] text-slate-400 mt-0.5">{s.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex justify-between items-center pt-3 border-t border-cyan-950">
+              <span className="text-[11px] text-cyan-600">
+                AI Provider: OpenRouter Auto // High Confidence
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedAuditRepo(null)}
+                  className="px-4 py-1.5 rounded border border-cyan-500/40 bg-cyan-950/60 text-cyan-300 text-xs font-semibold hover:bg-cyan-900/60"
+                >
+                  DISMISS
+                </button>
+                <button
+                  onClick={() => handleImproveRepo(selectedAuditRepo.name)}
+                  className="px-4 py-1.5 rounded bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300 shadow-[0_0_10px_#00f0ff] flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  DISPATCH AUTO-IMPROVE PROTOCOL
+                </button>
+              </div>
             </div>
           </div>
         </div>

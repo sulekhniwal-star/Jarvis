@@ -156,3 +156,49 @@ class GitHubService:
             )
         return res.json()
 
+    async def list_user_repositories(self, affiliation: str = "owner") -> List[Dict[str, Any]]:
+        """Lists all repositories accessible to the authenticated GitHub token."""
+        url = "https://api.github.com/user/repos"
+        params = {"per_page": 100, "affiliation": affiliation, "sort": "updated"}
+        res = await self._client.get(url, params=params)
+        if res.status_code != 200:
+            return []
+        return res.json()
+
+    async def get_repository_tree(
+        self,
+        repository: str,
+        default_branch: str = "main"
+    ) -> List[Dict[str, Any]]:
+        """Fetches recursive tree of repository files."""
+        url = f"https://api.github.com/repos/{repository}/git/trees/{default_branch}"
+        res = await self._client.get(url, params={"recursive": "1"})
+        if res.status_code != 200:
+            return []
+        data = res.json()
+        return data.get("tree", [])
+
+    async def get_file_content(
+        self,
+        repository: str,
+        path: str,
+        ref: Optional[str] = None
+    ) -> Optional[str]:
+        """Fetches raw or base64 decoded file content from GitHub repository."""
+        import base64
+        url = f"https://api.github.com/repos/{repository}/contents/{path}"
+        params = {}
+        if ref:
+            params["ref"] = ref
+        res = await self._client.get(url, params=params)
+        if res.status_code != 200:
+            return None
+        data = res.json()
+        content_b64 = data.get("content")
+        if content_b64:
+            try:
+                return base64.b64decode(content_b64).decode("utf-8", errors="replace")
+            except Exception:
+                return None
+        return None
+

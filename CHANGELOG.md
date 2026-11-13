@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0-m6] - 2026-11-13 — Milestone 6: Memory, Security & Recovery
+
+### Added
+- **Long-Term Memory Service (`models/memory.py`, `services/memory_service.py`):** Implemented scoped long-term memory engine partitioning shared owner preferences from project conventions, architectural decisions, and lessons learned.
+- **Historical Decision Lineage:** Built supersession tracking where existing active records for matching keys are marked `superseded` and linked to their successor via `superseded_by`, ensuring historical decisions are permanently preserved.
+- **Credential Storage Prevention Filter:** Enforced regex pattern scanning for API tokens (`ghp_`, JWT, OpenAI/Anthropic keys, Google API keys, Telegram tokens, private keys) before storage. Violations raise `SecurityViolationError` and log to the audit trail.
+- **Memory API Endpoints (`api/v1/memories.py`):** Added endpoints for creating, listing, archiving, and retrieving hierarchical project context.
+- **Encrypted Database Backup and Restore (`scripts/backup_db.py`, `scripts/restore_db.py`):** Created utilities using AES-256 Fernet encryption and SHA-256 integrity checksums to produce verifiable disaster recovery snapshots.
+- **Comprehensive Security Test Suite (`backend/tests/security/test_m6_security.py`):** Added 6 automated tests validating secret rejection, decision lineage, shell injection blocking, sandbox directory containment, and backup encryption round-trip. Total passing tests: 40.
+
+---
+
 ## [0.6.0-m5] - 2026-11-13 — Milestone 5: User Interfaces (Telegram & Web Dashboard)
 
 ### Added

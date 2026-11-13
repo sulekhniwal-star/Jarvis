@@ -9,6 +9,7 @@ from app.models.project import Project
 from app.models.task import Task, TaskStep, Execution
 from app.models.approval import Approval
 from app.models.audit import AuditEvent
+from app.models.memory import Memory
 
 __all__ = [
     "Base",
@@ -21,5 +22,6 @@ __all__ = [
     "Execution",
     "Approval",
     "AuditEvent",
+    "Memory",
 ]
 

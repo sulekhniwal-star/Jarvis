@@ -15,8 +15,8 @@ class SecurityException(HTTPException):
 
 
 class SandboxedFilesystem:
-    def __init__(self, workspace_root: Path):
-        self.workspace_root = workspace_root.resolve()
+    def __init__(self, workspace_root: Path | str):
+        self.workspace_root = Path(workspace_root).resolve()
         if not self.workspace_root.exists():
             self.workspace_root.mkdir(parents=True, exist_ok=True)
 

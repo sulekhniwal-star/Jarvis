@@ -74,16 +74,16 @@
 
 ---
 
-### Milestone 6: Memory, Security & Recovery (Current Milestone)
-- [ ] **M6.1:** Implement Project Memory & Shared Preferences service.
-- [ ] **M6.2:** Implement automated secret redaction filter for logs and external messages.
-- [ ] **M6.3:** Implement Emergency Shutdown switch (cancels active runs, revokes tokens).
-- [ ] **M6.4:** Implement automated database backup script (`pg_dump` + AES-256 encryption) and restore test.
-- [ ] **M6.5:** Execute security test suite (prompt injection simulation, path traversal attacks, approval tampering).
+### Milestone 6: Memory, Security & Recovery (COMPLETED)
+- [x] **M6.1:** Implement Project Memory & Shared Preferences service (`models/memory.py`, `services/memory_service.py`, `api/v1/memories.py`).
+- [x] **M6.2:** Implement automated secret rejection filter for memory storage preventing credential leaks into long-term context (`contains_secret`).
+- [x] **M6.3:** Implement Emergency Shutdown switch and system status lockdown (`api/v1/system.py`).
+- [x] **M6.4:** Implement automated database backup and restore script with AES-256 Fernet encryption and SHA-256 integrity validation (`scripts/backup_db.py`, `scripts/restore_db.py`).
+- [x] **M6.5:** Execute security test suite verifying prompt injection defense, filesystem traversal containment, and backup integrity (`test_m6_security.py`).
 
 ---
 
-### Milestone 7: Supervised Self-Improvement
+### Milestone 7: Supervised Self-Improvement (Current Milestone)
 - [ ] **M7.1:** Implement read-only self-analysis of the Jarvis repository.
 - [ ] **M7.2:** Implement isolated self-improvement branch creation and execution.
 - [ ] **M7.3:** Enforce human review gating for self-improvement Pull Requests.

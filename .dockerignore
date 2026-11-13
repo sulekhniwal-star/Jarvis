@@ -1,7 +1,12 @@
-# Git and documentation
+# Git and CI
 .git
 .github
-*.md
+
+# Documentation except readmes needed for package building
+DECISION_LOG.md
+SECURITY_POLICY.md
+SYSTEM_ARCHITECTURE.md
+TASK_BOARD.md
 LICENSE
 
 # Node / Frontend artifacts
@@ -32,4 +37,3 @@ backend/tests/*.db
 .idea
 .DS_Store
 Thumbs.db
-

@@ -14,9 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend definition and source files from repo root context
+# Copy backend definition, source files, and ensure README exists for hatchling
 COPY backend/pyproject.toml ./pyproject.toml
 COPY backend/app ./app
+RUN touch README.md
 
 RUN pip install --upgrade pip && \
     pip install .
@@ -59,4 +60,3 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-10000}/api/v1/health/live || exit 1
 
 CMD ["python", "-m", "app.cloud_entrypoint"]
-

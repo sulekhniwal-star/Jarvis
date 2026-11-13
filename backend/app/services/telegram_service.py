@@ -5,7 +5,7 @@ and emergency kill-switch commands with strict single-user allowlist enforcement
 """
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from fastapi import HTTPException
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,7 +14,9 @@ import structlog
 from app.core.config import settings
 from app.models.task import Task
 from app.schemas.task import TaskCreate, TaskPriority, TaskStatus
+from app.services.approval_service import evaluate_approval
 from app.services.audit_service import log_audit_event
+from app.services.memory_service import MemoryService, SecurityViolationError
 from app.services.task_service import cancel_task, create_task, get_task_by_id, list_tasks
 
 logger = structlog.get_logger()
@@ -30,6 +32,19 @@ def escape_markdown_v2(text: str) -> str:
     return re.sub(r"([\_*\[\]()~`>#+\-=|{}.!])", r"\\\1", str(text))
 
 
+BOT_COMMANDS = [
+    {"command": "start", "description": "Initialize Jarvis & verify connection"},
+    {"command": "help", "description": "Display command list and usage instructions"},
+    {"command": "task", "description": "Submit a coding task (/task <description>)"},
+    {"command": "tasks", "description": "List all active and recent tasks"},
+    {"command": "status", "description": "Check task status (/status <task_id>)"},
+    {"command": "remember", "description": "Save preference to memory (/remember <key>: <value>)"},
+    {"command": "approve", "description": "Approve a pending action (/approve <approval_id>)"},
+    {"command": "reject", "description": "Reject a pending action (/reject <approval_id>)"},
+    {"command": "emergency_stop", "description": "Emergency lockdown: cancel all active tasks"},
+]
+
+
 class TelegramService:
     def __init__(
         self,
@@ -37,9 +52,9 @@ class TelegramService:
         authorized_user_id: Optional[str] = None,
         http_client: Optional[httpx.AsyncClient] = None
     ):
-        self.bot_token = bot_token or settings.__dict__.get("TELEGRAM_BOT_TOKEN") or "mock_telegram_bot_token"
-        self.authorized_user_id = str(authorized_user_id or settings.__dict__.get("AUTHORIZED_TELEGRAM_USER_ID") or "")
-        self.base_url = f"https://api.telegram.com/bot{self.bot_token}"
+        self.bot_token = bot_token or settings.TELEGRAM_BOT_TOKEN or "mock_telegram_bot_token"
+        self.authorized_user_id = str(authorized_user_id or settings.AUTHORIZED_TELEGRAM_USER_ID or "")
+        self.base_url = f"https://api.telegram.org/bot{self.bot_token}"
         self._client = http_client or httpx.AsyncClient(timeout=15.0)
         self._owns_client = http_client is None
 
@@ -50,9 +65,27 @@ class TelegramService:
     def is_authorized_user(self, user_id: Any) -> bool:
         """Strict identity check: only messages from the designated owner are accepted."""
         if not self.authorized_user_id:
-            # If no authorized ID configured, deny all for security
             return False
         return str(user_id) == self.authorized_user_id
+
+    async def set_bot_commands(self) -> Dict[str, Any]:
+        """Registers the official command menu with Telegram Bot API."""
+        url = f"{self.base_url}/setMyCommands"
+        res = await self._client.post(url, json={"commands": BOT_COMMANDS})
+        return res.json()
+
+    async def get_updates(
+        self,
+        offset: Optional[int] = None,
+        timeout: int = 30
+    ) -> Dict[str, Any]:
+        """Fetches pending updates via long polling."""
+        url = f"{self.base_url}/getUpdates"
+        params: Dict[str, Any] = {"timeout": timeout}
+        if offset is not None:
+            params["offset"] = offset
+        res = await self._client.get(url, params=params, timeout=timeout + 10.0)
+        return res.json()
 
     async def send_message(
         self,
@@ -102,9 +135,11 @@ class TelegramService:
         """Dispatches a high-priority approval notification."""
         msg = (
             f"⚠️ *Human Approval Required*\n\n"
+            f"*Approval ID:* `{escape_markdown_v2(approval_id)}`\n"
             f"*Action:* `{escape_markdown_v2(action_type)}`\n"
             f"*Summary:* {escape_markdown_v2(payload_summary)}\n\n"
-            f"👉 [Review and Approve on Dashboard]({escape_markdown_v2(dashboard_url)})\n"
+            f"To approve via Telegram:\n`/approve {escape_markdown_v2(approval_id)}`\n\n"
+            f"👉 [Review on Dashboard]({escape_markdown_v2(dashboard_url)})\n"
         )
         return await self.send_message(chat_id, msg)
 
@@ -139,13 +174,46 @@ class TelegramService:
             return None
 
         # 2. Command routing
-        if text.startswith("/start"):
-            reply = "🤖 *Project Jarvis Online*\nAutonomous AI Engineering Platform ready."
-            await self.send_message(chat_id, escape_markdown_v2(reply))
+        cmd = text.split()[0].split("@")[0].lower() if text else ""
+
+        if cmd == "/start":
+            reply = (
+                "🤖 *Project Jarvis Online*\n\n"
+                "Personal Autonomous AI Assistant is active and connected.\n\n"
+                "Type /help to inspect available commands."
+            )
+            await self.send_message(chat_id, reply)
             return "start_handled"
 
-        elif text.startswith("/task"):
-            prompt = text[5:].strip()
+        elif cmd == "/help":
+            reply = (
+                "🛠️ *Jarvis Command Guide*\n\n"
+                "• `/task <prompt>` — Submit an autonomous coding assignment\n"
+                "• `/status <id>` — Check status and step execution of a task\n"
+                "• `/tasks` — List recent tasks and status\n"
+                "• `/remember <key>: <value>` — Store long-term developer preference\n"
+                "• `/approve <id>` — Approve pending human authorization\n"
+                "• `/reject <id>` — Reject pending action\n"
+                "• `/emergency_stop` — Immediately abort all running tasks"
+            )
+            await self.send_message(chat_id, reply)
+            return "help_handled"
+
+        elif cmd == "/tasks":
+            tasks, total = await list_tasks(session, limit=5)
+            if not tasks:
+                await self.send_message(chat_id, "ℹ️ No tasks currently in the system.")
+                return "tasks_empty"
+
+            lines = ["📋 *Recent Tasks*\n"]
+            for t in tasks:
+                lines.append(f"• `{t.id[:8]}` — *{escape_markdown_v2(t.title[:40])}* [{escape_markdown_v2(t.status)}]")
+            await self.send_message(chat_id, "\n".join(lines))
+            return "tasks_handled"
+
+        elif cmd == "/task":
+            parts = text.split(maxsplit=1)
+            prompt = parts[1].strip() if len(parts) > 1 else ""
             if not prompt:
                 await self.send_message(chat_id, "Usage: `/task <description of coding assignment>`")
                 return "task_empty"
@@ -169,7 +237,7 @@ class TelegramService:
             await self.send_message(chat_id, reply)
             return "task_created"
 
-        elif text.startswith("/status"):
+        elif cmd == "/status":
             parts = text.split(maxsplit=1)
             if len(parts) > 1:
                 task_id = parts[1].strip()
@@ -186,9 +254,78 @@ class TelegramService:
                 )
                 await self.send_message(chat_id, reply)
                 return "status_handled"
+            else:
+                await self.send_message(chat_id, "Usage: `/status <task_id>`")
+                return "status_missing_id"
 
-        elif text.startswith("/emergency_stop"):
-            # Emergency Stop: Cancel all active tasks
+        elif cmd == "/remember":
+            parts = text.split(maxsplit=1)
+            content = parts[1].strip() if len(parts) > 1 else ""
+            if ":" not in content:
+                await self.send_message(chat_id, "Usage: `/remember <key>: <preference or convention>`")
+                return "remember_invalid_format"
+            key, val = content.split(":", 1)
+            try:
+                mem = await MemoryService.store_memory(
+                    session=session,
+                    scope_type="shared",
+                    category="preference",
+                    key=key.strip(),
+                    content=val.strip(),
+                    actor_id=sender_id
+                )
+                await self.send_message(
+                    chat_id,
+                    f"🧠 *Preference Saved to Memory*\n\n*Key:* `{escape_markdown_v2(mem.key)}`\n*Content:* {escape_markdown_v2(mem.content)}"
+                )
+                return "remember_handled"
+            except SecurityViolationError as e:
+                await self.send_message(chat_id, f"🚫 *Security Block:* {escape_markdown_v2(str(e))}")
+                return "remember_security_blocked"
+
+        elif cmd == "/approve":
+            parts = text.split(maxsplit=1)
+            if len(parts) < 2:
+                await self.send_message(chat_id, "Usage: `/approve <approval_id>`")
+                return "approve_missing_id"
+            approval_id = parts[1].strip()
+            try:
+                appr = await evaluate_approval(
+                    session=session,
+                    approval_id=approval_id,
+                    decision="APPROVED",
+                    decided_by_user_id=owner_user_id,
+                    reason="Approved via authorized Telegram command"
+                )
+                await session.commit()
+                await self.send_message(chat_id, f"✅ *Approval Granted*\nAction `{escape_markdown_v2(appr.action_type)}` approved.")
+                return "approve_handled"
+            except HTTPException as e:
+                await self.send_message(chat_id, f"❌ *Error:* {escape_markdown_v2(e.detail)}")
+                return "approve_failed"
+
+        elif cmd == "/reject":
+            parts = text.split(maxsplit=1)
+            if len(parts) < 2:
+                await self.send_message(chat_id, "Usage: `/reject <approval_id>`")
+                return "reject_missing_id"
+            approval_id = parts[1].strip()
+            try:
+                appr = await evaluate_approval(
+                    session=session,
+                    approval_id=approval_id,
+                    decision="REJECTED",
+                    decided_by_user_id=owner_user_id,
+                    reason="Rejected via Telegram command"
+                )
+                await session.commit()
+                await self.send_message(chat_id, f"🛑 *Action Rejected*\nAction `{escape_markdown_v2(appr.action_type)}` rejected.")
+                return "reject_handled"
+            except HTTPException as e:
+                await self.send_message(chat_id, f"❌ *Error:* {escape_markdown_v2(e.detail)}")
+                return "reject_failed"
+
+        elif cmd == "/emergency_stop":
             tasks, _ = await list_tasks(session)
             cancelled_count = 0
             for t in tasks:
@@ -198,8 +335,8 @@ class TelegramService:
             await session.commit()
 
             reply = f"🚨 *EMERGENCY STOP EXECUTED*\nTerminated and cancelled {cancelled_count} active tasks."
-            await self.send_message(chat_id, escape_markdown_v2(reply))
+            await self.send_message(chat_id, reply)
             return "emergency_stop_handled"
 
+        await self.send_message(chat_id, "❓ Unknown command. Type /help to see available commands.")
         return "unrecognized_command"
-

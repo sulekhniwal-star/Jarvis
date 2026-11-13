@@ -20,15 +20,17 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Initializes database schema and default owner on application startup."""
     logger.info("Initializing Jarvis backend", environment=settings.ENVIRONMENT)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    if settings.ENVIRONMENT != "testing":
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
 
-    async with async_session_factory() as session:
-        await ensure_owner_user_exists(session)
+        async with async_session_factory() as session:
+            await ensure_owner_user_exists(session)
     logger.info("Jarvis backend initialized successfully")
     yield
     logger.info("Shutting down Jarvis backend")
-    await engine.dispose()
+    if settings.ENVIRONMENT != "testing":
+        await engine.dispose()
 
 
 app = FastAPI(

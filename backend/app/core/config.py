@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_MODEL: str = "openrouter/auto"
 
+    # Telegram Integration
+    TELEGRAM_BOT_TOKEN: str = ""
+    AUTHORIZED_TELEGRAM_USER_ID: str = ""
+    TELEGRAM_MODE: str = "polling"
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",

@@ -64,8 +64,12 @@ class TraceAndAuditMiddleware:
 
         logger.info("ACTION_START", trace_id=trace_id, method=method, path=path)
 
+        response_started = False
+
         async def send_wrapper(message):
+            nonlocal response_started
             if message["type"] == "http.response.start":
+                response_started = True
                 duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
                 status_code = message.get("status", 200)
 
@@ -115,4 +119,31 @@ class TraceAndAuditMiddleware:
                     sentry_sdk.capture_exception(exc)
                 except Exception:
                     pass
-            raise exc
+
+            if not response_started:
+                import json
+                error_body = json.dumps({
+                    "detail": f"Internal execution error: {str(exc)}",
+                    "trace_id": trace_id,
+                    "duration_ms": duration_ms,
+                    "status": "error"
+                }).encode("utf-8")
+
+                await send({
+                    "type": "http.response.start",
+                    "status": 500,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"access-control-allow-origin", b"*"),
+                        (b"access-control-allow-methods", b"*"),
+                        (b"access-control-allow-headers", b"*"),
+                        (b"x-trace-id", trace_id.encode("utf-8")),
+                        (b"x-response-time-ms", str(duration_ms).encode("utf-8")),
+                    ],
+                })
+                await send({
+                    "type": "http.response.body",
+                    "body": error_body,
+                })
+            else:
+                raise exc

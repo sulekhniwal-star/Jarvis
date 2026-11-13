@@ -46,6 +46,9 @@ ai-providers = [
     "openai>=1.54.0",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"

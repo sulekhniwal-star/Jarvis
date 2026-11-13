@@ -90,3 +90,4 @@ class CodingAgent:
             "files_modified": [c.get("file_path") for c in changes],
             "execution_logs": logs
         }
+

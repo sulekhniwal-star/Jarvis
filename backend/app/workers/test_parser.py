@@ -54,3 +54,4 @@ def parse_test_results(exit_code: int, stdout: str, stderr: str) -> Dict[str, An
         "passed_count": passed_count,
         "failed_count": failed_count
     }
+

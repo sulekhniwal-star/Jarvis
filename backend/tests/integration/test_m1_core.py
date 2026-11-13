@@ -5,72 +5,9 @@ Uses StaticPool in-memory SQLite and httpx AsyncClient for 100% offline, determi
 """
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
+from httpx import AsyncClient
 
-from app.core.database import get_db_session
-from app.core.security import hash_password
 from app.main import app
-from app.models.base import Base
-from app.models.user import User
-
-# Test database engine using StaticPool so in-memory DB is shared across async sessions
-_TEST_DB_URL = "sqlite+aiosqlite://"
-_engine = create_async_engine(
-    _TEST_DB_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-_session_factory = async_sessionmaker(
-    bind=_engine,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False
-)
-
-
-async def override_get_db_session():
-    async with _session_factory() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-
-
-app.dependency_overrides[get_db_session] = override_get_db_session
-
-
-@pytest.fixture(autouse=True)
-async def setup_test_database():
-    """Sets up fresh database schema and default owner user for each test."""
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    async with _session_factory() as session:
-        user = User(
-            username="test_owner",
-            hashed_password=hash_password("SuperSecretPassword123!"),
-            display_name="Test Owner",
-            role="owner",
-            is_active=True
-        )
-        session.add(user)
-        await session.commit()
-
-    yield
-
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest.fixture
-async def client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
 
 
 @pytest.fixture

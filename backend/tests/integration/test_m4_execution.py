@@ -156,3 +156,4 @@ async def test_end_to_end_coding_agent_on_real_codebase(tmp_path: Path):
     modified_content = (src_dir / "calculator.py").read_text(encoding="utf-8")
     assert "if b == 0:" in modified_content
     assert "return 0" in modified_content
+

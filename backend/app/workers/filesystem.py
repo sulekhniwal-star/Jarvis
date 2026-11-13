@@ -69,3 +69,4 @@ class SandboxedFilesystem:
                 rel = p.relative_to(self.workspace_root).as_posix()
                 results.append(rel)
         return sorted(results)
+

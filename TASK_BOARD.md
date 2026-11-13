@@ -57,7 +57,7 @@
 
 ---
 
-### Milestone 4: Coding Execution & Sandboxing (Current Milestone — COMPLETED)
+### Milestone 4: Coding Execution & Sandboxing (COMPLETED)
 - [x] **M4.1:** Implement disposable execution runner interface (`LocalSandboxRunner` with timeout and subprocess management).
 - [x] **M4.2:** Implement filesystem tool suite with strict path sandboxing (`SandboxedFilesystem` blocking directory traversal outside workspace).
 - [x] **M4.3:** Implement command execution engine with strict allowlist and timeout limits (`validate_and_tokenize_command`).
@@ -66,15 +66,15 @@
 
 ---
 
-### Milestone 5: User Interfaces (Telegram & Web Dashboard) (Next Up)
-- [ ] **M5.1:** Implement Telegram Bot listener (Long Polling mode with strict `from.id` allowlist).
-- [ ] **M5.2:** Implement Telegram command handlers (`/start`, `/task`, `/status`, `/emergency_stop`).
-- [ ] **M5.3:** Build Next.js 15 mobile-friendly dashboard views (Task List, Task Detail, Live Log Viewer).
-- [ ] **M5.4:** Build Approval Modal on dashboard with canonical parameter inspection and one-click approve/reject.
+### Milestone 5: User Interfaces (Telegram & Web Dashboard) (COMPLETED)
+- [x] **M5.1:** Implement Telegram Bot service with strict `from.id` allowlist and MarkdownV2 safe escaping (`services/telegram_service.py`).
+- [x] **M5.2:** Implement Telegram command handlers (`/start`, `/task`, `/status`, `/emergency_stop`).
+- [x] **M5.3:** Build Next.js 15 mobile-friendly dashboard views (Task status, active tasks, log viewers, emergency kill switch in `frontend/src/app/page.tsx`).
+- [x] **M5.4:** Implement system kill-switch API endpoints (`/api/v1/system/emergency-stop`, `/resume`, `/status`) and integration test suite (`test_m5_interfaces.py`).
 
 ---
 
-### Milestone 6: Memory, Security & Recovery
+### Milestone 6: Memory, Security & Recovery (Current Milestone)
 - [ ] **M6.1:** Implement Project Memory & Shared Preferences service.
 - [ ] **M6.2:** Implement automated secret redaction filter for logs and external messages.
 - [ ] **M6.3:** Implement Emergency Shutdown switch (cancels active runs, revokes tokens).

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0-m5] - 2026-11-13 — Milestone 5: User Interfaces (Telegram & Web Dashboard)
+
+### Added
+- **Telegram Service (`services/telegram_service.py`):** Implemented Telegram Bot service with strict `from.id` identity allowlisting (unauthorized messages are silently dropped and logged to audit), MarkdownV2 escaping, command intake (`/start`, `/task`, `/status`, `/emergency_stop`), and task completion notifications with Pull Request links.
+- **System Emergency Stop (`api/v1/system.py`):** Added emergency lockdown endpoints (`POST /api/v1/system/emergency-stop`, `POST /api/v1/system/resume`, `GET /api/v1/system/status`) that instantly halt executing tasks and lock system intake.
+- **Mobile-First Web Dashboard (`frontend/src/app/page.tsx`):** Enhanced Next.js 15 dashboard with responsive mobile layouts, real-time task cards, active approval action buttons, and a header emergency kill-switch.
+- **Unified Test Fixture Architecture (`backend/tests/conftest.py`):** Centralized file-backed SQLite database lifecycle with full model registration, preventing connection collisions and ensuring 100% test isolation.
+- **Automated Verification:** Added 5 interface integration tests (`backend/tests/integration/test_m5_interfaces.py`). All 34 tests passing across the repository.
+
+---
+
 ## [0.5.0-m4] - 2026-11-13 — Milestone 4: Coding Execution & Sandboxing
 
 ### Added

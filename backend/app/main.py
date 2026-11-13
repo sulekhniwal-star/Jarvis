@@ -57,8 +57,9 @@ app.add_middleware(
 # Trace & Action Audit Middleware (logs every click, status, duration, crash)
 app.add_middleware(TraceAndAuditMiddleware)
 
-# Include v1 master router
+# Include v1 master router at canonical /api/v1 and root fallback for resilient client compatibility
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+app.include_router(api_v1_router, prefix="")
 
 
 @app.get("/")

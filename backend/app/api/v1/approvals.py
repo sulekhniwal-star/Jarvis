@@ -32,6 +32,7 @@ async def list_approvals(
 
 
 @router.post("/{approval_id}/decide", response_model=ApprovalResponse)
+@router.post("/{approval_id}/decision", response_model=ApprovalResponse)
 async def decide_approval(
     approval_id: str,
     decision_in: ApprovalDecision,

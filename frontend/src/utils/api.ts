@@ -3,7 +3,16 @@
  * Connects the Stark Industries HUD to the live FastAPI backend with JWT session management.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+function resolveApiBase(): string {
+  let base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+  base = base.trim().replace(/\/+$/, "");
+  if (!base.endsWith("/api/v1")) {
+    base = `${base}/api/v1`;
+  }
+  return base;
+}
+
+const API_BASE = resolveApiBase();
 
 const DEFAULT_CREDENTIALS = {
   username: "jarvis_owner",

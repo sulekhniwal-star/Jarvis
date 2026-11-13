@@ -172,3 +172,4 @@ def test_github_webhook_hmac_signature_validation():
 
     # Missing or malformed header fails
     assert verify_github_signature(raw_payload, "invalid_header", secret) is False
+

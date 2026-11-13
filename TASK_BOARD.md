@@ -1,7 +1,7 @@
 # Project Jarvis — Task Board
 
 **Last Updated:** 2026-11-13  
-**Status:** Milestone 3 Complete — Ready for Milestone 4  
+**Status:** Milestone 4 Complete — Ready for Milestone 5  
 
 ---
 
@@ -48,7 +48,7 @@
 
 ---
 
-### Milestone 3: GitHub Integration (Current Milestone — COMPLETED)
+### Milestone 3: GitHub Integration (COMPLETED)
 - [x] **M3.1:** Implement GitHub App JWT generator (RS256) and ephemeral installation token requester (`services/github_app_auth.py`).
 - [x] **M3.2:** Implement repository access validator enforcing strict organization and repo allowlists (`services/github_service.py`).
 - [x] **M3.3:** Implement Git branch manager with protected branch guard preventing direct pushes to `main`/`master`.
@@ -57,16 +57,16 @@
 
 ---
 
-### Milestone 4: Coding Execution & Sandboxing (Next Up)
-- [ ] **M4.1:** Implement disposable execution runner interface (GitHub Actions workflow dispatcher & local Docker worker).
-- [ ] **M4.2:** Implement filesystem tool suite with strict path sandboxing.
-- [ ] **M4.3:** Implement command execution engine with strict allowlist and timeout limits.
-- [ ] **M4.4:** Implement test execution parser (capturing exit code 0 vs non-zero, extracting test output).
-- [ ] **M4.5:** Implement diagnostic retry loop (analyze error trace, retry within budget of 3).
+### Milestone 4: Coding Execution & Sandboxing (Current Milestone — COMPLETED)
+- [x] **M4.1:** Implement disposable execution runner interface (`LocalSandboxRunner` with timeout and subprocess management).
+- [x] **M4.2:** Implement filesystem tool suite with strict path sandboxing (`SandboxedFilesystem` blocking directory traversal outside workspace).
+- [x] **M4.3:** Implement command execution engine with strict allowlist and timeout limits (`validate_and_tokenize_command`).
+- [x] **M4.4:** Implement test execution parser (`parse_test_results` capturing exit code 0 vs non-zero).
+- [x] **M4.5:** Implement diagnostic retry loop in autonomous coding agent (`CodingAgent` verified against a real test codebase).
 
 ---
 
-### Milestone 5: User Interfaces (Telegram & Web Dashboard)
+### Milestone 5: User Interfaces (Telegram & Web Dashboard) (Next Up)
 - [ ] **M5.1:** Implement Telegram Bot listener (Long Polling mode with strict `from.id` allowlist).
 - [ ] **M5.2:** Implement Telegram command handlers (`/start`, `/task`, `/status`, `/emergency_stop`).
 - [ ] **M5.3:** Build Next.js 15 mobile-friendly dashboard views (Task List, Task Detail, Live Log Viewer).

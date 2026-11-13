@@ -66,3 +66,4 @@ async def get_installation_access_token(
     finally:
         if not http_client:
             await client.aclose()
+

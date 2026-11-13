@@ -10,7 +10,13 @@ from app.core.database import get_db_session
 from app.models.user import User
 from app.schemas.task import TaskCreate, TaskListResponse, TaskResponse
 from app.services.auth_service import get_current_user
-from app.services.task_service import cancel_task, create_task, get_task_by_id, list_tasks
+from app.services.task_service import (
+    approve_and_execute_task,
+    cancel_task,
+    create_task,
+    get_task_by_id,
+    list_tasks
+)
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -57,11 +63,24 @@ async def api_get_task(
 
 
 @router.post("/{task_id}/cancel", response_model=TaskResponse)
+@router.post("/{task_id}/reject", response_model=TaskResponse)
 async def api_cancel_task(
     task_id: str,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session)
 ):
-    """Cancels an active task and terminates worker execution."""
+    """Cancels or rejects an active task and terminates worker execution."""
     return await cancel_task(session, task_id, current_user.id)
+
+
+@router.post("/{task_id}/approve", response_model=TaskResponse)
+@router.post("/{task_id}/execute", response_model=TaskResponse)
+async def api_approve_task(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session)
+):
+    """Approves a pending task and triggers execution protocol."""
+    return await approve_and_execute_task(session, task_id, current_user.id)
+
 

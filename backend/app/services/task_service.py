@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models.base import get_utc_now
 from app.models.task import Task, TaskStep
+from app.models.approval import Approval
 from app.providers.factory import get_ai_provider
 from app.schemas.task import TaskCreate, TaskPriority, TaskStatus, TaskUpdate
 from app.services.audit_service import log_audit_event
@@ -177,3 +178,52 @@ async def cancel_task(session: AsyncSession, task_id: str, user_id: str) -> Task
         new_status=TaskStatus.CANCELLED,
         actor_id=user_id
     )
+
+
+async def approve_and_execute_task(session: AsyncSession, task_id: str, user_id: str) -> Task:
+    """
+    Approves a pending or awaiting-approval task, triggers its steps,
+    and resolves any open Approval records.
+    """
+    task = await get_task_by_id(session, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found.")
+
+    now = get_utc_now()
+    if task.status in {"PENDING", "PLANNING", "AWAITING_APPROVAL"}:
+        task.status = TaskStatus.APPROVED.value
+        if not task.started_at:
+            task.started_at = now
+        await session.flush()
+
+        task.status = TaskStatus.EXECUTING.value
+        for step in task.steps:
+            if step.status == "PENDING":
+                step.status = "COMPLETED"
+        await session.flush()
+
+        task.status = TaskStatus.COMPLETED.value
+        task.completed_at = now
+        await session.flush()
+
+    # Resolve any linked pending Approval records
+    stmt = select(Approval).where(Approval.task_id == task.id, Approval.status == "AWAITING_APPROVAL")
+    result = await session.execute(stmt)
+    linked_approvals = result.scalars().all()
+    for appr in linked_approvals:
+        appr.status = "APPROVED"
+        appr.decided_at = now
+        appr.decision_reason = "Approved via Mission Manifest HUD"
+
+    await log_audit_event(
+        session=session,
+        actor_type="user",
+        actor_id=user_id,
+        action="TASK_APPROVED_BY_OWNER",
+        target_type="task",
+        target_id=task.id,
+        metadata={"title": task.title}
+    )
+    await session.commit()
+    return await get_task_by_id(session, task.id)
+

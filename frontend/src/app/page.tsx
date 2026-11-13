@@ -25,6 +25,7 @@ import {
   ExternalLink,
   FileCode,
   CheckCircle2,
+  XCircle,
   AlertTriangle,
   Sparkles,
 } from "lucide-react";
@@ -35,6 +36,8 @@ import {
   createTaskApi,
   fetchApprovals,
   evaluateApprovalApi,
+  approveTaskApi,
+  rejectTaskApi,
   emergencyStopApi,
   fetchFleetRepos,
   fetchRepoAudit,
@@ -209,6 +212,30 @@ export default function DashboardPage() {
     } catch (err) {
       console.warn("Approval evaluated locally:", err);
       setPendingApprovals((prev) => prev.filter((a) => a.id !== id));
+    }
+  };
+
+  const handleApproveTask = async (taskId: string) => {
+    hudSound.playBlip();
+    try {
+      await approveTaskApi(taskId);
+      showToast(`Mission ${taskId.slice(0, 8)} Authorized! Protocol Active.`);
+      loadData();
+    } catch (err: any) {
+      console.error("Task authorization failed:", err);
+      showToast(`Authorization failed: ${err.message || "Network Error"}`);
+    }
+  };
+
+  const handleRejectTask = async (taskId: string) => {
+    hudSound.playEmergency();
+    try {
+      await rejectTaskApi(taskId);
+      showToast(`Mission ${taskId.slice(0, 8)} Aborted/Cancelled.`);
+      loadData();
+    } catch (err: any) {
+      console.error("Task cancellation failed:", err);
+      showToast(`Cancellation failed: ${err.message || "Network Error"}`);
     }
   };
 
@@ -793,8 +820,33 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
+                    {(task.status === "PENDING" || task.status === "AWAITING_APPROVAL" || task.status === "PLANNING") && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleApproveTask(task.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-emerald-400 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 text-xs font-extrabold transition-all shadow-[0_0_10px_#10b981] hover:scale-105 active:scale-95"
+                          title="Authorize and execute this autonomous mission"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          APPROVE & RUN
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRejectTask(task.id)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-rose-500/50 bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 text-xs font-semibold transition-all hover:border-rose-400"
+                          title="Abort and cancel this mission"
+                        >
+                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                          REJECT
+                        </button>
+                      </>
+                    )}
+
                     <button
+                      type="button"
                       onClick={() => {
                         hudSound.playBlip();
                         setSelectedLogsTask(task);

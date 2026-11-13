@@ -284,6 +284,18 @@ export async function evaluateApprovalApi(id: string, decision: "APPROVED" | "RE
   });
 }
 
+export async function approveTaskApi(taskId: string): Promise<any> {
+  return await apiRequest(`/tasks/${taskId}/approve`, {
+    method: "POST",
+  });
+}
+
+export async function rejectTaskApi(taskId: string): Promise<any> {
+  return await apiRequest(`/tasks/${taskId}/reject`, {
+    method: "POST",
+  });
+}
+
 export async function emergencyStopApi(): Promise<any> {
   return await apiRequest("/system/emergency-stop", {
     method: "POST",

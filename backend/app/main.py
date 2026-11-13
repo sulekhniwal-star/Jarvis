@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.core.database import async_session_factory, engine
 from app.models.base import Base
 from app.services.auth_service import ensure_owner_user_exists
+from app.middleware.trace_middleware import TraceAndAuditMiddleware
 
 logger = structlog.get_logger()
 
@@ -42,14 +43,19 @@ app = FastAPI(
     redoc_url="/redoc" if settings.DEBUG else None,
 )
 
-# CORS Middleware
+# CORS Middleware - allows localhost, Vercel deployments, and temporary domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.tmp\.now|http://localhost:\d+|http://127\.0\.0\.1:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Trace-Id", "X-Response-Time-Ms"],
 )
+
+# Trace & Action Audit Middleware (logs every click, status, duration, crash)
+app.add_middleware(TraceAndAuditMiddleware)
 
 # Include v1 master router
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)

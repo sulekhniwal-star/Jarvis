@@ -32,6 +32,7 @@ dependencies = [
     "python-telegram-bot>=21.6",
     "python-dotenv>=1.0.1",
     "psutil>=6.0.0",
+    "sentry-sdk[fastapi]>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -52,7 +53,7 @@ packages = ["app"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra -q --strict-markers"
+addopts = "-ra -q --strict-markers -p no:langsmith"
 testpaths = ["tests"]
 pythonpath = [".", ".."]
 asyncio_mode = "auto"

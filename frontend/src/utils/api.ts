@@ -47,8 +47,12 @@ export async function getAuthToken(): Promise<string | null> {
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
   const token = await getAuthToken();
+  const traceId = `clk_${Math.random().toString(36).substring(2, 10)}_${Date.now().toString(36)}`;
+  const method = options.method || "GET";
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "X-Trace-Id": traceId,
     ...(options.headers as Record<string, string>),
   };
 
@@ -56,31 +60,68 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}): P
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // 1. Log click trace locally to developer console
+  console.log(
+    `%c[CLICK TRACE] ⚡ ${method} ${endpoint}`,
+    "color: #00e5ff; font-weight: bold; background: #001f2f; padding: 2px 6px; border-radius: 4px;",
+    { traceId, payload: options.body ? JSON.parse(options.body as string) : null }
+  );
+
   const url = `${API_BASE}${endpoint}`;
-  const response = await fetch(url, { ...options, headers });
+  const startTime = performance.now();
 
-  if (response.status === 401 && token) {
-    // Token may have expired, retry once with fresh login
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("jarvis_access_token");
-    }
-    cachedToken = null;
-    const newToken = await getAuthToken();
-    if (newToken) {
-      headers["Authorization"] = `Bearer ${newToken}`;
-      const retryResponse = await fetch(url, { ...options, headers });
-      if (!retryResponse.ok) {
-        throw new Error(`API error ${retryResponse.status}: ${await retryResponse.text()}`);
+  try {
+    const response = await fetch(url, { ...options, headers });
+    const duration = Math.round(performance.now() - startTime);
+
+    if (response.status === 401 && token) {
+      // Token may have expired, retry once with fresh login
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jarvis_access_token");
       }
-      return retryResponse.json();
+      cachedToken = null;
+      const newToken = await getAuthToken();
+      if (newToken) {
+        headers["Authorization"] = `Bearer ${newToken}`;
+        const retryResponse = await fetch(url, { ...options, headers });
+        if (!retryResponse.ok) {
+          const errText = await retryResponse.text();
+          console.error(
+            `%c[CLICK TRACE] ❌ FAILED ${method} ${endpoint} (Status: ${retryResponse.status}, Duration: ${duration}ms, Trace: ${traceId})`,
+            "color: #ff3366; font-weight: bold; background: #2f000f; padding: 2px 6px;",
+            errText
+          );
+          throw new Error(`API error ${retryResponse.status}: ${errText}`);
+        }
+        return retryResponse.json();
+      }
     }
-  }
 
-  if (!response.ok) {
-    throw new Error(`API error ${response.status}: ${await response.text()}`);
-  }
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(
+        `%c[CLICK TRACE] ❌ FAILED ${method} ${endpoint} (Status: ${response.status}, Duration: ${duration}ms, Trace: ${traceId})`,
+        "color: #ff3366; font-weight: bold; background: #2f000f; padding: 2px 6px;",
+        errText
+      );
+      throw new Error(`API error ${response.status}: ${errText}`);
+    }
 
-  return response.json();
+    console.log(
+      `%c[CLICK TRACE] ✅ SUCCESS ${method} ${endpoint} (Duration: ${duration}ms, Trace: ${traceId})`,
+      "color: #00ff88; font-weight: bold; background: #002b16; padding: 2px 6px; border-radius: 4px;"
+    );
+
+    return response.json();
+  } catch (error: any) {
+    const duration = Math.round(performance.now() - startTime);
+    console.error(
+      `%c[CLICK TRACE] 💥 NETWORK CRASH on ${method} ${endpoint} (Trace: ${traceId}, Duration: ${duration}ms)`,
+      "color: #ff3366; font-weight: bold;",
+      error
+    );
+    throw error;
+  }
 }
 
 export interface TelemetryData {

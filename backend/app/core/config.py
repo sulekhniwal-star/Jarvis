@@ -67,11 +67,17 @@ class Settings(BaseSettings):
     GITHUB_TOKEN: str = ""
     GITHUB_TARGET_ORG: str = "sulekhniwal-star"
 
+    # Observability & Tracing (Sentry / Distributed Tracing)
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = "production"
+    SENTRY_TRACES_SAMPLE_RATE: float = 1.0
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
+        "https://rushing-ochre-6bax7yl.tmp.now",
     ]
 
 

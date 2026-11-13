@@ -187,6 +187,7 @@ export interface TaskItem {
     name: string;
     tool_name: string;
     status: string;
+    description?: string;
   }>;
   logs: string[];
 }
@@ -221,7 +222,7 @@ export async function fetchTasks(): Promise<TaskItem[]> {
         completedSteps: completed || (t.status === "COMPLETED" ? steps.length || 4 : 1),
         steps: steps,
         logs: steps.map(
-          (s: any) => `[Step ${s.sequence}] ${s.name} (${s.tool_name}) -> Status: ${s.status}`
+          (s: any) => `[Step ${s.sequence}] ${s.name} (${s.tool_name || "core"}) -> Status: ${s.status}${s.description ? ` // ${s.description}` : ""}`
         ),
       };
     });

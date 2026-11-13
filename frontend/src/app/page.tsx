@@ -821,6 +821,25 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex items-center flex-wrap gap-2">
+                    {(() => {
+                      const prStep = task.steps?.find((s: any) => (s as any)?.description?.includes("github.com") && (s as any)?.description?.includes("/pull/"));
+                      if (!prStep) return null;
+                      const match = (prStep as any)?.description?.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/);
+                      if (!match) return null;
+                      return (
+                        <a
+                          href={match[0]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-purple-500 bg-purple-950/80 hover:bg-purple-900 text-purple-300 text-xs font-bold transition-all shadow-[0_0_10px_#a855f7] hover:scale-105"
+                          title="View live Pull Request on GitHub"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                          VIEW PULL REQUEST
+                        </a>
+                      );
+                    })()}
+
                     {(task.status === "PENDING" || task.status === "AWAITING_APPROVAL" || task.status === "PLANNING") && (
                       <>
                         <button
@@ -1082,12 +1101,28 @@ export default function DashboardPage() {
                 &gt; MISSION: {selectedLogsTask.title}
               </div>
               {selectedLogsTask.logs && selectedLogsTask.logs.length > 0 ? (
-                selectedLogsTask.logs.map((log: string, i: number) => (
-                  <div key={i} className="flex gap-2">
-                    <span className="text-cyan-600 select-none">&gt;</span>
-                    <span>{log}</span>
-                  </div>
-                ))
+                selectedLogsTask.logs.map((log: string, i: number) => {
+                  const urlMatch = log.match(/https:\/\/github\.com\/[^\s]+\/pull\/\d+/);
+                  return (
+                    <div key={i} className="flex gap-2 items-start">
+                      <span className="text-cyan-600 select-none">&gt;</span>
+                      <div className="flex-1">
+                        <span>{urlMatch ? log.replace(urlMatch[0], "").trim() : log}</span>
+                        {urlMatch && (
+                          <a
+                            href={urlMatch[0]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-emerald-400 font-bold underline hover:text-emerald-300 ml-1.5 px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/50 shadow-[0_0_8px_#10b981]"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            {urlMatch[0]}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="text-cyan-600">&gt; No steps executed yet.</div>
               )}

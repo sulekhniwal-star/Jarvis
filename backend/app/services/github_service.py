@@ -37,12 +37,16 @@ class GitHubService:
     def validate_repository_access(self, repository: str) -> bool:
         """
         Enforces repository-level isolation.
-        Tasks cannot touch repositories outside the pre-authorized allowlist.
+        Allows pre-authorized repositories and user's configured GitHub target org.
         """
-        if not self.allowed_repositories:
-            # If no explicit allowlist provided, reject for security
-            return False
-        return repository.lower() in self.allowed_repositories
+        from app.core.config import settings
+        rep_clean = repository.lower().strip()
+        if self.allowed_repositories and rep_clean in self.allowed_repositories:
+            return True
+        target_org = (settings.GITHUB_TARGET_ORG or "sulekhniwal-star").lower()
+        if rep_clean.startswith(f"{target_org}/"):
+            return True
+        return False
 
     async def get_default_branch_sha(self, repository: str, default_branch: str = "main") -> str:
         """Retrieves the commit SHA of the base branch head."""
@@ -95,6 +99,45 @@ class GitHubService:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Failed to create branch on GitHub: {res.status_code} - {res.text}"
+            )
+        return res.json()
+
+    async def create_or_update_file(
+        self,
+        repository: str,
+        path: str,
+        content: str,
+        commit_message: str,
+        branch: str,
+        sha: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Creates or updates a file on a target branch."""
+        import base64
+        if not self.validate_repository_access(repository):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied: Repository '{repository}' is not authorized."
+            )
+
+        url = f"https://api.github.com/repos/{repository}/contents/{path}"
+        content_b64 = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+        payload: Dict[str, Any] = {
+            "message": commit_message,
+            "content": content_b64,
+            "branch": branch
+        }
+        if sha:
+            payload["sha"] = sha
+        else:
+            check_res = await self._client.get(url, params={"ref": branch})
+            if check_res.status_code == 200:
+                payload["sha"] = check_res.json().get("sha")
+
+        res = await self._client.put(url, json=payload)
+        if res.status_code not in (200, 201):
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Failed to commit file '{path}' to branch '{branch}': {res.status_code} - {res.text}"
             )
         return res.json()
 

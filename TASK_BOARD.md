@@ -1,7 +1,7 @@
 # Project Jarvis — Task Board
 
 **Last Updated:** 2026-11-13  
-**Status:** Milestone 2 Complete — Ready for Milestone 3  
+**Status:** Milestone 3 Complete — Ready for Milestone 4  
 
 ---
 
@@ -39,7 +39,7 @@
 
 ---
 
-### Milestone 2: Agent Orchestration (Current Milestone — COMPLETED)
+### Milestone 2: Agent Orchestration (COMPLETED)
 - [x] **M2.1:** Implement LangGraph `StateGraph` task workflow with checkpointer (`MemorySaver` / `AsyncPostgresSaver`).
 - [x] **M2.2:** Implement Task Planner node (breaking prompts into deterministic task steps and detecting sensitive actions).
 - [x] **M2.3:** Implement Human-in-the-Loop approval interrupt node (`interrupt_before=["approval_gate"]`).
@@ -48,16 +48,16 @@
 
 ---
 
-### Milestone 3: GitHub Integration (Next Up)
-- [ ] **M3.1:** Implement GitHub App JWT generator (RS256) and ephemeral installation token requester.
-- [ ] **M3.2:** Implement repository access validator (restrict access exclusively to designated private repo).
-- [ ] **M3.3:** Implement Git branch manager (create `jarvis/task-...` branches).
-- [ ] **M3.4:** Implement Pull Request generator with structured test evidence and diff summary.
-- [ ] **M3.5:** Implement GitHub Webhook signature validator (`X-Hub-Signature-256`).
+### Milestone 3: GitHub Integration (Current Milestone — COMPLETED)
+- [x] **M3.1:** Implement GitHub App JWT generator (RS256) and ephemeral installation token requester (`services/github_app_auth.py`).
+- [x] **M3.2:** Implement repository access validator enforcing strict organization and repo allowlists (`services/github_service.py`).
+- [x] **M3.3:** Implement Git branch manager with protected branch guard preventing direct pushes to `main`/`master`.
+- [x] **M3.4:** Implement Pull Request generator with structured markdown, test evidence, and human review requirement.
+- [x] **M3.5:** Implement GitHub Webhook signature validator (`X-Hub-Signature-256`) using constant-time HMAC-SHA256 comparison (`api/v1/webhooks.py`).
 
 ---
 
-### Milestone 4: Coding Execution & Sandboxing
+### Milestone 4: Coding Execution & Sandboxing (Next Up)
 - [ ] **M4.1:** Implement disposable execution runner interface (GitHub Actions workflow dispatcher & local Docker worker).
 - [ ] **M4.2:** Implement filesystem tool suite with strict path sandboxing.
 - [ ] **M4.3:** Implement command execution engine with strict allowlist and timeout limits.

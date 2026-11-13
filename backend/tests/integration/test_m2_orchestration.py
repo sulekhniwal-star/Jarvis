@@ -262,3 +262,4 @@ async def test_checkpoint_recovery_after_simulated_restart():
     final_state = await app_instance_2.ainvoke(None, config=config)
     assert final_state["status"] == "COMPLETED"
     assert final_state["pr_url"] is not None
+

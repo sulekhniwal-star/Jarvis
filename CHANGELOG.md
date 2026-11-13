@@ -7,14 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0-m3] - 2026-11-13 — Milestone 3: GitHub Integration
+
+### Added
+- **GitHub App Cryptographic Authentication (`services/github_app_auth.py`):** Implemented asymmetric RS256 JWT signing for GitHub App authentication and exchange for short-lived 60-minute installation access tokens (`ghs_...`).
+- **Repository Access Broker (`services/github_service.py`):** Enforced least-privilege repository isolation; tasks are cryptographically and logically blocked from interacting with unapproved repositories.
+- **Branch Management & Protected Branch Guard:** Added git branch creation with strict safety checks preventing direct creation or pushing to protected branches (`main`, `master`, `develop`).
+- **Pull Request Engine with Evidence Badge:** Implemented Pull Request generator that embeds structured task metadata, diff summaries, and honest test execution results (status badges, exit codes, output logs) with explicit human review disclaimers.
+- **HMAC Webhook Signature Verification (`api/v1/webhooks.py`):** Added `POST /api/v1/webhooks/github` with constant-time HMAC-SHA256 signature verification (`X-Hub-Signature-256`) and audit logging.
+- **Automated Verification:** Added 5 new GitHub integration tests (`backend/tests/integration/test_m3_github.py`). All 25 repository tests passing in 3.12s.
+
+---
+
 ## [0.3.0-m2] - 2026-11-13 — Milestone 2: Agent Orchestration
 
 ### Added
 - **LangGraph State Machine (`orchestrator/state.py`, `workflow.py`):** Implemented typed graph state `TaskGraphState` and compiled `StateGraph` connecting intake, planning, approval gating, code execution, test verification, diagnostic retry, and PR generation.
-- **Human-in-the-Loop Interrupts:** Configured `interrupt_before=["approval_gate"]` with automatic state persistence. Tasks containing high-consequence keywords (e.g. "production", "delete", "paid") pause execution awaiting human approval.
-- **Workflow Resilience & Recovery:** Checkpoint persistence allows brand new process instances to re-hydrate interrupted task state from thread IDs and resume seamlessly without step duplication.
-- **Diagnostic Retry Loop:** Integrated test failure detection that automatically routes to error diagnosis and retries execution within a strict budget (max 3 retries).
-- **Automated Verification:** Added 5 comprehensive orchestration integration tests (`backend/tests/integration/test_m2_orchestration.py`). All 20 repository tests passing in 2.61s.
+- **Human-in-the-Loop Interrupts:** Configured `interrupt_before=["approval_gate"]` with automatic state persistence.
+- **Workflow Resilience & Recovery:** Checkpoint persistence allows brand new process instances to re-hydrate interrupted task state from thread IDs.
+- **Diagnostic Retry Loop:** Integrated test failure detection that automatically routes to error diagnosis and retries execution.
+- **Automated Verification:** Added 5 orchestration integration tests.
 
 ---
 
@@ -22,15 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Backend Application Core:** Configured Python 3.12 virtual environment and FastAPI application in `backend/app/main.py`.
-- **Database Persistence:** Defined SQLAlchemy 2.0 async models (`User`, `Project`, `Task`, `TaskStep`, `Execution`, `Approval`, `AuditEvent`) in `backend/app/models/`.
-- **Security & Authentication:** Implemented Argon2id password hashing, JWT bearer tokens, and Fernet AES-256 encryption in `backend/app/core/security.py` and `backend/app/services/auth_service.py`.
-- **Task Management Engine:** Built Task CRUD service with server-side validated state machine transitions, cancellation, and automated plan breakdown in `backend/app/services/task_service.py`.
-- **Deterministic Approvals:** Implemented approval engine with canonical JSON SHA-256 parameter hashing in `backend/app/services/approval_service.py`.
-- **Audit Logging with Redaction:** Built append-only audit event service with automated secret scrubbing in `backend/app/services/audit_service.py`.
-- **Provider Abstraction:** Implemented `AIProvider` base interface and offline `MockAIProvider` in `backend/app/providers/`.
+- **Database Persistence:** Defined SQLAlchemy 2.0 async models (`User`, `Project`, `Task`, `TaskStep`, `Execution`, `Approval`, `AuditEvent`).
+- **Security & Authentication:** Implemented Argon2id password hashing, JWT bearer tokens, and Fernet AES-256 encryption.
+- **Task Management Engine:** Built Task CRUD service with server-side validated state machine transitions.
+- **Deterministic Approvals:** Implemented approval engine with canonical JSON SHA-256 parameter hashing.
+- **Audit Logging with Redaction:** Built append-only audit event service with automated secret scrubbing.
+- **Provider Abstraction:** Implemented `AIProvider` base interface and offline `MockAIProvider`.
 - **REST API Endpoints:** Wired `/api/v1/health`, `/api/v1/auth`, `/api/v1/tasks`, and `/api/v1/approvals`.
-- **Next.js 15 Frontend:** Scaffolded responsive mobile-first dashboard skeleton in `frontend/` with Task Intake, Task Queue, and Emergency Kill-Switch.
-- **Automated Test Suite:** Created 15 passing automated unit, integration, and security tests (`backend/tests/`).
+- **Next.js 15 Frontend:** Scaffolded responsive mobile-first dashboard skeleton.
 
 ---
 
@@ -38,13 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Completed technical research across all 11 core domains (`RESEARCH_LOG.md`).
-- Established Technology Decision Register with detailed rationales, limitations, and alternatives (`TECH_STACK.md`).
-- Created Architecture Decision Records ADR-001 through ADR-012 (`DECISION_LOG.md`).
-- Documented Bifurcated Enclave Architecture, trust boundaries, failure handling, and state machine (`SYSTEM_ARCHITECTURE.md`).
-- Formalized STRIDE threat analysis and OWASP Top 10 for LLMs security controls (`THREAT_MODEL.md`).
-- Updated system Security Policy with mandatory sandbox boundaries and redaction rules (`SECURITY_POLICY.md`).
-- Inspected local development environment on Windows 11 host.
-- Established repository directory layout.
-- Added comprehensive `.env.example` template.
-- Added Pytest baseline fixtures and architectural unit tests.
-- Added GitHub Actions CI pipeline (`.github/workflows/ci.yml`).
+- Established Technology Decision Register (`TECH_STACK.md`) and ADRs (`DECISION_LOG.md`).
+- Documented Bifurcated Enclave Architecture (`SYSTEM_ARCHITECTURE.md`) and STRIDE Threat Model (`THREAT_MODEL.md`).
+- Established repository skeleton and CI pipeline.

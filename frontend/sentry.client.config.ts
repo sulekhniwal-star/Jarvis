@@ -19,3 +19,4 @@ if (SENTRY_DSN) {
   });
   console.log("[J.A.R.V.I.S. Tracing] Sentry Full-Stack Telemetry & Click Analyzer Active.");
 }
+

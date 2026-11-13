@@ -95,3 +95,4 @@ def decrypt_secret(encrypted_secret: str) -> str:
         return ""
     fernet = _get_fernet()
     return fernet.decrypt(encrypted_secret.encode()).decode()
+

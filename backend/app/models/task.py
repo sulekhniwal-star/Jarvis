@@ -57,3 +57,4 @@ class Execution(Base, TimestampMixin):
     logs: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     task: Mapped["Task"] = relationship("Task", back_populates="executions")
+

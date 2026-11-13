@@ -17,3 +17,4 @@ class Project(Base, TimestampMixin):
     repository_name: Mapped[str] = mapped_column(String(100), nullable=False)
     default_branch: Mapped[str] = mapped_column(String(50), default="main", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+

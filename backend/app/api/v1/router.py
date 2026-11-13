@@ -13,3 +13,4 @@ api_v1_router.include_router(health_router)
 api_v1_router.include_router(auth_router)
 api_v1_router.include_router(tasks_router)
 api_v1_router.include_router(approvals_router)
+

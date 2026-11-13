@@ -1,7 +1,7 @@
 # Project Jarvis — Task Board
 
 **Last Updated:** 2026-11-13  
-**Status:** Milestone 1 Complete — Ready for Milestone 2  
+**Status:** Milestone 2 Complete — Ready for Milestone 3  
 
 ---
 
@@ -15,7 +15,7 @@
 
 ## Milestone Tracking
 
-### Milestone 0: Research and Specification
+### Milestone 0: Research and Specification (COMPLETED)
 - [x] **M0.1:** Research current official documentation & stable versions (Python 3.12, FastAPI, LangGraph, Next.js 15, PostgreSQL 16).
 - [x] **M0.2:** Verify model provider pricing, free-tier quotas, and data privacy policies.
 - [x] **M0.3:** Verify hosting, free-tier constraints (Supabase 500MB DB & 7-day pause rule, GitHub Actions 2,000 mins/mo).
@@ -27,7 +27,7 @@
 
 ---
 
-### Milestone 1: Core Foundation (Current Milestone — COMPLETED)
+### Milestone 1: Core Foundation (COMPLETED)
 - [x] **M1.1:** Setup Python backend virtual environment / project files (`pyproject.toml`, FastAPI app skeleton).
 - [x] **M1.2:** Implement database models (SQLAlchemy 2.0 Async: `User`, `Project`, `Task`, `TaskStep`, `Execution`, `Approval`, `AuditEvent`).
 - [x] **M1.3:** Implement Authentication service (Argon2id hashing, JWT session bearer tokens, single-owner allowlist).
@@ -39,16 +39,16 @@
 
 ---
 
-### Milestone 2: Agent Orchestration (Next Up)
-- [ ] **M2.1:** Implement LangGraph `StateGraph` task workflow with `AsyncPostgresSaver` / checkpointer.
-- [ ] **M2.2:** Implement Task Planner node (breaking prompts into deterministic task steps).
-- [ ] **M2.3:** Implement Human-in-the-Loop approval interrupt node.
-- [ ] **M2.4:** Implement pause, resume, and cancellation mechanics.
-- [ ] **M2.5:** Test workflow durability across simulated coordinator restart.
+### Milestone 2: Agent Orchestration (Current Milestone — COMPLETED)
+- [x] **M2.1:** Implement LangGraph `StateGraph` task workflow with checkpointer (`MemorySaver` / `AsyncPostgresSaver`).
+- [x] **M2.2:** Implement Task Planner node (breaking prompts into deterministic task steps and detecting sensitive actions).
+- [x] **M2.3:** Implement Human-in-the-Loop approval interrupt node (`interrupt_before=["approval_gate"]`).
+- [x] **M2.4:** Implement pause, resume, diagnostic retry loop, and rejection handling.
+- [x] **M2.5:** Test workflow durability across simulated coordinator restart (all 5 orchestration tests passing in 0.65s).
 
 ---
 
-### Milestone 3: GitHub Integration
+### Milestone 3: GitHub Integration (Next Up)
 - [ ] **M3.1:** Implement GitHub App JWT generator (RS256) and ephemeral installation token requester.
 - [ ] **M3.2:** Implement repository access validator (restrict access exclusively to designated private repo).
 - [ ] **M3.3:** Implement Git branch manager (create `jarvis/task-...` branches).

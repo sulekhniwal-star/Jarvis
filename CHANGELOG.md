@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0-m2] - 2026-11-13 — Milestone 2: Agent Orchestration
+
+### Added
+- **LangGraph State Machine (`orchestrator/state.py`, `workflow.py`):** Implemented typed graph state `TaskGraphState` and compiled `StateGraph` connecting intake, planning, approval gating, code execution, test verification, diagnostic retry, and PR generation.
+- **Human-in-the-Loop Interrupts:** Configured `interrupt_before=["approval_gate"]` with automatic state persistence. Tasks containing high-consequence keywords (e.g. "production", "delete", "paid") pause execution awaiting human approval.
+- **Workflow Resilience & Recovery:** Checkpoint persistence allows brand new process instances to re-hydrate interrupted task state from thread IDs and resume seamlessly without step duplication.
+- **Diagnostic Retry Loop:** Integrated test failure detection that automatically routes to error diagnosis and retries execution within a strict budget (max 3 retries).
+- **Automated Verification:** Added 5 comprehensive orchestration integration tests (`backend/tests/integration/test_m2_orchestration.py`). All 20 repository tests passing in 2.61s.
+
+---
+
 ## [0.2.0-m1] - 2026-11-13 — Milestone 1: Core Foundation
 
 ### Added

@@ -64,3 +64,4 @@ async def api_cancel_task(
 ):
     """Cancels an active task and terminates worker execution."""
     return await cancel_task(session, task_id, current_user.id)
+

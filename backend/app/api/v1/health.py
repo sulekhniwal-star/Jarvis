@@ -27,3 +27,4 @@ async def readiness(session: AsyncSession = Depends(get_db_session)):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Database unreachable: {str(e)}"
         )
+

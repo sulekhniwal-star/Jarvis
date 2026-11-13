@@ -66,3 +66,4 @@ def test_secret_redaction_filter():
     assert "ghp_" not in redacted
     assert "eyJhbGci" not in redacted
     assert "[REDACTED]" in redacted
+

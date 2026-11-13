@@ -19,3 +19,4 @@ class AuditEventResponse(BaseModel):
 
     class Config:
         from_attributes = True
+

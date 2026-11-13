@@ -27,3 +27,4 @@ class AIProvider(ABC):
     ) -> Dict[str, Any]:
         """Generates code changes and explanations."""
         pass
+

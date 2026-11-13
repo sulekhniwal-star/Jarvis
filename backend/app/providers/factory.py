@@ -14,3 +14,4 @@ def get_ai_provider() -> AIProvider:
         return MockAIProvider()
     # When other providers are added, they are instantiated here
     return MockAIProvider()
+

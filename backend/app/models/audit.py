@@ -18,3 +18,4 @@ class AuditEvent(Base, TimestampMixin):
     target_type: Mapped[str] = mapped_column(String(50), nullable=False)
     target_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+

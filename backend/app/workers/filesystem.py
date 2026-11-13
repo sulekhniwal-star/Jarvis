@@ -5,6 +5,7 @@ symbolic link attacks, and access outside the assigned workspace.
 """
 
 from pathlib import Path
+import re
 from typing import List
 from fastapi import HTTPException, status
 
@@ -23,12 +24,28 @@ class SandboxedFilesystem:
     def resolve_safe_path(self, relative_path: str) -> Path:
         """
         Resolves path and guarantees it resides within workspace_root.
-        Prevents directory traversal attacks (../, absolute paths, symlink escapes).
+        Prevents directory traversal attacks (../, absolute paths, symlink escapes, Windows drive escapes).
         """
         if not relative_path or not relative_path.strip():
             raise SecurityException("Empty path is invalid.")
 
-        target = (self.workspace_root / relative_path).resolve()
+        norm = relative_path.replace("\\", "/")
+
+        # Check for foreign OS drive letter or Windows absolute paths on POSIX
+        if re.match(r"^[a-zA-Z]:", norm):
+            try:
+                target = Path(norm).resolve()
+                target.relative_to(self.workspace_root)
+                return target
+            except ValueError:
+                raise SecurityException(
+                    f"Path traversal detected: Target '{relative_path}' is outside workspace '{self.workspace_root}'."
+                )
+
+        if norm.startswith("/"):
+            target = Path(norm).resolve()
+        else:
+            target = (self.workspace_root / norm).resolve()
 
         # Strict containment check
         try:

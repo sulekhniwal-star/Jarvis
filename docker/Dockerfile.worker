@@ -1,0 +1,29 @@
+# Project Jarvis — Isolated Coding Worker Execution Container
+# Provides sandboxed CLI tools without control-plane secrets
+
+FROM python:3.12-slim
+
+WORKDIR /workspace
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    pytest \
+    ruff \
+    pytest-asyncio
+
+# Create unprivileged worker user
+RUN groupadd -g 2001 worker && \
+    useradd -u 2001 -g worker -s /bin/bash -m worker && \
+    chown -R worker:worker /workspace
+
+USER worker
+
+CMD ["tail", "-f", "/dev/null"]
+

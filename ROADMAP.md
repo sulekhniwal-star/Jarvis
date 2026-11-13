@@ -1,5 +1,9 @@
 # Roadmap
 
+> [!NOTE]
+> **Status: v1.0 MVP COMPLETED & VERIFIED (Phases 0–7)**
+> All core foundation, agent orchestration, GitHub integration, sandboxed execution, user interfaces, memory/security, and supervised self-improvement milestones are fully implemented with 43 automated passing tests.
+
 ## Planning assumptions
 
 -   Owner availability: 25+ hours/week.

@@ -1,17 +1,48 @@
 # Project Jarvis
 
-**Personal AI Engineering Platform --- Documentation Pack**\
-**Target:** MVP 1.0 \| **Status:** Architecture baseline, not production
-approval
+**Personal AI Engineering Platform — Autonomous SDLC Assistant**  
+**Target:** MVP 1.0 | **Status:** Implemented & Verified (43 Automated Tests Passing)
 
 ## Purpose
 
-Jarvis is a cloud-coordinated personal AI assistant whose first priority
-is autonomous software development. It accepts tasks, researches, plans,
-edits code in isolated environments, runs tests, and prepares GitHub
-pull requests for human review.
+Jarvis is a cloud-coordinated personal AI assistant whose primary objective is autonomous software development. It accepts natural-language software assignments, researches technical documentation, designs plans, executes code modifications within isolated sandboxes, runs test suites, and prepares verified GitHub pull requests for human review.
 
-## Core principles
+---
+
+## Quickstart & Verification
+
+### 1. Backend Setup & Test Suite
+```powershell
+# Navigate to backend and activate virtualenv
+cd f:\Javis\backend
+.\.venv\Scripts\Activate.ps1
+
+# Run the complete test suite (43 tests across M1–M7)
+python -m pytest tests -v
+
+# Run the backend API server
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 2. Frontend Mobile-First Dashboard
+```powershell
+cd f:\Javis\frontend
+pnpm dev
+# Opens at http://localhost:3000
+```
+
+### 3. Database Backup & Disaster Recovery
+```powershell
+# Create AES-256 encrypted database snapshot
+python scripts/backup_db.py --db backend/jarvis.db --out backups/
+
+# Restore encrypted backup with key
+python scripts/restore_db.py --backup backups/<backup_file>.enc --db backend/jarvis_restored.db --key <key>
+```
+
+---
+
+## Core Architecture Principles
 
 1.  Independent execution does not mean independent authority.
 2.  The model proposes actions; deterministic services authorize them.

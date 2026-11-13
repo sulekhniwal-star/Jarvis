@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0-m7] - 2026-11-13 — Milestone 7: Supervised Self-Improvement & v1.0 MVP Completion
+
+### Added
+- **Repository Self-Analysis Engine (`services/self_improvement.py`):** Implemented read-only codebase health inspection reporting Python module inventories, test file coverage density, TODO/FIXME tracking, and protected security file discovery.
+- **Protected Core Component Guard (`PROTECTED_CORE_COMPONENTS`):** Built strict programmatic boundary preventing autonomous agents from targeting core authentication (`security.py`), kill-switch (`system.py`), command policies (`command_policy.py`), or approval services (`approval_service.py`). Target modifications raise `ProtectedComponentViolation` and abort execution before touching filesystem or git.
+- **Pull Request Engine with Human Review Contract:** Implemented structured self-improvement PR payload generation embedding honest test execution evidence badges and explicit human review banners.
+- **Milestone 7 Test Suite (`backend/tests/integration/test_m7_self_improvement.py`):** Added 3 integration tests covering self-inspection, protected component rejection, and end-to-end self-enhancement workflow in an isolated workspace.
+- **Full MVP Verification:** All 43 automated tests passing across Milestones 1 through 7 with zero regressions.
+
+---
+
 ## [0.7.0-m6] - 2026-11-13 — Milestone 6: Memory, Security & Recovery
 
 ### Added

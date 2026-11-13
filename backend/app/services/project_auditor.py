@@ -147,3 +147,4 @@ class ProjectAuditorService:
             "files_sample": file_paths[:20],
             "analysis": plan,
         }
+

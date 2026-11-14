@@ -32,16 +32,17 @@ Project Jarvis is designed around a **Bifurcated Enclave Architecture** that str
 |                                                  |                                                  |
 |   +----------------------------------------------v----------------------------------------------+   |
 |   |                         LangGraph Stateful Orchestration Engine                             |   |
-|   |   - Task Planner Node             - Coding Agent Node             - PR Generator Node       |   |
-|   |   - Human-in-the-Loop Interrupt   - Diagnostic Retry Loop         - State Checkpointer      |   |
+|   |   - Task Planner Node             - Researcher Sub-Node           - Coding Agent Node       |   |
+|   |   - Reviewer Sub-Node             - PR Generator Node             - State Checkpointer      |   |
+|   |   - Human-in-the-Loop Interrupt   - Diagnostic Retry Loop         - Postgres Checkpointer   |   |
 |   +-------------------+--------------------------+------------------------------+---------------+   |
 |                       |                          |                              |                   |
 |   +-------------------v--------+    +------------v-------------+    +-----------v---------------+   |
 |   |   AI Provider Gateway      |    |  Deterministic Policy &  |    |  Durable State Storage    |   |
-|   | - MockProvider (CI/Test)   |    |      Approval Engine     |    | - Supabase / PostgreSQL   |   |
-|   | - GeminiAdapter            |    | - Tool Call Authorizer   |    | - SQLAlchemy 2.0 Async    |   |
-|   | - OpenAIAdapter            |    | - Payload Hash Verifier  |    | - LangGraph Checkpoints   |   |
-|   | - Paid-Call Circuit Breaker|    | - Non-Self-Approval Gate |    | - AES-256 Encrypted Store |   |
+|   | - OpenRouter (auto) Primary|    |      Approval Engine     |    | - Supabase / PostgreSQL   |   |
+|   | - MockProvider (CI/Test)   |    | - Tool Call Authorizer   |    | - SQLAlchemy 2.0 Async    |   |
+|   | - Gemini / OpenAI Fallback |    | - Payload Hash Verifier  |    | - LangGraph Checkpoints   |   |
+|   | - Paid-Call Circuit Breaker|    | - Non-Self-Approval Gate |    | - Fernet Encrypted Store  |   |
 |   +----------------------------+    +------------+-------------+    +---------------------------+   |
 +--------------------------------------------------|--------------------------------------------------+
                                                    | Ephemeral Job Dispatch (Token, Target, Commands)
@@ -66,9 +67,9 @@ Project Jarvis is designed around a **Bifurcated Enclave Architecture** that str
 +-----------------------------------------------------------------------------------------------------+
 |                                            EXTERNAL SYSTEMS                                         |
 |   +------------------------------------+                      +---------------------------------+   |
-|   |          GitHub Platform           |                      |     Google AI Studio / LLM      |   |
-|   |  - Private Org Repositories        |                      |  - Gemini 1.5 / 2.0 Flash / Pro |   |
-|   |  - Branch Protection Policies      |                      |  - Free Tier Rate Limiting      |   |
+|   |          GitHub Platform           |                      |     OpenRouter / Model APIs     |   |
+|   |  - Private Org Repositories        |                      |  - openrouter/auto Meta-Router  |   |
+|   |  - Branch Protection Policies      |                      |  - Claude 3.5 / Gemini / DeepSeek |   |
 |   |  - PR Reviews & Status Checks      |                      |  - Zero-spend Guarantee Mode    |   |
 |   +------------------------------------+                      +---------------------------------+   |
 +-----------------------------------------------------------------------------------------------------+
@@ -187,6 +188,12 @@ A task progresses through strict, validated state transitions managed by LangGra
 - **`COMPLETED`:** All tests verified green, PR evidence compiled, notifications dispatched.
 - **`FAILED`:** Terminal error (retry limit exceeded, unauthorized command, or timeout).
 - **`CANCELLED`:** Aborted by human operator or emergency kill-switch.
+
+### Sub-Agent Graph Nodes & Edge Topology:
+
+LangGraph orchestrates specialized modular sub-nodes within the state machine:
+1. **`researcher_node` (Conditional):** Triggered during `PLANNING` when task ambiguity or external API documentation verification is required. Ingests source documentation as untrusted data and returns structured findings to the planner.
+2. **`reviewer_node` (Quality Gate):** Triggered after `TESTING` succeeds. Inspects the captured git diff, validates test assertion evidence, checks for scope creep or unintended secret additions, and approves transition to `PR_CREATED`.
 
 ---
 

@@ -10,11 +10,14 @@
 -   Infrastructure/deployment definitions.
 -   Git repositories (also protected by GitHub history).
 
-## Backup policy
+## Backup policy and SLAs
 
-Define and approve: - Backup frequency: \[TBD\] - Retention: \[TBD\] -
-Storage region/provider: \[TBD\] - Encryption: required - Recovery point
-objective (RPO): \[TBD\] - Recovery time objective (RTO): \[TBD\]
+-   **Backup frequency:** Automated daily logical backup (`pg_dump`) executed at 02:00 UTC.
+-   **Retention period:** 30 daily snapshots; 12 monthly archives.
+-   **Storage provider:** Client-side encrypted snapshots stored in GitHub Actions encrypted artifacts / private cloud storage.
+-   **Encryption standard:** Fernet (AES-128-CBC with HMAC-SHA256 authenticated encryption) using `MASTER_ENCRYPTION_KEY`.
+-   **Recovery point objective (RPO):** Maximum 24 hours of task metadata.
+-   **Recovery time objective (RTO):** Maximum 2 hours to provision a clean database and restore schema/data.
 
 Do not claim backup coverage until automated jobs and restore tests
 exist.

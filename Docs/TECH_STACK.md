@@ -17,8 +17,8 @@ This register details each selected technology across the system layers, documen
 | Presentation:  Next.js 15 (React 19, TypeScript, Tailwind CSS, Lucide React) + Telegram Bot        |
 | Control Plane: Python 3.12, FastAPI, Pydantic v2, Uvicorn, LangGraph (StateGraph)                  |
 | Persistence:   PostgreSQL 16 (Supabase Free / Docker), SQLAlchemy 2.0 (Async), Alembic             |
-| AI Gateway:    Internal Provider Abstraction (MockProvider [CI/Test], GeminiAdapter, OpenAIAdapter) |
-| Security:      Argon2id, JWT (HttpOnly), Fernet AES-256-GCM, Deterministic Tool Policy Engine      |
+| AI Gateway:    OpenRouter Universal Gateway (openrouter/auto), MockProvider [CI/Test], Pluggable Adapters |
+| Security:      Argon2id, JWT (HttpOnly), Fernet (AES-128-CBC + HMAC-SHA256), Deterministic Tool Policy Engine |
 | Execution:     GitHub Actions (Cloud Hosted Runners) & Disposable Local Docker Sandbox             |
 | Telemetry:     Structlog (JSON format), Pytest Asyncio, Cryptographic Audit Ledger                 |
 +----------------------------------------------------------------------------------------------------+
@@ -108,7 +108,7 @@ This register details each selected technology across the system layers, documen
 | **Why Selected** | Telegram is the owner's preferred mobile interface. It supports rich text, markdown, inline keyboard buttons (for quick navigation to approval screens), and real-time alerts. Long Polling operates outbound over HTTPS with zero open inbound ports on the development computer. |
 | **Alternatives Considered** | - **Discord Bot:** Complex permission model, heavier client, and less suited for private single-user mobile alerting.<br>- **Slack App:** Free tier has 90-day message retention limits and requires public webhooks.<br>- **WhatsApp Cloud API:** Complex Meta Business verification and per-conversation fees. |
 | **Costs & Limitations** | 100% Free / ₹0 from Telegram. Bot API payload limit: 4096 characters per message (long logs are truncated or linked to dashboard). |
-| **Security Implications** | Static allowlist: only messages from `AUTHORIZED_TELEGRAM_USER_ID` are processed. All other messages are dropped and logged. |
+| **Security Implications** | Static allowlist: only messages from `TELEGRAM_AUTHORIZED_USER_ID` are processed. All other messages are dropped and logged. |
 
 ---
 
@@ -116,10 +116,10 @@ This register details each selected technology across the system layers, documen
 
 | Field | Detail |
 | :--- | :--- |
-| **Selected Technology** | **Pluggable Provider Abstraction (`MockProvider`, `GeminiAdapter`, `OpenAIAdapter`)** |
-| **Why Selected** | Prevents vendor lock-in. Allows seamless switching between Gemini, OpenAI, Claude, or local Ollama instances. Includes a deterministic `MockProvider` that returns structured plans and synthetic code edits without network access, enabling 100% offline, ₹0-cost automated testing and CI. |
-| **Alternatives Considered** | - **Direct Vendor SDK Coupling (e.g. only `google-genai`):** Tight coupling makes provider switching or offline unit testing painful.<br>- **Commercial AI Gateways (Portkey, LiteLLM Hosted):** Extra dependency and potential cost; internal adapter achieves identical decoupling with zero dependencies. |
-| **Costs & Limitations** | Mock Provider: ₹0. Google AI Studio Free Tier: ₹0 (subject to RPM limits and privacy policy considerations). Paid calls hard-blocked by default unless explicitly approved. |
+| **Selected Technology** | **OpenRouter Universal Gateway (`openrouter/auto`) with `MockProvider` for CI (ADR-013)** |
+| **Why Selected** | Establishes OpenRouter as the primary production gateway (`DEFAULT_AI_PROVIDER=openrouter`) with dynamic meta-routing (`openrouter/auto`) balancing cost, throughput, and availability across frontier models (Claude 3.5 Sonnet, Gemini 2.0 Flash, DeepSeek V3/R1). Retains a deterministic offline `MockProvider` for unit, integration, and CI tests (0 network calls, ₹0 cost), while maintaining pluggable vendor adapters (`GeminiAdapter`, `OpenAIAdapter`) for direct execution fallback. |
+| **Alternatives Considered** | - **Direct Single-Vendor SDK Coupling (e.g. only `google-genai`):** High risk of vendor lock-in, single-provider outages, and price volatility.<br>- **Commercial AI Gateways (Portkey, LiteLLM Hosted):** Extra hosted dependency and cost; OpenRouter provides OpenAI-compatible endpoint compatibility with native auto-routing. |
+| **Costs & Limitations** | Mock Provider: ₹0. OpenRouter models billed pay-as-you-go or free tier routes. Paid calls hard-blocked by default unless explicitly approved. |
 | **Security Implications** | Prompts are scanned to redact environment variables, JWTs, and API keys. System instructions warn that external repo contents are untrusted data. |
 
 ---
@@ -128,8 +128,8 @@ This register details each selected technology across the system layers, documen
 
 | Field | Detail |
 | :--- | :--- |
-| **Selected Technology** | **Argon2id + Fernet (AES-256-GCM) + Environment Variable Injection** |
-| **Why Selected** | Argon2id is the NIST/OWASP gold standard for password hashing, resistant to GPU/ASIC cracking. Fernet authenticated encryption guarantees that stored third-party credentials (GitHub private key, Telegram token, AI keys) cannot be decrypted or tampered with if the raw database is compromised. |
+| **Selected Technology** | **Argon2id + Fernet (AES-128-CBC with HMAC-SHA256) + Environment Variable Injection** |
+| **Why Selected** | Argon2id is the NIST/OWASP gold standard for password hashing, resistant to GPU/ASIC cracking. Fernet authenticated encryption (AES-128-CBC with PKCS7 padding and HMAC-SHA256) guarantees that stored third-party credentials (GitHub private key, Telegram token, AI keys) cannot be decrypted or tampered with if the raw database is compromised. |
 | **Alternatives Considered** | - **HashiCorp Vault / AWS Secrets Manager:** Extreme overkill and high operational complexity/cost for a personal single-tenant system.<br>- **Plaintext `.env` / database storage:** Unacceptable security risk. |
 | **Costs & Limitations** | Free / Open Source (cryptography library). Master encryption key must be safely backed up by the owner. |
 | **Security Implications** | All secrets are scrubbed from logs via regex-based log masking filters. |

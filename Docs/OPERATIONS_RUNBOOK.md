@@ -61,5 +61,8 @@
 
 ## Contact and escalation
 
-Owner: \[TBD\] Hosting provider support: \[TBD\] Incident log location:
-\[TBD\] Recovery environment: \[TBD\]
+-   **System owner:** Configured via `TELEGRAM_AUTHORIZED_USER_ID` (High-priority Telegram alerts and authenticated web dashboard).
+-   **Cloud database support:** Supabase Platform Support (`supabase.com/dashboard/support`).
+-   **Source control support:** GitHub Status (`www.githubstatus.com`).
+-   **Incident log location:** Control-plane JSON logs (`/var/log/jarvis/control_plane.jsonl`) and database `audit_events` ledger.
+-   **Recovery environment:** Local Docker Compose replica running PostgreSQL 16 on port 5433 with matching Alembic migration head.

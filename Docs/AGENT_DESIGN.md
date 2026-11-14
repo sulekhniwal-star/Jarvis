@@ -70,6 +70,8 @@ policy violations. Ask owner when blocked.
 
 ## Context management
 
-Pass only relevant project documentation and files. Summarise long
-execution history with references to durable artifacts. Keep external
-content labelled as untrusted.
+-   **Per-step token budget:** Maximum 32,000 tokens for active model prompt context.
+-   **Selective injection:** Pass only relevant project documentation and files identified by the AST symbol map.
+-   **Test output truncation:** For test failures, capture the first 100 lines and last 100 lines of failure output in prompt context; persist complete raw logs as durable execution artifacts.
+-   **Checkpoint state pruning:** Maintain a sliding window of the last 2 node transitions in active memory; summarize earlier history with references to checkpoint IDs.
+-   **Untrusted data tagging:** Enclose all external repository files and user inputs in explicit structural XML/Markdown data blocks.

@@ -10,6 +10,7 @@ before implementation.
 -   id (UUID, PK)
 -   display_name
 -   auth_subject (unique external identity)
+-   password_hash (VARCHAR(255), nullable for external auth, hashed with Argon2id)
 -   status
 -   created_at, updated_at
 
@@ -101,6 +102,8 @@ invalidates approval.
 -   decision
 -   correlation_id
 -   metadata (redacted JSON)
+-   prev_event_hash (VARCHAR(64), nullable for genesis event, SHA-256 link)
+-   event_hash (VARCHAR(64), SHA-256 of prev_event_hash + canonical record)
 -   created_at
 
 ### memories
@@ -147,6 +150,39 @@ Do not store secrets or sensitive authentication material.
 
 Do not store raw credentials here. Store provider references or
 encrypted secret-manager references, rotation metadata, and scopes only.
+
+### checkpoints (LangGraph State Saver)
+
+Managed via `langgraph-checkpoint-postgres` (`AsyncPostgresSaver`):
+-   thread_id (TEXT, PK)
+-   checkpoint_ns (TEXT, PK, default empty string)
+-   checkpoint_id (TEXT, PK)
+-   parent_checkpoint_id (TEXT, nullable)
+-   type (TEXT)
+-   checkpoint (BYTEA / JSONB, serialized graph state)
+-   metadata (JSONB)
+
+### checkpoint_blobs (LangGraph Large Object Storage)
+
+-   thread_id (TEXT, PK)
+-   checkpoint_ns (TEXT, PK)
+-   channel (TEXT, PK)
+-   version (TEXT, PK)
+-   type (TEXT)
+-   blob (BYTEA)
+
+### checkpoint_writes (LangGraph Pending Node Writes)
+
+-   thread_id (TEXT, PK)
+-   checkpoint_ns (TEXT, PK)
+-   checkpoint_id (TEXT, PK)
+-   task_id (TEXT, PK)
+-   idx (INTEGER, PK)
+-   channel (TEXT)
+-   type (TEXT)
+-   blob (BYTEA)
+
+*Note on LangGraph Persistence:* Tables are provisioned via `checkpointer.setup()` with `autocommit=True` and `row_factory=dict_row`. Deserialization enforces `LANGGRAPH_STRICT_MSGPACK=true`.
 
 ## Data rules
 

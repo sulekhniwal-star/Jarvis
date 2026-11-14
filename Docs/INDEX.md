@@ -6,7 +6,7 @@ documents plus two practical supplements.
   ------------------------------------------------------------------------------------------------
   File                                                         Purpose
   ------------------------------------------------------------ -----------------------------------
-  [README.md](README.md)                                       Project Jarvis
+  [ROADMAP.md](ROADMAP.md)                                     Project Roadmap and Milestone Schedule
 
   [VISION.md](VISION.md)                                       Product Vision
 

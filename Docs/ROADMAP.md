@@ -1,8 +1,10 @@
 # Roadmap
 
-> [!NOTE]
-> **Status: v1.0 MVP COMPLETED & VERIFIED (Phases 0–7)**
-> All core foundation, agent orchestration, GitHub integration, sandboxed execution, user interfaces, memory/security, and supervised self-improvement milestones are fully implemented with 43 automated passing tests.
+> [!IMPORTANT]
+> **Governance Notice (Audit Baseline 2026-11-14):**
+> All milestone completion claims and references to passing automated tests represent target specifications and synthetic test claims. Their implementation status is formally classified as:
+> `NOT VERIFIED — SOURCE-CODE AUDIT PENDING`
+> Verification of code artifacts will occur in Phase B against this finalized documentation baseline.
 
 ## Planning assumptions
 

@@ -20,6 +20,7 @@ reviewable changes with verifiable evidence.
 
 1.  Inspect repository structure and project instructions.
 2.  Identify relevant files and existing patterns.
+    - *2a.* Generate Tree-sitter AST repository symbol map (<4k tokens) indexing function, class, and method definitions across the codebase to guide targeted file edits without overflowing context windows.
 3.  Check task scope and detect ambiguity.
 4.  Research official documentation if required.
 5.  Propose implementation plan.
@@ -28,8 +29,7 @@ reviewable changes with verifiable evidence.
 8.  Implement small coherent changes.
 9.  Run formatting, lint, type checks, unit/integration tests as
     available.
-10. Inspect diff for accidental changes, secrets, generated files, and
-    scope creep.
+10. Inspect diff for accidental changes, generated files, and scope creep; run automated pre-commit secret scan (Gitleaks / regex rules) on staged files before commit.
 11. Fix failures within bounded retry budget.
 12. Produce final report with exact evidence.
 13. Request PR creation through GitHub integration.

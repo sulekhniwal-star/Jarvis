@@ -14,10 +14,11 @@ file or commit a populated `.env`.
 
   AUTH_SECRET                 Session/token signing secret    Yes
 
+  MASTER_ENCRYPTION_KEY       Fernet encryption master key    Yes
+
   TELEGRAM_BOT_TOKEN          Telegram bot credential         Yes
 
-  TELEGRAM_OWNER_IDS          Allowed Telegram numeric user   Treat as private config
-                              IDs                             
+  TELEGRAM_AUTHORIZED_USER_ID Single allowed numeric user ID  Treat as private config
 
   GITHUB_APP_ID               GitHub App identifier           No
 
@@ -28,6 +29,12 @@ file or commit a populated `.env`.
 
   GEMINI_API_KEY_REF          Optional secret manager         No
                               reference                       
+
+  OPENROUTER_API_KEY          OpenRouter API key              Yes
+
+  DEFAULT_AI_PROVIDER         Default AI provider (openrouter) No
+
+  DEFAULT_MODEL_NAME          Default model (openrouter/auto) No
 
   AI_PAID_CALLS_ENABLED       Must default to false           No
 

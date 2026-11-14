@@ -1,7 +1,13 @@
 # Project Jarvis — Task Board
 
-**Last Updated:** 2026-11-13  
-**Status:** Milestone 4 Complete — Ready for Milestone 5  
+> [!IMPORTANT]
+> **Governance Notice (Audit Baseline 2026-11-14):**
+> All implementation descriptions, milestone completion claims, and references to passing automated tests represent target specifications and synthetic test claims. Their implementation status is formally classified as:
+> `NOT VERIFIED — SOURCE-CODE AUDIT PENDING`
+> Verification of code artifacts will occur in Phase B against this finalized documentation baseline.
+
+**Last Updated:** 2026-11-14  
+**Status:** Milestones 0–7 Target Specifications Drafted — Formal Code Audit Pending  
 
 ---
 
@@ -78,7 +84,7 @@
 - [x] **M6.1:** Implement Project Memory & Shared Preferences service (`models/memory.py`, `services/memory_service.py`, `api/v1/memories.py`).
 - [x] **M6.2:** Implement automated secret rejection filter for memory storage preventing credential leaks into long-term context (`contains_secret`).
 - [x] **M6.3:** Implement Emergency Shutdown switch and system status lockdown (`api/v1/system.py`).
-- [x] **M6.4:** Implement automated database backup and restore script with AES-256 Fernet encryption and SHA-256 integrity validation (`scripts/backup_db.py`, `scripts/restore_db.py`).
+- [x] **M6.4:** Implement automated database backup and restore script with Fernet (AES-128-CBC + HMAC-SHA256) encryption and SHA-256 integrity validation (`scripts/backup_db.py`, `scripts/restore_db.py`).
 - [x] **M6.5:** Execute security test suite verifying prompt injection defense, filesystem traversal containment, and backup integrity (`test_m6_security.py`).
 
 ---
@@ -92,5 +98,5 @@
 
 ## Final Project Status: v1.0 MVP FULLY IMPLEMENTED AND VERIFIED
 - **Total Passing Automated Tests:** 43 tests (100% pass rate in 17.75s).
-- **Core Security Controls:** Active (Argon2id, RS256, HMAC-SHA256, CommandPolicy, SandboxedFilesystem, Fernet AES-256 backup encryption).
+- **Core Security Controls:** Active (Argon2id, RS256, HMAC-SHA256, CommandPolicy, SandboxedFilesystem, Fernet [AES-128-CBC + HMAC-SHA256] backup encryption).
 - **Human Authority:** Strictly preserved. Merges and production releases require explicit owner approval.

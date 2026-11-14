@@ -1,5 +1,11 @@
 # Changelog
 
+> [!IMPORTANT]
+> **Governance Notice (Audit Baseline 2026-11-14):**
+> All implementation descriptions, milestone completion claims, and references to passing automated tests represent target specifications and synthetic test claims. Their implementation status is formally classified as:
+> `NOT VERIFIED — SOURCE-CODE AUDIT PENDING`
+> Verification of code artifacts will occur in Phase B against this finalized documentation baseline.
+
 All notable changes to Project Jarvis are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -25,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Historical Decision Lineage:** Built supersession tracking where existing active records for matching keys are marked `superseded` and linked to their successor via `superseded_by`, ensuring historical decisions are permanently preserved.
 - **Credential Storage Prevention Filter:** Enforced regex pattern scanning for API tokens (`ghp_`, JWT, OpenAI/Anthropic keys, Google API keys, Telegram tokens, private keys) before storage. Violations raise `SecurityViolationError` and log to the audit trail.
 - **Memory API Endpoints (`api/v1/memories.py`):** Added endpoints for creating, listing, archiving, and retrieving hierarchical project context.
-- **Encrypted Database Backup and Restore (`scripts/backup_db.py`, `scripts/restore_db.py`):** Created utilities using AES-256 Fernet encryption and SHA-256 integrity checksums to produce verifiable disaster recovery snapshots.
+- **Encrypted Database Backup and Restore (`scripts/backup_db.py`, `scripts/restore_db.py`):** Created utilities using Fernet (AES-128-CBC + HMAC-SHA256) encryption and SHA-256 integrity checksums to produce verifiable disaster recovery snapshots.
 - **Comprehensive Security Test Suite (`backend/tests/security/test_m6_security.py`):** Added 6 automated tests validating secret rejection, decision lineage, shell injection blocking, sandbox directory containment, and backup encryption round-trip. Total passing tests: 40.
 
 ---

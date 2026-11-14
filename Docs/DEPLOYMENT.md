@@ -37,13 +37,21 @@ Pricing after free quota. - Terms governing source-code and AI data.
 
 ## Worker deployment
 
--   Prefer disposable hosted runners or isolated VMs for untrusted code.
--   Never expose cloud control-plane credentials.
+-   Prefer disposable hosted runners (GitHub Actions) or isolated VMs for untrusted code.
+-   Never expose cloud control-plane credentials or database connection strings.
 -   Do not mount Docker socket into worker.
--   Use resource and execution limits.
--   Restrict outbound network.
+-   Use resource and execution limits (max 2 GB RAM, 1.5 CPU, 10 min timeout).
+-   Enforce two-phase network isolation:
+    - *Phase 1 (Hydration):* Outbound network restricted strictly to vetted package registries (`pypi.org`, `registry.npmjs.org`) for dependency installation.
+    - *Phase 2 (Testing & Execution):* Outbound network completely disabled (`--network=none`).
 -   Destroy workspace after artifact collection.
 -   Record image digest and environment metadata.
+
+## Cloud database keep-alive automation
+
+To prevent Supabase Free Tier databases from pausing after 7 days of inactivity, deploy an automated weekly GitHub Actions workflow (`.github/workflows/db-keepalive.yml`):
+- Schedule: Sundays at 00:00 UTC (`0 0 * * 0`).
+- Action: Executes a lightweight query (`SELECT 1;`) via direct connection or Supabase REST API using encrypted repository secrets.
 
 ## Release process
 

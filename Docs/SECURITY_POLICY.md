@@ -21,7 +21,7 @@
 ### Secret Storage
 
 - Master secrets are passed exclusively via system environment variables (`SECRET_KEY`, `MASTER_ENCRYPTION_KEY`).
-- Integration secrets stored in the database (GitHub App private key, Telegram bot token) are encrypted at rest using AES-256-GCM via `cryptography.fernet`.
+- Integration secrets stored in the database (GitHub App private key, Telegram bot token) are encrypted at rest using Fernet (AES-128-CBC with HMAC-SHA256 authenticated encryption) via `cryptography.fernet`.
 - No plaintext credentials, private keys, or passwords may exist in repository code, commit history, or documentation.
 
 ### Ephemeral Token Lifetimes
@@ -50,7 +50,9 @@ When running tasks in local or containerized environments:
 - **Privilege Escalation:** Disabled (`--security-opt=no-new-privileges:true`).
 - **Filesystem:** Read-only root filesystem (`--read-only`), ephemeral writable workspace on tmpfs.
 - **Resource Limits:** Max 2 GB RAM, max 1.5 CPU cores, max 100 PIDs.
-- **Network Egress:** Disabled (`--network=none`) during test execution unless explicitly required for dependency fetching.
+- **Two-Phase Network Egress Isolation:**
+  - *Phase 1 (Hydration):* Egress restricted strictly to vetted package registries (`pypi.org`, `registry.npmjs.org`) via local caching proxy for dependency installation.
+  - *Phase 2 (Execution & Test):* Network egress completely disabled (`--network=none`).
 - **Host Mounts:** STRICTLY FORBIDDEN. Never mount host paths or the Docker socket (`/var/run/docker.sock`).
 
 ---

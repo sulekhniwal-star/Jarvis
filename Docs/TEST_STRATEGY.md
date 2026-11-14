@@ -36,17 +36,21 @@ Bounded retry behavior.
 AI output tests should use assertions on structured behavior, not
 brittle exact wording.
 
-## Required end-to-end scenario
+## Required end-to-end scenario & synthetic fixture
 
-1.  Owner submits task for a designated demo repository.
-2.  System creates durable task and plan.
-3.  Worker receives only the demo repository capability.
-4.  Worker changes a simple feature.
-5.  Tests run and evidence is captured.
-6.  GitHub branch and PR are created.
-7.  Dashboard and Telegram report completion.
-8.  Owner can inspect diff and logs.
-9.  No merge/deploy occurs.
+The end-to-end integration and release gate requires execution against the standardized synthetic test repository (`jarvis-demo-target`):
+-   **Repository profile:** Python 3.12 library with `pyproject.toml` and `pytest`.
+-   **Baseline defect:** A failing assertion in `tests/test_calculator.py` with clear error output (`AssertionError: 2 != 3`).
+-   **Acceptance execution:**
+    1.  Owner submits task to fix the failing test.
+    2.  System creates durable task and plan.
+    3.  Worker receives only the `jarvis-demo-target` scoped installation token.
+    4.  Worker inspects AST symbols, identifies defect in `calculator.py`, and applies code patch.
+    5.  `pytest` executes inside isolated sandbox; exit code `0` and test logs captured.
+    6.  GitHub branch `jarvis/fix-calc-...` pushed and Pull Request opened.
+    7.  Dashboard and Telegram report completion with PR link and test evidence badge.
+    8.  Owner can inspect diff and logs.
+    9.  No merge/deploy occurs.
 
 ## Release gate
 

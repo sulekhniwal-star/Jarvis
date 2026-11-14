@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-<<<<<<< HEAD
+## [0.3.0] - 2026-11-14
+
+### Added
+- **Milestone 2 – Jarvis Control Plane:**
+  - Implemented 9 domain repositories in `@jarvis/database/src/repositories/` (`UserRepository`, `ProjectRepository`, `MilestoneRepository`, `TaskRepository`, `AgentRunRepository`, `ApprovalRepository`, `BudgetRepository`, `AuditRepository`, `QueueRepository`).
+  - Added optimistic locking support in `TaskRepository` with atomic `version = version + 1` increments to prevent race conditions.
+  - Implemented Finite State Machine in `@jarvis/core` with transition matrices, validation guards, and `TaskStateTransitionError` across all 13 task states.
+  - Built `@jarvis/permission-engine` with immutable policy matrix gating 9 critical actions (`PROD_DEPLOY`, `SPEND_FUNDS`, `PAID_AI_INFERENCE`, etc.), approval ticket generation, and resolution handlers.
+  - Built `@jarvis/budget-manager` with pre-flight inference cost evaluation, daily cap (INR 25.00/day) and monthly cap (INR 750.00/mo) checking, and zero-cost `:free` model bypass.
+  - Built `@jarvis/agent-orchestrator` with `TaskCoordinator` (intake, state transitions, dispatch, abort) and `QueueWorker` (asynchronous `pgmq` queue poller).
+  - Authored comprehensive unit and integration test suites using native Node test runner (`node --test`), achieving 100% test pass across all workspace packages.
+
+---
+
 ## [0.2.0] - 2026-11-14
 
 ### Added
@@ -26,18 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-=======
->>>>>>> 48a706327a0b462fb02100467795c8bb1da16eaf
 ## [0.1.0] - 2026-11-14
 
 ### Added
 - **Milestone 0 – Architecture & Governance Foundation:**
   - Initialized comprehensive architectural blueprint and system specifications.
-<<<<<<< HEAD
-  - Authored all 24 required design, security, product, and operational design documents.
-  - Formulated formal Architecture Decision Records (ADR-001 through ADR-006).
-  - Scaffolded monorepo folder layout.
-=======
   - Documented complete product requirements (`PRODUCT_REQUIREMENTS.md`) and non-functional constraints.
   - Established system architecture with Mermaid sequence and dataflow diagrams (`SYSTEM_ARCHITECTURE.md`).
   - Authored technology stack rationale and selection criteria (`TECH_STACK.md`).
@@ -58,4 +64,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Established staged product roadmap across 11 MVP milestones (`ROADMAP.md`).
   - Created ADRs 001 through 006 capturing foundational architectural decisions.
   - Scaffolded production monorepo folder layout.
->>>>>>> 48a706327a0b462fb02100467795c8bb1da16eaf

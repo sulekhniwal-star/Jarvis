@@ -151,3 +151,45 @@ def test_telegram_markdown_v2_escaping():
     assert r"\." in escaped
     assert r"\*" in escaped
     assert r"\!" in escaped
+
+
+@pytest.mark.asyncio
+async def test_telegram_inline_approval_callback():
+    """Verify Telegram inline keyboard callback query authorizes pending action."""
+    from app.models.approval import Approval
+    from app.services.approval_service import create_approval_request
+
+    telegram = TelegramService(bot_token="test_token", authorized_user_id="111222333")
+    sent_messages = []
+
+    async def mock_send(chat_id, text, parse_mode="MarkdownV2", reply_markup=None):
+        sent_messages.append({"chat_id": chat_id, "text": text})
+        return {"ok": True}
+
+    telegram.send_message = mock_send
+
+    async with _session_factory() as session:
+        appr = await create_approval_request(
+            session=session,
+            action_type="HIGH_CONSEQUENCE_PROD",
+            payload={"action": "drop_cache", "target": "production"},
+        )
+        await session.commit()
+        appr_id = appr.id
+
+        update = {
+            "update_id": 99,
+            "callback_query": {
+                "id": "cb1",
+                "from": {"id": 111222333, "username": "owner"},
+                "message": {"chat": {"id": 111222333}},
+                "data": f"approve_{appr_id}",
+            },
+        }
+        res = await telegram.handle_incoming_update(update, session)
+        assert res == "inline_approved"
+
+        refreshed = (
+            await session.execute(select(Approval).where(Approval.id == appr_id))
+        ).scalar_one()
+        assert refreshed.status == "APPROVED"

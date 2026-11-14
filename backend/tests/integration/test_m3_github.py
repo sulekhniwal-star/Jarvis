@@ -17,8 +17,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 
 from app.api.v1.webhooks import verify_github_signature
+from app.core.config import settings
+from app.models.audit import AuditEvent
+from app.models.task import Task
 from app.services.github_app_auth import generate_github_app_jwt
 from app.services.github_service import GitHubService
+from sqlalchemy import select
+from tests.conftest import test_session_factory as db_session_factory
 
 
 @pytest.fixture(scope="module")
@@ -168,3 +173,143 @@ def test_github_webhook_hmac_signature_validation():
 
     # Missing or malformed header fails
     assert verify_github_signature(raw_payload, "invalid_header", secret) is False
+
+
+@pytest.mark.asyncio
+async def test_github_issue_opened_webhook_dispatches_task(client):
+    """
+    Verify that an incoming GitHub 'issues.opened' webhook automatically
+    dispatches an autonomous task in Jarvis and logs an audit event.
+    """
+    secret = settings.GITHUB_WEBHOOK_SECRET or "development_test_webhook_secret_key"
+    payload = {
+        "action": "opened",
+        "repository": {"full_name": "sulekhniwal-star/job-automation"},
+        "issue": {
+            "number": 42,
+            "title": "Fix crash on job scraper pagination",
+            "body": "The job scraper crashes with index error when pagination exceeds 10 pages.",
+            "labels": [{"name": "bug"}, {"name": "jarvis"}],
+        },
+    }
+    raw_body = json.dumps(payload).encode("utf-8")
+    signature = "sha256=" + hmac.new(secret.encode("utf-8"), msg=raw_body, digestmod=hashlib.sha256).hexdigest()
+
+    response = await client.post(
+        "/api/v1/webhooks/github",
+        content=raw_body,
+        headers={
+            "X-Hub-Signature-256": signature,
+            "X-GitHub-Event": "issues",
+            "X-GitHub-Delivery": "delivery-uuid-001",
+            "Content-Type": "application/json",
+        },
+    )
+
+    assert response.status_code == 200
+    res_data = response.json()
+    assert res_data["status"] == "processed"
+    assert res_data["event"] == "issues"
+    assert res_data["action"] == "opened"
+    assert res_data["task_id"] is not None
+
+    task_id = res_data["task_id"]
+    async with db_session_factory() as session:
+        task = await session.get(Task, task_id)
+        assert task is not None
+        assert "[ISSUE #42]" in task.title
+        assert "sulekhniwal-star/job-automation" in task.title
+        assert task.created_by == "github_automation"
+        assert task.priority == "HIGH"
+        assert task.idempotency_key == "gh-issue-sulekhniwal-star/job-automation-42"
+
+        # Verify audit log
+        stmt = select(AuditEvent).where(AuditEvent.action == "GITHUB_EVENT_ISSUES")
+        result = await session.execute(stmt)
+        audit_events = result.scalars().all()
+        assert len(audit_events) >= 1
+        assert any(
+            (json.loads(e.metadata_json) if isinstance(e.metadata_json, str) else (e.metadata_json or {})).get("delivery_id") == "delivery-uuid-001"
+            for e in audit_events
+        )
+
+
+@pytest.mark.asyncio
+async def test_github_issue_comment_mention_dispatches_task(client):
+    """
+    Verify that an issue comment mentioning '@jarvis' triggers an autonomous task dispatch.
+    """
+    secret = settings.GITHUB_WEBHOOK_SECRET or "development_test_webhook_secret_key"
+    payload = {
+        "action": "created",
+        "repository": {"full_name": "sulekhniwal-star/fitkarma-website"},
+        "issue": {
+            "number": 88,
+            "title": "Optimize responsive layout on mobile",
+        },
+        "comment": {
+            "id": 55512,
+            "body": "Hey @jarvis please fix this mobile header overflow issue.",
+        },
+    }
+    raw_body = json.dumps(payload).encode("utf-8")
+    signature = "sha256=" + hmac.new(secret.encode("utf-8"), msg=raw_body, digestmod=hashlib.sha256).hexdigest()
+
+    response = await client.post(
+        "/api/v1/webhooks/github",
+        content=raw_body,
+        headers={
+            "X-Hub-Signature-256": signature,
+            "X-GitHub-Event": "issue_comment",
+            "X-GitHub-Delivery": "delivery-uuid-002",
+            "Content-Type": "application/json",
+        },
+    )
+
+    assert response.status_code == 200
+    res_data = response.json()
+    assert res_data["status"] == "processed"
+    assert res_data["task_id"] is not None
+
+    async with db_session_factory() as session:
+        task = await session.get(Task, res_data["task_id"])
+        assert task is not None
+        assert "[COMMENT FIX #88]" in task.title
+        assert task.idempotency_key == "gh-comment-55512"
+
+
+@pytest.mark.asyncio
+async def test_github_issue_webhook_idempotency(client):
+    """
+    Verify duplicate deliveries of the same GitHub event return the existing task without duplicate creation.
+    """
+    secret = settings.GITHUB_WEBHOOK_SECRET or "development_test_webhook_secret_key"
+    payload = {
+        "action": "opened",
+        "repository": {"full_name": "sulekhniwal-star/pocketbase-server"},
+        "issue": {
+            "number": 19,
+            "title": "Add CORS whitelist for admin dashboard",
+            "body": "Need CORS config for local dev.",
+        },
+    }
+    raw_body = json.dumps(payload).encode("utf-8")
+    signature = "sha256=" + hmac.new(secret.encode("utf-8"), msg=raw_body, digestmod=hashlib.sha256).hexdigest()
+
+    headers = {
+        "X-Hub-Signature-256": signature,
+        "X-GitHub-Event": "issues",
+        "X-GitHub-Delivery": "delivery-uuid-003",
+        "Content-Type": "application/json",
+    }
+
+    res1 = await client.post("/api/v1/webhooks/github", content=raw_body, headers=headers)
+    assert res1.status_code == 200
+    task_id_1 = res1.json()["task_id"]
+
+    res2 = await client.post("/api/v1/webhooks/github", content=raw_body, headers=headers)
+    assert res2.status_code == 200
+    task_id_2 = res2.json()["task_id"]
+
+    assert task_id_1 == task_id_2
+

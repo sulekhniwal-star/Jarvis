@@ -272,3 +272,122 @@ class ProjectAuditorService:
         }
         _AUDIT_CACHE[repo_name] = {"data": result, "timestamp": now}
         return result
+
+    async def batch_upgrade_dependencies(
+        self,
+        repo_names: list[str] | None = None,
+        session: Any = None,
+        user_id: str = "system",
+    ) -> dict[str, Any]:
+        """
+        Discovers dependency manifests across fleet repositories and dispatches
+        autonomous dependency upgrade tasks with regression-testing directives.
+        """
+        import time
+
+        from app.schemas.task import TaskCreate, TaskPriority
+        from app.services.task_service import create_task
+
+        try:
+            fleet = await self.list_fleet_repositories()
+        except Exception as e:
+            logger.warning("fleet_listing_failed_using_defaults", error=str(e))
+            fleet = []
+
+        if repo_names:
+            normalized_targets = {r.lower().strip() for r in repo_names}
+            target_repos = [
+                r
+                for r in fleet
+                if r.get("name", "").lower() in normalized_targets
+                or r.get("full_name", "").lower() in normalized_targets
+            ]
+            # If target names were explicitly requested but not in discovered fleet, add directly
+            for req_name in repo_names:
+                if not any(t.get("name", "").lower() == req_name.lower() for t in target_repos):
+                    target_repos.append({"name": req_name, "full_name": f"sulekhniwal-star/{req_name}"})
+        else:
+            # Pick top 5 active/supported repos by default
+            target_repos = fleet[:5]
+
+        # If fleet was empty (e.g. offline/mock environment), use top priority mapped repos
+        if not target_repos:
+            top_defaults = ["jarvis", "job-automation", "linkedin-ai-automation"]
+            target_repos = [{"name": r, "full_name": f"sulekhniwal-star/{r}"} for r in top_defaults]
+
+        dispatched_tasks: list[dict[str, Any]] = []
+
+        for repo in target_repos:
+            repo_name = repo.get("name", "")
+            full_repo = repo.get("full_name", repo_name)
+
+            manifests = []
+            try:
+                tree = await self.github.get_repository_tree(full_repo)
+                file_paths = [item.get("path", "") for item in tree if item.get("type") == "blob"]
+                candidates = [
+                    "package.json",
+                    "pyproject.toml",
+                    "requirements.txt",
+                    "Cargo.toml",
+                    "go.mod",
+                    "pom.xml",
+                    "build.gradle",
+                ]
+                for candidate in candidates:
+                    if any(p.endswith(candidate) or p == candidate for p in file_paths):
+                        manifests.append(candidate)
+            except Exception:
+                manifests = (
+                    ["package.json"]
+                    if "website" in repo_name or "app" in repo_name
+                    else ["pyproject.toml", "requirements.txt"]
+                )
+
+            manifest_desc = ", ".join(manifests) if manifests else "package manifests"
+
+            task_in = TaskCreate(
+                title=f"[DEP-UPGRADE] {repo_name}: Modernize & Secure Dependencies",
+                description=(
+                    f"Autonomous dependency upgrade protocol for repository '{full_repo}'.\n\n"
+                    f"Detected Package Manifests: {manifest_desc}\n\n"
+                    f"Engineering Directives:\n"
+                    f"1. Audit dependency specifications for outdated packages, security advisories, and deprecations.\n"
+                    f"2. Apply compatible non-breaking upgrades preserving backwards compatibility.\n"
+                    f"3. Run automated test suites to ensure zero regressions.\n"
+                    f"4. Document package updates and security fixes in a structured Pull Request."
+                ),
+                priority=TaskPriority.HIGH if "jarvis" in repo_name.lower() else TaskPriority.MEDIUM,
+                idempotency_key=f"dep-upgrade-{repo_name}-{int(time.time() // 86400)}",
+            )
+
+            if session:
+                task = await create_task(session, task_in, user_id=user_id)
+                dispatched_tasks.append(
+                    {
+                        "task_id": task.id,
+                        "repo_name": repo_name,
+                        "full_name": full_repo,
+                        "manifests": manifests,
+                        "priority": task.priority,
+                    }
+                )
+            else:
+                dispatched_tasks.append(
+                    {
+                        "task_id": f"simulated-{repo_name}",
+                        "repo_name": repo_name,
+                        "full_name": full_repo,
+                        "manifests": manifests,
+                        "priority": "HIGH" if "jarvis" in repo_name.lower() else "MEDIUM",
+                    }
+                )
+
+        return {
+            "status": "DISPATCHED",
+            "total_dispatched": len(dispatched_tasks),
+            "upgraded_repos": [t["repo_name"] for t in dispatched_tasks],
+            "task_ids": [t["task_id"] for t in dispatched_tasks],
+            "details": dispatched_tasks,
+        }
+

@@ -31,6 +31,25 @@ from app.main import app
 from app.models.base import Base
 from app.models.user import User
 
+# Pre-compute Argon2id hashes once per test session to avoid 92x redundant hashing overhead
+_CACHED_TEST_OWNER_HASH: str | None = None
+_CACHED_OWNER_M5_HASH: str | None = None
+
+
+def get_cached_test_owner_hash() -> str:
+    global _CACHED_TEST_OWNER_HASH
+    if _CACHED_TEST_OWNER_HASH is None:
+        _CACHED_TEST_OWNER_HASH = hash_password("SuperSecretPassword123!")
+    return _CACHED_TEST_OWNER_HASH
+
+
+def get_cached_owner_m5_hash() -> str:
+    global _CACHED_OWNER_M5_HASH
+    if _CACHED_OWNER_M5_HASH is None:
+        _CACHED_OWNER_M5_HASH = hash_password("Pass12345678!")
+    return _CACHED_OWNER_M5_HASH
+
+
 test_engine = create_async_engine(
     _TEST_DB_URL,
     connect_args={"check_same_thread": False},
@@ -62,14 +81,14 @@ async def setup_test_database():
     async with test_session_factory() as session:
         user1 = User(
             username="test_owner",
-            hashed_password=hash_password("SuperSecretPassword123!"),
+            hashed_password=get_cached_test_owner_hash(),
             display_name="Test Owner",
             role="owner",
             is_active=True,
         )
         user2 = User(
             username="owner_m5",
-            hashed_password=hash_password("Pass12345678!"),
+            hashed_password=get_cached_owner_m5_hash(),
             display_name="Owner M5",
             role="owner",
             is_active=True,
@@ -88,6 +107,18 @@ async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+@pytest.fixture
+async def auth_headers(client: AsyncClient):
+    """Logs in as the test owner and returns Authorization header."""
+    res = await client.post(
+        "/api/v1/auth/login", json={"username": "test_owner", "password": "SuperSecretPassword123!"}
+    )
+    assert res.status_code == 200
+    token = res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
 
 
 @pytest.fixture

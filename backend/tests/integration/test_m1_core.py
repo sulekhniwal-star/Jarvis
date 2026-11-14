@@ -8,17 +8,6 @@ import pytest
 from httpx import AsyncClient
 
 
-@pytest.fixture
-async def auth_headers(client: AsyncClient):
-    """Logs in as the test owner and returns Authorization header."""
-    res = await client.post(
-        "/api/v1/auth/login", json={"username": "test_owner", "password": "SuperSecretPassword123!"}
-    )
-    assert res.status_code == 200
-    token = res.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
 @pytest.mark.asyncio
 async def test_health_endpoints(client: AsyncClient):
     """Verify liveness and readiness probes."""
@@ -116,3 +105,34 @@ async def test_unauthenticated_requests_blocked(client: AsyncClient):
         "/api/v1/tasks", json={"title": "Unauthorized", "description": "Should fail"}
     )
     assert post_res.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_task_logs_and_retry(client: AsyncClient, auth_headers: dict):
+    """Verify task logs retrieval and manual operator retry endpoint."""
+    res = await client.post(
+        "/api/v1/tasks",
+        json={"title": "Task for logs testing", "description": "Verify log formatting."},
+        headers=auth_headers,
+    )
+    assert res.status_code == 201
+    task_id = res.json()["id"]
+
+    # Verify logs endpoint
+    log_res = await client.get(f"/api/v1/tasks/{task_id}/logs", headers=auth_headers)
+    assert log_res.status_code == 200
+    log_data = log_res.json()
+    assert log_data["task_id"] == task_id
+    assert len(log_data["logs"]) > 0
+
+    # Cancel then retry
+    await client.post(f"/api/v1/tasks/{task_id}/cancel", headers=auth_headers)
+    retry_res = await client.post(f"/api/v1/tasks/{task_id}/retry", headers=auth_headers)
+    assert retry_res.status_code == 200
+    assert retry_res.json()["status"] in ["EXECUTING", "COMPLETED"]
+
+    # Verify diff endpoint
+    diff_res = await client.get(f"/api/v1/tasks/{task_id}/diff", headers=auth_headers)
+    assert diff_res.status_code == 200
+    assert "diff" in diff_res.json()
+    assert len(diff_res.json()["diff"]) > 0

@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     DATABASE_TIMEOUT_SECONDS: int = 30
 
     # AI Provider Defaults
-    DEFAULT_AI_PROVIDER: str = "mock"
+    DEFAULT_AI_PROVIDER: str = "openrouter"
     ALLOW_PAID_API_CALLS: bool = False
     MAX_MONTHLY_BUDGET_INR: float = 1000.0
 

@@ -22,6 +22,7 @@
 | **ADR-010** | Mobile-First Responsive Web Dashboard via Next.js 15               | Accepted | 2026-11-13 |
 | **ADR-011** | Managed Supabase Free Tier with Keep-Alive & Self-Host Portability | Accepted | 2026-11-13 |
 | **ADR-012** | Controlled Supervised Self-Improvement in Isolated Branches        | Accepted | 2026-11-13 |
+| **ADR-013** | Primary AI Engine via OpenRouter Universal Auto Routing (`openrouter/auto`) | Accepted | 2026-11-14 |
 
 ---
 
@@ -167,6 +168,18 @@
   5. A Pull Request is opened for mandatory human review and signed release approval.
 - **Alternatives Considered:** Unsupervised autonomous self-modifying runtime (rejected: catastrophic risk of accidental safety degradation or runaway bugs).
 - **Consequences:** Safe, auditable, and transparent self-enhancement.
+
+---
+
+### ADR-013: Primary AI Engine via OpenRouter Universal Auto Routing (`openrouter/auto`)
+
+- **Status:** Accepted
+- **Context:** Hardcoding a single model vendor (e.g. OpenAI GPT-4o, Anthropic Claude 3.5 Sonnet, or Google Gemini Flash) creates vendor lock-in, vulnerability to single-provider rate-limit outages, and unpredictable token price shifts. OpenRouter provides an OpenAI-compatible unified API that routes to any frontier model.
+- **Decision:** Establish **OpenRouter** as the primary default AI provider (`DEFAULT_AI_PROVIDER=openrouter`) with **`openrouter/auto`** as the default model string. This enables OpenRouter's dynamic meta-routing to automatically select the optimal frontier model (balancing latency, throughput, cost, and availability across Claude 3.5 Sonnet, Gemini 2.0 Flash, DeepSeek V3/R1, and Llama 3.3) for planning and code patch generation.
+- **Alternatives Considered:**
+  1. Pinning a specific proprietary model (rejected: brittle to pricing shifts and provider outages).
+  2. Local-only Ollama models (deferred: good for offline development, but lower zero-shot code synthesis quality for complex multi-file refactoring).
+- **Consequences:** Provides maximum resilience, zero vendor lock-in, dynamic provider failover, and access to frontier reasoning models while maintaining a unified HTTP client interface.
 
 ---
 

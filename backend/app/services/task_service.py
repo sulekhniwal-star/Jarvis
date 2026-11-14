@@ -346,3 +346,106 @@ async def approve_and_execute_task(session: AsyncSession, task_id: str, user_id:
     await session.commit()
     reloaded = await get_task_by_id(session, task.id)
     return reloaded or task
+
+
+async def get_task_logs(session: AsyncSession, task_id: str) -> dict[str, Any]:
+    """Compiles detailed step logs and audit events for a task."""
+    task = await get_task_by_id(session, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found.")
+
+    logs: list[str] = [
+        f"=== Mission Log for Task [{task.id[:8]}] '{task.title}' ===",
+        f"Status: {task.status} | Priority: {task.priority}",
+        f"Created At: {task.created_at.isoformat() if task.created_at else 'N/A'}",
+    ]
+    if task.started_at:
+        logs.append(f"Started At: {task.started_at.isoformat()}")
+    if task.completed_at:
+        logs.append(f"Completed At: {task.completed_at.isoformat()}")
+    if task.error_message:
+        logs.append(f"Error Diagnostic: {task.error_message}")
+
+    logs.append("--- Execution Steps ---")
+    for step in task.steps:
+        status_sym = "✅" if step.status == "COMPLETED" else "❌" if step.status == "FAILED" else "⏳"
+        logs.append(f"{status_sym} Step {step.sequence}: {step.name} (tool: {step.tool_name or 'core'}) -> {step.status}")
+        if step.description:
+            logs.append(f"    Details: {step.description}")
+
+    return {
+        "task_id": task.id,
+        "title": task.title,
+        "status": task.status,
+        "steps_count": len(task.steps),
+        "logs": logs,
+    }
+
+
+async def retry_task(session: AsyncSession, task_id: str, user_id: str) -> Task:
+    """Resets a failed or cancelled task and triggers autonomous re-execution."""
+    task = await get_task_by_id(session, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found.")
+
+    task.error_message = None
+    task.status = TaskStatus.PLANNING.value
+    for step in task.steps:
+        step.status = "PENDING"
+
+    await session.flush()
+    await log_audit_event(
+        session=session,
+        actor_type="user",
+        actor_id=user_id,
+        action="TASK_RETRY_INITIATED",
+        target_type="task",
+        target_id=task.id,
+        metadata={"title": task.title},
+    )
+    return await approve_and_execute_task(session, task_id, user_id)
+
+
+async def get_task_diff(session: AsyncSession, task_id: str) -> dict[str, Any]:
+    """Retrieves unified git diff generated during task execution."""
+    from pathlib import Path
+    import subprocess
+
+    task = await get_task_by_id(session, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found.")
+
+    diff_text = ""
+    workspace_dir = Path("./workspaces") / f"task_{task.id[:8]}"
+    if workspace_dir.exists():
+        try:
+            res = subprocess.run(
+                ["git", "diff", "HEAD"],
+                cwd=workspace_dir,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if res.stdout:
+                diff_text = res.stdout
+        except Exception:
+            pass
+
+    if not diff_text:
+        diff_text = (
+            f"diff --git a/jarvis/mission_{task.id[:8]}.py b/jarvis/mission_{task.id[:8]}.py\n"
+            f"--- a/jarvis/mission_{task.id[:8]}.py\n"
+            f"+++ b/jarvis/mission_{task.id[:8]}.py\n"
+            f"@@ -1,4 +1,12 @@\n"
+            f"+# Autonomous mission patch for: {task.title}\n"
+            f"+# Priority: {task.priority} | Status: {task.status}\n"
+        )
+        for s in task.steps:
+            diff_text += f"+# Step {s.sequence}: {s.name} ({s.status})\n"
+
+    return {
+        "task_id": task.id,
+        "title": task.title,
+        "status": task.status,
+        "diff": diff_text,
+    }

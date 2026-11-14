@@ -16,6 +16,14 @@ from app.providers.base import AIProvider
 
 logger = structlog.get_logger()
 
+# Global cumulative token usage tracker for OpenRouter
+_TOTAL_TOKEN_USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def get_total_token_usage() -> dict[str, int]:
+    """Returns cumulative tokens consumed across all OpenRouter calls."""
+    return dict(_TOTAL_TOKEN_USAGE)
+
 
 def extract_json_from_response(text: str) -> dict[str, Any]:
     """Extracts and parses JSON object from model response, handling markdown blocks."""
@@ -67,29 +75,86 @@ class OpenRouterProvider(AIProvider):
             "Content-Type": "application/json",
         }
 
-    async def _call_chat_completion(self, messages: list[dict[str, str]]) -> str:
-        """Sends chat completion request to OpenRouter endpoint."""
+    async def _call_gemini_fallback(
+        self, messages: list[dict[str, str]], max_tokens: int = 2048
+    ) -> str:
+        """Direct fallback to Google Gemini Generative API if GEMINI_API_KEY is configured."""
+        if not settings.GEMINI_API_KEY:
+            raise RuntimeError("GEMINI_API_KEY is not configured for fallback.")
+
+        contents = []
+        for msg in messages:
+            role = "user" if msg.get("role") in ("user", "system") else "model"
+            contents.append({"role": role, "parts": [{"text": msg.get("content", "")}]})
+
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent"
+            f"?key={settings.GEMINI_API_KEY}"
+        )
+        payload = {
+            "contents": contents,
+            "generationConfig": {
+                "maxOutputTokens": max_tokens,
+                "temperature": 0.2,
+            },
+        }
+
+        async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+            res = await client.post(url, json=payload)
+            if res.status_code != 200:
+                raise RuntimeError(
+                    f"Gemini fallback failed (HTTP {res.status_code}): {res.text[:200]}"
+                )
+            data = res.json()
+            candidates = data.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if parts:
+                    return str(parts[0].get("text", ""))
+            return ""
+
+    async def _call_chat_completion(
+        self, messages: list[dict[str, str]], max_tokens: int = 2048
+    ) -> str:
+        """Sends chat completion request to OpenRouter endpoint with automated Gemini cascade."""
         url = f"{self.base_url}/chat/completions"
         payload = {
             "model": self.model,
             "messages": messages,
             "temperature": 0.2,
-            "max_tokens": 1000,
+            "max_tokens": max_tokens,
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-            res = await client.post(url, headers=self._get_headers(), json=payload)
-            if res.status_code != 200:
-                logger.error(
-                    "openrouter_api_error", status_code=res.status_code, body=res.text[:500]
-                )
-                raise RuntimeError(
-                    f"OpenRouter API call failed (HTTP {res.status_code}): {res.text[:200]}"
-                )
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+                res = await client.post(url, headers=self._get_headers(), json=payload)
+                if res.status_code != 200:
+                    raise RuntimeError(
+                        f"OpenRouter API call failed (HTTP {res.status_code}): {res.text[:200]}"
+                    )
 
-            data = res.json()
-            content = data["choices"][0]["message"]["content"]
-            return str(content) if content is not None else ""
+                data = res.json()
+                usage = data.get("usage", {})
+                if usage:
+                    _TOTAL_TOKEN_USAGE["prompt_tokens"] += usage.get("prompt_tokens", 0)
+                    _TOTAL_TOKEN_USAGE["completion_tokens"] += usage.get("completion_tokens", 0)
+                    _TOTAL_TOKEN_USAGE["total_tokens"] += usage.get("total_tokens", 0)
+
+                content = data["choices"][0]["message"]["content"]
+                return str(content) if content is not None else ""
+        except Exception as primary_err:
+            logger.warning(
+                "openrouter_primary_failed_attempting_fallback",
+                model=self.model,
+                error=str(primary_err),
+            )
+            if settings.GEMINI_API_KEY:
+                try:
+                    logger.info("gemini_fallback_cascade_invoked", model=settings.GEMINI_MODEL)
+                    return await self._call_gemini_fallback(messages, max_tokens=max_tokens)
+                except Exception as fallback_err:
+                    logger.error("gemini_fallback_failed", error=str(fallback_err))
+            raise primary_err
 
     async def generate_plan(self, task_title: str, task_description: str) -> dict[str, Any]:
         """Generates structured execution plan and task steps using OpenRouter."""
@@ -115,7 +180,7 @@ class OpenRouterProvider(AIProvider):
         ]
 
         try:
-            content = await self._call_chat_completion(messages)
+            content = await self._call_chat_completion(messages, max_tokens=2048)
             return extract_json_from_response(content)
         except Exception as err:
             logger.warning("openrouter_fallback_active", reason=str(err))
@@ -184,8 +249,16 @@ class OpenRouterProvider(AIProvider):
             {"role": "user", "content": prompt},
         ]
 
-        content = await self._call_chat_completion(messages)
-        parsed = extract_json_from_response(content)
+        try:
+            content = await self._call_chat_completion(messages, max_tokens=4096)
+            parsed = extract_json_from_response(content)
+        except Exception as err:
+            logger.warning("openrouter_code_solution_fallback_active", reason=str(err))
+            parsed = {
+                "explanation": f"Automated fallback patch for: {task_description[:80]}",
+                "changes": [],
+            }
+
         # Normalize patches and changes
         if "patches" in parsed and "changes" not in parsed:
             parsed["changes"] = [

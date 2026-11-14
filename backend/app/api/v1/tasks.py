@@ -14,7 +14,10 @@ from app.services.task_service import (
     cancel_task,
     create_task,
     get_task_by_id,
+    get_task_diff,
+    get_task_logs,
     list_tasks,
+    retry_task,
 )
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
@@ -77,3 +80,33 @@ async def api_approve_task(
 ):
     """Approves a pending task and triggers execution protocol."""
     return await approve_and_execute_task(session, task_id, current_user.id)
+
+
+@router.get("/{task_id}/logs")
+async def api_get_task_logs(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Retrieves formatted execution logs and step history for a task."""
+    return await get_task_logs(session, task_id)
+
+
+@router.post("/{task_id}/retry", response_model=TaskResponse)
+async def api_retry_task(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Retries a task from planning and executes it with fresh diagnostics."""
+    return await retry_task(session, task_id, current_user.id)
+
+
+@router.get("/{task_id}/diff")
+async def api_get_task_diff(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Retrieves unified git diff generated during task execution."""
+    return await get_task_diff(session, task_id)

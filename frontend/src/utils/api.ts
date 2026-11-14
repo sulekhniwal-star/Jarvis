@@ -289,6 +289,20 @@ export async function rejectTaskApi(taskId: string): Promise<any> {
   });
 }
 
+export async function retryTaskApi(taskId: string): Promise<any> {
+  return await apiRequest(`/tasks/${taskId}/retry`, {
+    method: "POST",
+  });
+}
+
+export async function fetchTaskLogs(taskId: string): Promise<any> {
+  return await apiRequest(`/tasks/${taskId}/logs`);
+}
+
+export async function fetchTaskDiff(taskId: string): Promise<any> {
+  return await apiRequest(`/tasks/${taskId}/diff`);
+}
+
 export async function emergencyStopApi(): Promise<any> {
   return await apiRequest("/system/emergency-stop", {
     method: "POST",
@@ -342,4 +356,12 @@ export async function selfImproveJarvisApi(): Promise<any> {
     method: "POST",
   });
 }
+
+export async function batchUpgradeDependenciesApi(repoNames?: string[]): Promise<any> {
+  return await apiRequest("/projects/batch-upgrade", {
+    method: "POST",
+    body: JSON.stringify(repoNames ? { repo_names: repoNames } : {}),
+  });
+}
+
 

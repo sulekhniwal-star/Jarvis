@@ -60,3 +60,56 @@ async def test_openrouter_generate_plan_mocked_http():
         assert plan["summary"] == "OpenRouter Plan"
         assert len(plan["steps"]) == 1
         assert plan["steps"][0]["name"] == "Inspect"
+
+
+@pytest.mark.asyncio
+async def test_openrouter_gemini_fallback_cascade():
+    """Verify that when OpenRouter fails, it cascades to Gemini if GEMINI_API_KEY is configured."""
+    gemini_response = {
+        "candidates": [
+            {
+                "content": {
+                    "parts": [
+                        {
+                            "text": '```json\n{"summary": "Gemini Fallback Plan", "steps": [{"sequence": 1, "name": "Gemini Step", "tool_name": "repo_inspect"}]}\n```'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    # OpenRouter returns 500, then Gemini returns 200
+    mock_or_fail = httpx.Response(status_code=500, text="Internal Server Error")
+    mock_gemini_success = httpx.Response(status_code=200, json=gemini_response)
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.side_effect = [mock_or_fail, mock_gemini_success]
+
+        with patch("app.core.config.settings.GEMINI_API_KEY", "gemini_mock_key_123"):
+            provider = OpenRouterProvider(api_key="sk-or-v1-testkey")
+            plan = await provider.generate_plan("Fallback Task", "Testing Cascade")
+
+            assert plan["summary"] == "Gemini Fallback Plan"
+            assert len(plan["steps"]) == 1
+            assert plan["steps"][0]["name"] == "Gemini Step"
+
+
+@pytest.mark.asyncio
+async def test_openrouter_resilient_code_fallback():
+    """Verify code solution generator returns safe fallback structure when APIs fail."""
+    mock_or_fail = httpx.Response(status_code=429, text="Rate limit exceeded")
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.return_value = mock_or_fail
+
+        with patch("app.core.config.settings.GEMINI_API_KEY", ""):
+            provider = OpenRouterProvider(api_key="sk-or-v1-testkey")
+            solution = await provider.generate_code_solution(
+                "Task with network down", {"app.py": "print('hello')"}
+            )
+
+            assert "fallback" in solution["explanation"].lower()
+            assert "changes" in solution
+            assert isinstance(solution["changes"], list)
+

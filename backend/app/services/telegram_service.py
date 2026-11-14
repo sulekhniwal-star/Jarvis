@@ -86,11 +86,17 @@ class TelegramService:
         return res.json()
 
     async def send_message(
-        self, chat_id: str, text: str, parse_mode: str = "MarkdownV2"
+        self,
+        chat_id: str,
+        text: str,
+        parse_mode: str = "MarkdownV2",
+        reply_markup: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Dispatches an outbound notification to Telegram."""
+        """Dispatches an outbound notification to Telegram with optional inline buttons."""
         url = f"{self.base_url}/sendMessage"
-        payload = {"chat_id": chat_id, "text": text, "parse_mode": parse_mode}
+        payload: dict[str, Any] = {"chat_id": chat_id, "text": text, "parse_mode": parse_mode}
+        if reply_markup is not None:
+            payload["reply_markup"] = reply_markup
         res = await self._client.post(url, json=payload)
         return res.json()
 
@@ -123,16 +129,23 @@ class TelegramService:
         payload_summary: str,
         dashboard_url: str = "http://localhost:3000",
     ) -> dict[str, Any]:
-        """Dispatches a high-priority approval notification."""
+        """Dispatches a high-priority approval notification with interactive one-tap buttons."""
         msg = (
             f"⚠️ *Human Approval Required*\n\n"
             f"*Approval ID:* `{escape_markdown_v2(approval_id)}`\n"
             f"*Action:* `{escape_markdown_v2(action_type)}`\n"
             f"*Summary:* {escape_markdown_v2(payload_summary)}\n\n"
-            f"To approve via Telegram:\n`/approve {escape_markdown_v2(approval_id)}`\n\n"
             f"👉 [Review on Dashboard]({escape_markdown_v2(dashboard_url)})\n"
         )
-        return await self.send_message(chat_id, msg)
+        reply_markup = {
+            "inline_keyboard": [
+                [
+                    {"text": "✅ AUTHORIZE & RUN", "callback_data": f"approve_{approval_id}"},
+                    {"text": "❌ ABORT MISSION", "callback_data": f"reject_{approval_id}"},
+                ]
+            ]
+        }
+        return await self.send_message(chat_id, msg, reply_markup=reply_markup)
 
     async def handle_incoming_update(
         self,
@@ -142,15 +155,58 @@ class TelegramService:
     ) -> str | None:
         """
         Processes an incoming Telegram update.
-        Rejects unauthorized users silently and dispatches valid commands.
+        Handles text commands and interactive inline keyboard callback queries.
+        Rejects unauthorized users silently.
         """
+        # 1. Handle interactive inline keyboard callbacks
+        callback_query = update_data.get("callback_query")
+        if callback_query:
+            sender = callback_query.get("from", {})
+            sender_id = str(sender.get("id", ""))
+            if not self.is_authorized_user(sender_id):
+                logger.warning("Rejected unauthorized Telegram callback", sender_id=sender_id)
+                return None
+
+            data = callback_query.get("data", "")
+            chat_id = str(callback_query.get("message", {}).get("chat", {}).get("id", ""))
+
+            if data.startswith("approve_"):
+                appr_id = data.replace("approve_", "")
+                await evaluate_approval(
+                    session,
+                    appr_id,
+                    "APPROVED",
+                    "Approved via Telegram one-tap inline button",
+                    owner_user_id,
+                )
+                await session.commit()
+                await self.send_message(
+                    chat_id, f"✅ Action `{escape_markdown_v2(appr_id)}` authorized via inline button."
+                )
+                return "inline_approved"
+            elif data.startswith("reject_"):
+                appr_id = data.replace("reject_", "")
+                await evaluate_approval(
+                    session,
+                    appr_id,
+                    "REJECTED",
+                    "Rejected via Telegram one-tap inline button",
+                    owner_user_id,
+                )
+                await session.commit()
+                await self.send_message(
+                    chat_id, f"❌ Action `{escape_markdown_v2(appr_id)}` rejected via inline button."
+                )
+                return "inline_rejected"
+
+        # 2. Handle standard message commands
         message = update_data.get("message", {})
         sender = message.get("from", {})
         sender_id = str(sender.get("id", ""))
         text = message.get("text", "").strip()
         chat_id = str(message.get("chat", {}).get("id", ""))
 
-        # 1. Identity allowlist check
+        # Identity allowlist check
         if not self.is_authorized_user(sender_id):
             logger.warning("Rejected unauthorized Telegram message", sender_id=sender_id)
             await log_audit_event(

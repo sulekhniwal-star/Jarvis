@@ -54,6 +54,8 @@ jarvis.db
 htmlcov/
 .tox/
 .nox/
+workspaces/
+.jarvis/system_state.json
 
 # Next.js / Node
 node_modules/

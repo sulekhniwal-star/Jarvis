@@ -77,13 +77,22 @@ class CodingAgent:
 
         retries_used = 0
         all_modified_files: set[str] = {str(c["file_path"]) for c in changes if c.get("file_path")}
+        failure_history: list[str] = []
 
-        # 5. Diagnostic retry loop with active code repair
+        # 5. Diagnostic retry loop with sequential context & active code repair
         while not test_result["passed"] and retries_used < max_retries:
             retries_used += 1
             logs.append(
                 f"[CodingAgent] Tests failed. Starting diagnostic retry {retries_used}/{max_retries}..."
             )
+
+            # Record failure context to prevent repeating previous mistakes
+            failure_history.append(
+                f"--- ATTEMPT {retries_used} FAILURE ---\n"
+                f"Exit Code: {test_result.get('exit_code', 1)}\n"
+                f"Output:\n{test_result.get('raw_output', '')[:1000]}"
+            )
+            history_context = "\n\n".join(failure_history)
 
             # Refresh context with failing files
             retry_context: dict[str, str] = {}
@@ -94,10 +103,11 @@ class CodingAgent:
                     pass
 
             error_prompt = (
-                f"The following automated test failed during task execution:\n"
-                f"Task: {task_title}\n"
-                f"Error Evidence:\n{test_result.get('raw_output', '')[:1500]}\n"
-                f"Please produce a corrected patch that fixes the error and passes the test."
+                f"The automated test suite failed during task execution:\n"
+                f"Task Directive: {task_title}\n\n"
+                f"Previous Failure History:\n{history_context}\n\n"
+                f"CRITICAL INSTRUCTION: Review the failure evidence and previous attempt history. "
+                f"Analyze the root cause and produce a corrected patch that resolves the issue and passes all tests."
             )
 
             try:

@@ -4,6 +4,7 @@ Allows Jarvis to inspect, research, audit, and auto-improve user repositories.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
@@ -122,3 +123,30 @@ async def self_improve_jarvis(
         "health_score": health_report.get("health_score"),
         "priority": "CRITICAL",
     }
+
+
+class BatchUpgradeRequest(BaseModel):
+    repo_names: list[str] | None = None
+
+
+@router.post("/batch-upgrade")
+async def batch_upgrade_dependencies(
+    payload: BatchUpgradeRequest | None = None,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Discovers package manifests across fleet repositories and dispatches
+    autonomous dependency upgrade tasks.
+    """
+    auditor = ProjectAuditorService()
+    try:
+        repos = payload.repo_names if payload else None
+        result = await auditor.batch_upgrade_dependencies(
+            repo_names=repos, session=session, user_id=current_user.id
+        )
+        await session.commit()
+        return result
+    finally:
+        await auditor.close()
+

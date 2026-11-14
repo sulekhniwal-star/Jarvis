@@ -2,6 +2,9 @@
 Project Jarvis — System Control & Emergency Kill-Switch Endpoints.
 """
 
+import json
+from pathlib import Path
+
 import psutil
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
@@ -18,14 +21,41 @@ from app.services.task_service import cancel_task, list_tasks
 
 router = APIRouter(prefix="/system", tags=["System"])
 
-# In-memory operational flag (defaults to OPERATIONAL)
-_SYSTEM_STATE = {"status": "OPERATIONAL"}
+# Persistent operational state file
+_STATE_FILE = Path(__file__).resolve().parent.parent.parent.parent / ".jarvis" / "system_state.json"
+
+
+def _get_system_status() -> dict[str, str]:
+    """Retrieves system status from disk with fallback to OPERATIONAL."""
+    if _STATE_FILE.exists():
+        try:
+            with open(_STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict) and "status" in data:
+                    return data
+        except Exception:
+            pass
+    return {"status": "OPERATIONAL"}
+
+
+def _set_system_status(status_val: str) -> dict[str, str]:
+    """Persists system status atomically to disk."""
+    state = {"status": status_val}
+    try:
+        _STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        temp_file = _STATE_FILE.with_suffix(".tmp")
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(state, f)
+        temp_file.replace(_STATE_FILE)
+    except Exception:
+        pass
+    return state
 
 
 @router.get("/status")
 async def get_system_status():
     """Returns current system health and operational mode."""
-    return _SYSTEM_STATE
+    return _get_system_status()
 
 
 @router.get("/telemetry")
@@ -83,8 +113,13 @@ async def get_system_telemetry(session: AsyncSession = Depends(get_db_session)):
         pending_approvals = 0
         db_connected = False
 
+    from app.providers.openrouter import get_total_token_usage
+
+    tokens = get_total_token_usage()
+    estimated_inr = round(tokens.get("total_tokens", 0) * 0.00003, 3)
+
     return {
-        "status": _SYSTEM_STATE["status"],
+        "status": _get_system_status()["status"],
         "hardware": {
             "cpu_percent": cpu_percent,
             "cpu_cores": cpu_cores,
@@ -103,9 +138,12 @@ async def get_system_telemetry(session: AsyncSession = Depends(get_db_session)):
             "pending_approvals": pending_approvals,
         },
         "budget": {
-            "current_inr": 0,
-            "monthly_limit_inr": 1000,
+            "current_inr": estimated_inr,
+            "monthly_limit_inr": settings.MAX_MONTHLY_BUDGET_INR,
             "currency": "INR",
+            "tokens_consumed": tokens.get("total_tokens", 0),
+            "prompt_tokens": tokens.get("prompt_tokens", 0),
+            "completion_tokens": tokens.get("completion_tokens", 0),
         },
         "ai_provider": {
             "name": settings.DEFAULT_AI_PROVIDER,
@@ -123,7 +161,7 @@ async def emergency_stop(
     Emergency kill-switch: Immediately halts all active tasks,
     locks the system, and commits security audit event.
     """
-    _SYSTEM_STATE["status"] = "LOCKED"
+    _set_system_status("LOCKED")
 
     # Cancel all active tasks
     tasks, _ = await list_tasks(session)
@@ -155,7 +193,7 @@ async def resume_system(
     current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db_session)
 ):
     """Restores system to OPERATIONAL mode after review."""
-    _SYSTEM_STATE["status"] = "OPERATIONAL"
+    _set_system_status("OPERATIONAL")
     await log_audit_event(
         session=session,
         actor_type="user",

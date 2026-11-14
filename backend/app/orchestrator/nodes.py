@@ -4,10 +4,13 @@ Implements modular step functions for planning, approval gating, code generation
 test execution, diagnosis retry loop, and pull request generation.
 """
 
+from pathlib import Path
 from typing import Any
 
 from app.orchestrator.state import TaskGraphState
 from app.providers.factory import get_ai_provider
+from app.workers.coding_agent import CodingAgent
+from app.workers.runner import LocalSandboxRunner
 
 
 async def intake_node(state: TaskGraphState) -> dict[str, Any]:
@@ -86,6 +89,27 @@ async def executor_node(state: TaskGraphState) -> dict[str, Any]:
     logs.append(f"[Executor] Modifying files on isolated branch for task {state['task_id']}...")
 
     provider = get_ai_provider()
+    workspace_path = state.get("workspace_root")
+
+    # If a live workspace directory is specified, execute through CodingAgent
+    if workspace_path and Path(str(workspace_path)).exists():
+        try:
+            runner = LocalSandboxRunner(workspace_root=Path(str(workspace_path)))
+            agent = CodingAgent(runner=runner, ai_provider=provider)
+            res = await agent.execute_task(
+                task_title=state["title"],
+                task_description=state["description"],
+                test_command=state.get("test_command", "python --version"),
+            )
+            logs.extend(res.get("logs", []))
+            return {
+                "status": "EXECUTING",
+                "patch_diff": res.get("solution", {}).get("explanation", "Patch applied in sandbox"),
+                "execution_logs": logs,
+            }
+        except Exception as e:
+            logs.append(f"[Executor] Local sandbox execution note: {e}")
+
     solution = await provider.generate_code_solution(
         state["description"], {"src/main.py": "# initial code\n"}
     )

@@ -126,3 +126,32 @@ async def test_end_to_end_supervised_self_improvement_workflow():
         assert "Human Review Required" in pr_payload["body"]
         assert "![Tests Passed]" in pr_payload["body"]
         assert "- `utils.py`" in pr_payload["body"]
+
+
+@pytest.mark.asyncio
+async def test_batch_upgrade_dependencies_endpoint(client, auth_headers):
+    """
+    CRITICAL ACCEPTANCE TEST:
+    Verify /projects/batch-upgrade endpoint discovers dependency manifests and
+    dispatches autonomous modernization tasks into the pipeline.
+    """
+    res = await client.post(
+        "/api/v1/projects/batch-upgrade",
+        json={"repo_names": ["job-automation", "linkedin-ai-automation"]},
+        headers=auth_headers,
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "DISPATCHED"
+    assert data["total_dispatched"] == 2
+    assert any(r.lower() == "job-automation" for r in data["upgraded_repos"])
+    assert any(r.lower() == "linkedin-ai-automation" for r in data["upgraded_repos"])
+    assert len(data["task_ids"]) == 2
+
+    # Verify tasks are queryable via task API
+    task_id = data["task_ids"][0]
+    task_res = await client.get(f"/api/v1/tasks/{task_id}", headers=auth_headers)
+    assert task_res.status_code == 200
+    task_info = task_res.json()
+    assert "[DEP-UPGRADE]" in task_info["title"]
+

@@ -1,0 +1,26 @@
+{
+  "name": "@jarvis/telegram-integration",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/*.test.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@jarvis/agent-orchestrator": "workspace:*",
+    "@jarvis/budget-manager": "workspace:*",
+    "@jarvis/core": "workspace:*",
+    "@jarvis/database": "workspace:*",
+    "@jarvis/permission-engine": "workspace:*",
+    "@jarvis/shared-contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.3"
+  }
+}

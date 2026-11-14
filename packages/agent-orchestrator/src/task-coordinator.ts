@@ -1,6 +1,5 @@
 import type {
   CreateTaskInput,
-  TaskStatus,
   TaskPriority,
 } from '@jarvis/shared-contracts';
 import {
@@ -14,6 +13,7 @@ import type {
   TaskRepository,
   TaskRow,
   TaskUpdate,
+  TaskStatus,
   AuditRepository,
   QueueRepository,
 } from '@jarvis/database';
@@ -94,7 +94,7 @@ export class TaskCoordinator {
       details: {
         taskId,
         fromStatus: current.status,
-        toStatus,
+        toStatus: String(toStatus),
         version: updated.version,
       },
     });
@@ -185,6 +185,25 @@ export class TaskCoordinator {
     return this.transitionTask(taskId, userId, 'SELF_HEALING', task.version, {
       retry_count: task.retry_count + 1,
     });
+  }
+
+  /**
+   * Cancels a task in progress and transitions status to CANCELLED.
+   */
+  async cancelTask(taskId: string, userId: string, reason: string): Promise<TaskRow> {
+    const task = await this.taskRepo.getById(taskId, userId);
+    if (!task) throw new Error(`Task ${taskId} not found`);
+
+    const cancelled = await this.transitionTask(taskId, userId, 'CANCELLED', task.version);
+
+    await this.auditRepo.append({
+      userId,
+      eventType: 'TASK_CANCELLED',
+      severity: 'INFO',
+      details: { taskId, reason },
+    });
+
+    return cancelled;
   }
 
   /**

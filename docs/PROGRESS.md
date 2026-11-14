@@ -1,8 +1,8 @@
 # Project Progress Log: Jarvis Autonomous Personal AI
 
-**Current Status:** Milestone 2 (Jarvis Control Plane) – Completed & Verified  
+**Current Status:** Milestone 3 (Telegram and Web Interface) – Completed & Verified  
 **Date:** November 14, 2026  
-**Last Updated:** November 14, 2026, 19:00 UTC  
+**Last Updated:** November 14, 2026, 19:25 UTC  
 
 ---
 
@@ -13,8 +13,8 @@
 | **M0** | Architecture & Governance | **COMPLETED** | Day 1 |
 | **M1** | Supabase Foundation | **COMPLETED** | Sprint 1 |
 | **M2** | Jarvis Control Plane | **COMPLETED** | Sprint 1 |
-| **M3** | Telegram & Web Interface | **NEXT** | Sprint 2 |
-| **M4** | Specification & Planning Agents | Pending | Sprint 2 |
+| **M3** | Telegram & Web Interface | **COMPLETED** | Sprint 2 |
+| **M4** | Specification & Planning Agents | **NEXT** | Sprint 2 |
 | **M5** | GitHub App Integration | Pending | Sprint 3 |
 | **M6** | Coding Execution Engine | Pending | Sprint 3 |
 | **M7** | Automated QA & Self-Healing | Pending | Sprint 4 |
@@ -25,95 +25,105 @@
 
 ---
 
-## 2. Milestone 2 Execution Details: Jarvis Control Plane
+## 2. Milestone 3 Execution Details: Telegram & Web Interface
 
 ### Features & Deliverables Completed:
-- **Repository Pattern Implementation (`@jarvis/database/src/repositories/`)**:
-  - `UserRepository`: User preference resolution, budget cap tracking.
-  - `ProjectRepository`: Project metadata and repo binding.
-  - `MilestoneRepository`: Milestone creation and status management.
-  - `TaskRepository`: Task intake, retrieval, and atomic optimistic locking transitions (`version = version + 1`).
-  - `AgentRunRepository`: Runner environment tracking, logs, and token telemetry recording.
-  - `ApprovalRepository`: Action gating ticket creation and human resolution.
-  - `BudgetRepository`: Atomic transaction ledger appends, daily/monthly spend aggregation in INR.
-  - `AuditRepository`: Structured append-only audit trail logging.
-  - `QueueRepository`: Direct pgmq enqueue and visibility peek.
-- **Finite State Machine (`@jarvis/core/src/state-machine.ts`)**:
-  - Complete transition validation across 13 core states (`INTAKE`, `SPECIFYING`, `PLANNING`, `PENDING_APPROVAL`, `DISPATCHED`, `RUNNING`, `TESTING`, `SELF_HEALING`, `PR_CREATED`, `COMPLETED`, `ESCALATED`, `CANCELLED`, `EMERGENCY_ABORTED`).
-  - Strict exception assertions throwing `TaskStateTransitionError` on illegal hops.
-- **Central Permission Engine (`@jarvis/permission-engine`)**:
-  - Implementation of immutable policy matrix gating 9 critical actions (`PROD_DEPLOY`, `SEND_MESSAGE`, `SPEND_FUNDS`, `PAID_AI_INFERENCE`, `MAJOR_ARCH_CHANGE`, `SENSITIVE_DB_OP`, `ACCOUNT_CHANGE`, `DESTRUCTIVE_ACTION`, `NEW_DEPENDENCY`).
-  - Human approval ticket creation and strict blocking assertion (`assertApproved`).
-  - Resolution handler with audit event emissions.
-- **Financial Budget Manager (`@jarvis/budget-manager`)**:
-  - Pre-flight model evaluation blocking paid models without approval or when `prefer_free_models` is active.
-  - Daily spending cap (INR 25.00/day) and monthly spending cap (INR 750.00/mo) pre-flight enforcement.
-  - `:free` model zero-cost bypass.
-- **Agent Orchestrator & Task Coordinator (`@jarvis/agent-orchestrator`)**:
-  - `TaskCoordinator`: Coordinates task intake, optimistic state transitions, dispatch checks, and cancellations.
-  - `QueueWorker`: Polling engine consuming messages from native `pgmq` queues.
-- **Verification & Test Suite**:
-  - Unit and integration tests written and verified for all packages using native Node test runner (`node --test`).
-  - 100% test pass across `@jarvis/core`, `@jarvis/permission-engine`, `@jarvis/budget-manager`, and `@jarvis/agent-orchestrator`.
+- **Telegram Bot Webhook & Security Engine (`@jarvis/telegram-integration`)**:
+  - `validateWebhookSecret`: Constant-time comparison (`crypto.timingSafeEqual`) on `X-Telegram-Bot-Api-Secret-Token` header to defeat timing attacks.
+  - User and chat whitelisting verifying incoming sender against `ADMIN_TELEGRAM_CHAT_ID`.
+  - Full Bot API Client: `sendMessage`, `editMessageText`, and `answerCallbackQuery`.
+  - Interactive Inline Keyboards: 1-click `[Approve]` and `[Reject]` buttons for action approval requests.
+  - Command Router & Handlers:
+    - `/task <prompt>`: Intakes task in `INTAKE` status for active project via `TaskCoordinator`.
+    - `/status`: Summarizes active tasks, pending approvals, and today's spend (INR).
+    - `/projects`: Displays registered GitHub projects, branches, and status.
+    - `/budget`: Shows daily spend (₹/25), monthly spend (₹/750), and emergency reserve state.
+    - `/approve <ticket_id>`: Resolves approval tickets via `PermissionEngine`.
+    - `/reject <ticket_id>`: Rejects tickets with audit trail logging.
+    - `/abort <task_id>` / `/kill`: Emergency kill switch to cancel active tasks immediately.
+- **Next.js 15 Web Dashboard (`apps/dashboard`)**:
+  - Next.js 15 App Router with Tailwind CSS dark-mode dashboard.
+  - Integrated with `@jarvis/database`, `@jarvis/core`, `@jarvis/shared-contracts`, `@jarvis/permission-engine`, and `@jarvis/budget-manager`.
+  - Pages & Components:
+    - `src/components/navbar.tsx`: Header with brand, navigation links, and live daily budget gauge.
+    - `src/components/budget-widget.tsx`: Visual spending meters for daily cap, monthly cap, and emergency reserve status.
+    - `src/components/task-status-badge.tsx`: Color-coded lifecycle badge for all 13 states.
+    - `src/components/approval-card.tsx`: Interactive action ticket card with risk badges and 1-click decision buttons.
+    - `src/app/page.tsx`: Executive dashboard overview with live budget, pending approvals banner, and recent tasks table.
+    - `src/app/tasks/page.tsx`: Complete task queue view with status filter tabs (`ALL`, `INTAKE`, `PLANNING`, `RUNNING`, etc.).
+    - `src/app/tasks/new/page.tsx`: Form for task intake with priority selection and requirement prompts.
+    - `src/app/tasks/[id]/page.tsx`: Detailed task view with raw requirements, generated specifications, implementation plans, and runner history.
+    - `src/app/tasks/[id]/task-control-buttons.tsx`: Interactive controls (Start/Dispatch, Cancel, Emergency Abort).
+    - `src/app/projects/page.tsx`: Project overview with GitHub repository bindings.
+    - `src/app/approvals/page.tsx`: Dedicated Approvals Center.
+    - `src/app/login/page.tsx`: Administrator authentication portal.
+    - `src/app/api/webhooks/telegram/route.ts`: Secure webhook endpoint with secret token verification.
+    - `src/app/api/tasks/route.ts` & `src/app/api/approvals/route.ts`: API endpoints for intake and governance.
 
 ### Files Created / Modified:
-- `packages/core/src/state-machine.ts`
-- `packages/core/src/state-machine.test.ts`
-- `packages/core/src/index.ts`
-- `packages/database/src/repositories/user.repository.ts`
-- `packages/database/src/repositories/project.repository.ts`
-- `packages/database/src/repositories/milestone.repository.ts`
-- `packages/database/src/repositories/task.repository.ts`
-- `packages/database/src/repositories/agent-run.repository.ts`
-- `packages/database/src/repositories/approval.repository.ts`
-- `packages/database/src/repositories/budget.repository.ts`
-- `packages/database/src/repositories/audit.repository.ts`
-- `packages/database/src/repositories/queue.repository.ts`
-- `packages/database/src/repositories/index.ts`
-- `packages/database/src/index.ts`
-- `packages/permission-engine/src/policy-matrix.ts`
-- `packages/permission-engine/src/permission-engine.ts`
-- `packages/permission-engine/src/permission-engine.test.ts`
-- `packages/permission-engine/src/index.ts`
-- `packages/budget-manager/src/budget-manager.ts`
-- `packages/budget-manager/src/budget-manager.test.ts`
-- `packages/budget-manager/src/index.ts`
+- `packages/telegram-integration/package.json`
+- `packages/telegram-integration/tsconfig.json`
+- `packages/telegram-integration/src/types.ts`
+- `packages/telegram-integration/src/auth.ts`
+- `packages/telegram-integration/src/telegram-client.ts`
+- `packages/telegram-integration/src/command-router.ts`
+- `packages/telegram-integration/src/telegram.test.ts`
+- `packages/telegram-integration/src/index.ts`
 - `packages/agent-orchestrator/src/task-coordinator.ts`
-- `packages/agent-orchestrator/src/task-coordinator.test.ts`
-- `packages/agent-orchestrator/src/queue-worker.ts`
-- `packages/agent-orchestrator/src/index.ts`
+- `packages/database/src/repositories/task.repository.ts`
+- `apps/dashboard/package.json`
+- `apps/dashboard/tsconfig.json`
+- `apps/dashboard/next.config.ts`
+- `apps/dashboard/tailwind.config.ts`
+- `apps/dashboard/postcss.config.mjs`
+- `apps/dashboard/src/app/globals.css`
+- `apps/dashboard/src/app/layout.tsx`
+- `apps/dashboard/src/app/page.tsx`
+- `apps/dashboard/src/app/tasks/page.tsx`
+- `apps/dashboard/src/app/tasks/new/page.tsx`
+- `apps/dashboard/src/app/tasks/[id]/page.tsx`
+- `apps/dashboard/src/app/tasks/[id]/task-control-buttons.tsx`
+- `apps/dashboard/src/app/projects/page.tsx`
+- `apps/dashboard/src/app/approvals/page.tsx`
+- `apps/dashboard/src/app/login/page.tsx`
+- `apps/dashboard/src/app/api/webhooks/telegram/route.ts`
+- `apps/dashboard/src/app/api/tasks/route.ts`
+- `apps/dashboard/src/app/api/tasks/[id]/transition/route.ts`
+- `apps/dashboard/src/app/api/approvals/route.ts`
+- `apps/dashboard/src/app/api.test.ts`
+- `apps/dashboard/src/components/navbar.tsx`
+- `apps/dashboard/src/components/task-status-badge.tsx`
+- `apps/dashboard/src/components/budget-widget.tsx`
+- `apps/dashboard/src/components/approval-card.tsx`
+- `apps/dashboard/src/lib/services.ts`
 
 ### Tests Executed & Results:
-- `pnpm -r test` → **100% PASS** (17 tests across all 4 packages):
+- `pnpm -r test` → **100% PASS** (30 tests across all 6 workspace packages):
   - `@jarvis/core`: 6 tests passing (state machine transitions, terminal states, error assertions).
   - `@jarvis/budget-manager`: 3 tests passing (free model bypass, paid model gating, daily limit enforcement).
   - `@jarvis/permission-engine`: 5 tests passing (policy matrix, ticket creation, pending assertion block, approval resolution).
   - `@jarvis/agent-orchestrator`: 3 tests passing (task intake, state transition with optimistic lock, illegal hop rejection).
+  - `@jarvis/telegram-integration`: 10 tests passing (timing-safe token validation, chat authorization, commands, inline button callbacks, approval alerts).
+  - `@jarvis/dashboard`: 3 tests passing (webhook validation, Zod task schema intake validation, error handling).
+- `next build` → **100% PASS** (Production build compiled and optimized 8 static and dynamic routes).
 
 ---
 
-## 3. Milestone 1 Execution Details: Supabase Foundation
-
-### Features & Deliverables Completed:
-- Initialized pnpm monorepo workspace configuration (`pnpm-workspace.yaml`, `turbo.json`, root `package.json`).
-- Established Supabase local configuration (`supabase/config.toml`) with API, Auth, Storage, and pgmq settings.
-- Authored production SQL migration suite (`supabase/migrations/`):
-  - `20261114000001_initial_schema.sql`: Core entity tables, vector/pgmq extensions, updated_at triggers, and indexes.
-  - `20261114000002_rls_policies.sql`: Strict Row Level Security policies with `TO authenticated`, ownership checks, and immutable constraints on `budget_ledgers` and `audit_logs`.
-  - `20261114000003_storage_buckets.sql`: Private `task-artifacts` storage bucket with folder-level RLS policies.
-  - `20261114000004_queues.sql`: Initialized `jarvis_task_queue` and `jarvis_agent_run_queue` native queues via `pgmq`.
-- Authored development fixtures in `supabase/seed.sql`.
-- Built `@jarvis/database` package containing strict TypeScript types (`types.ts`) and Supabase client factory (`client.ts`).
-- Built `@jarvis/shared-contracts` package containing Zod schemas for tasks, approvals, budget entries, and queues.
-- Built `@jarvis/core` package with financial limits, retry bounds, and domain error hierarchy.
+## 3. Milestone 2 Execution Details: Jarvis Control Plane
+- Repositories implemented in `@jarvis/database` with optimistic concurrency locking.
+- State machine implemented in `@jarvis/core`.
+- Central Permission Engine implemented in `@jarvis/permission-engine`.
+- Budget Manager implemented in `@jarvis/budget-manager`.
+- TaskCoordinator and QueueWorker implemented in `@jarvis/agent-orchestrator`.
 
 ---
 
-## 4. Milestone 0 Execution Details: Architecture & Governance
+## 4. Milestone 1 Execution Details: Supabase Foundation
+- Monorepo configured with pnpm and Turborepo.
+- Supabase local configuration and migrations authored and verified.
+- Core packages `@jarvis/database`, `@jarvis/shared-contracts`, and `@jarvis/core` built.
 
-### Features & Deliverables Completed:
-- Researched latest official documentation for OpenRouter API, Supabase `pgmq`, Supabase `pgvector`, GitHub Apps, Telegram Bot Webhooks, and Aider CLI (`docs/RESEARCH_LOG.md`).
-- Authored complete set of 24 required architecture, security, product, and operational design documents.
-- Formulated Architecture Decision Records (ADRs 001 - 006) for foundational design choices.
-- Scaffolding of monorepo directory layout (`apps/`, `supabase/`, `packages/`, `workers/`, `infra/`, `docs/`).
-- Validated technical assumptions regarding rate limits, free tiers, and financial caps.
+---
+
+## 5. Milestone 0 Execution Details: Architecture & Governance
+- All 24 design specifications and ADRs authored and verified.

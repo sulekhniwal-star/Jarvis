@@ -61,6 +61,33 @@ export class TaskRepository {
     return data ?? [];
   }
 
+  async listByUser(
+    userId: string,
+    options: { status?: TaskStatus; limit?: number; offset?: number } = {}
+  ): Promise<TaskRow[]> {
+    let query = this.client
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (options.status) {
+      query = query.eq('status', options.status);
+    }
+
+    query = query.order('created_at', { ascending: false });
+
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit ?? 20) - 1);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data ?? [];
+  }
+
   /**
    * Idempotent state transition with optimistic concurrency lock.
    * Increments `version` and verifies expected status and version match.

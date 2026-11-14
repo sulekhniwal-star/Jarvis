@@ -38,64 +38,20 @@ class CodingAgent:
         logs: list[str] = []
         logs.append(f"[CodingAgent] Starting execution for task: '{task_title}'")
 
-        # 1. Workspace inspection & intelligent context gathering
+        # 1. Workspace inspection
         files = self.runner.fs.list_files()
         logs.append(f"[CodingAgent] Discovered {len(files)} files in sandboxed workspace.")
 
-        # Ignore noisy, cache, or binary files
-        ignored_patterns = (
-            "__pycache__",
-            ".git",
-            "node_modules",
-            ".venv",
-            ".pytest_cache",
-            ".png",
-            ".jpg",
-            ".ico",
-            ".lock",
-        )
-        filtered_files = [f for f in files if not any(ign in f for ign in ignored_patterns)]
-
-        # Prioritize source and test files
-        sorted_files = sorted(
-            filtered_files,
-            key=lambda f: (
-                0 if f.endswith((".py", ".ts", ".js", ".jsx", ".tsx")) else
-                1 if f.endswith((".json", ".toml", ".yaml", ".yml")) else
-                2 if f.endswith(".md") else 3
-            ),
-        )
-
+        # Read context
         context: dict[str, str] = {}
-        total_bytes = 0
-        for f in sorted_files[:15]:
+        for f in files[:5]:  # Scope first few files
             try:
-                content = self.runner.fs.read_file(f)
-                if total_bytes + len(content) < 30000:
-                    context[f] = content
-                    total_bytes += len(content)
+                context[f] = self.runner.fs.read_file(f)
             except Exception:
                 pass
 
-        # 2. Check if workspace lacks tests and add explicit test authoring directive
-        has_tests = any("test" in f.lower() for f in files)
-        test_requirement = ""
-        if not has_tests:
-            test_requirement = (
-                "\nCRITICAL REQUIREMENT: This project currently has NO automated tests. "
-                "You MUST author a new unit test suite (e.g. `tests/test_feature.py` or `test_main.py`) "
-                "with clear assertions testing your code, so automated verification succeeds."
-            )
-
-        full_prompt = (
-            f"Directive: {task_title}\n\n"
-            f"Description: {task_description}\n"
-            f"{test_requirement}\n\n"
-            f"Implement the complete code solutions and tests. Return full file contents."
-        )
-
-        # 3. Generate solution
-        solution = await self.provider.generate_code_solution(full_prompt, context)
+        # 2. Generate solution
+        solution = await self.provider.generate_code_solution(task_description, context)
         raw_changes = solution.get("changes") or solution.get("patches") or []
         changes = []
         for item in raw_changes:
@@ -106,7 +62,7 @@ class CodingAgent:
 
         logs.append(f"[CodingAgent] Applying {len(changes)} file changes...")
 
-        # 4. Apply changes into sandbox
+        # 3. Apply changes into sandbox
         for change in changes:
             path = change.get("file_path")
             content = change.get("content", "")
@@ -114,7 +70,7 @@ class CodingAgent:
                 self.runner.fs.write_file(path, content)
                 logs.append(f"[CodingAgent] Wrote {len(content)} bytes to '{path}'")
 
-        # 5. Run tests
+        # 4. Run tests
         logs.append(f"[CodingAgent] Running test command: '{test_command}'")
         test_result = await self.runner.run_tests(test_command)
         logs.append(f"[CodingAgent] Test result: {test_result['summary']}")
@@ -123,7 +79,7 @@ class CodingAgent:
         all_modified_files: set[str] = {str(c["file_path"]) for c in changes if c.get("file_path")}
         failure_history: list[str] = []
 
-        # 6. Diagnostic retry loop with sequential context & active code repair
+        # 5. Diagnostic retry loop with sequential context & active code repair
         while not test_result["passed"] and retries_used < max_retries:
             retries_used += 1
             logs.append(
@@ -133,13 +89,12 @@ class CodingAgent:
             # Record failure context to prevent repeating previous mistakes
             failure_history.append(
                 f"--- ATTEMPT {retries_used} FAILURE ---\n"
-                f"Command: {test_command}\n"
                 f"Exit Code: {test_result.get('exit_code', 1)}\n"
-                f"Output / Traceback:\n{test_result.get('raw_output', '')[:1200]}"
+                f"Output:\n{test_result.get('raw_output', '')[:1000]}"
             )
             history_context = "\n\n".join(failure_history)
 
-            # Refresh context with failing files & traceback mentions
+            # Refresh context with failing files
             retry_context: dict[str, str] = {}
             for path in all_modified_files:
                 try:
@@ -147,22 +102,12 @@ class CodingAgent:
                 except Exception:
                     pass
 
-            # Also check if traceback mentions other workspace files
-            raw_out = test_result.get("raw_output", "")
-            for f in files:
-                if f in raw_out and f not in retry_context:
-                    try:
-                        retry_context[f] = self.runner.fs.read_file(f)
-                    except Exception:
-                        pass
-
             error_prompt = (
                 f"The automated test suite failed during task execution:\n"
-                f"Task Directive: {task_title}\n"
-                f"Test Command: {test_command}\n\n"
+                f"Task Directive: {task_title}\n\n"
                 f"Previous Failure History:\n{history_context}\n\n"
-                f"CRITICAL INSTRUCTION: Analyze the exact test failure traceback above. "
-                f"Repair the code or tests so that all test assertions PASS with exit code 0."
+                f"CRITICAL INSTRUCTION: Review the failure evidence and previous attempt history. "
+                f"Analyze the root cause and produce a corrected patch that resolves the issue and passes all tests."
             )
 
             try:

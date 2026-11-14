@@ -106,6 +106,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       projects: {
         Row: {
@@ -144,6 +145,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       milestones: {
         Row: {
@@ -182,6 +184,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       tasks: {
         Row: {
@@ -241,6 +244,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       agent_runs: {
         Row: {
@@ -300,6 +304,7 @@ export interface Database {
           started_at?: string;
           completed_at?: string | null;
         };
+        Relationships: [];
       };
       approval_requests: {
         Row: {
@@ -335,6 +340,7 @@ export interface Database {
           requested_at?: string;
           resolved_at?: string | null;
         };
+        Relationships: [];
       };
       budget_ledgers: {
         Row: {
@@ -361,7 +367,19 @@ export interface Database {
           is_actual?: boolean;
           recorded_at?: string;
         };
-        Update: never;
+        Update: {
+          id?: string;
+          user_id?: string;
+          agent_run_id?: string | null;
+          billing_date?: string;
+          amount_inr?: number;
+          amount_usd?: number;
+          provider?: string;
+          model_id?: string;
+          is_actual?: boolean;
+          recorded_at?: string;
+        };
+        Relationships: [];
       };
       memories: {
         Row: {
@@ -394,6 +412,7 @@ export interface Database {
           metadata?: Json;
           created_at?: string;
         };
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -416,7 +435,17 @@ export interface Database {
           channel?: CommunicationChannel;
           timestamp?: string;
         };
-        Update: never;
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          event_type?: string;
+          severity?: AuditSeverity;
+          details?: Json;
+          client_ip?: string | null;
+          channel?: CommunicationChannel;
+          timestamp?: string;
+        };
+        Relationships: [];
       };
     };
     Views: {
@@ -432,6 +461,7 @@ export interface Database {
           active_tasks: number;
           total_cost_inr: number;
         };
+        Relationships: [];
       };
     };
     Functions: {

@@ -179,6 +179,44 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/agent-orchestrator:
+    dependencies:
+      '@jarvis/budget-manager':
+        specifier: workspace:*
+        version: link:../budget-manager
+      '@jarvis/core':
+        specifier: workspace:*
+        version: link:../core
+      '@jarvis/database':
+        specifier: workspace:*
+        version: link:../database
+      '@jarvis/permission-engine':
+        specifier: workspace:*
+        version: link:../permission-engine
+      '@jarvis/shared-contracts':
+        specifier: workspace:*
+        version: link:../shared-contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/budget-manager:
+    dependencies:
+      '@jarvis/core':
+        specifier: workspace:*
+        version: link:../core
+      '@jarvis/database':
+        specifier: workspace:*
+        version: link:../database
+      '@jarvis/shared-contracts':
+        specifier: workspace:*
+        version: link:../shared-contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/core:
     dependencies:
       '@jarvis/shared-contracts':
@@ -194,6 +232,22 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.49.1
         version: 2.119.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/permission-engine:
+    dependencies:
+      '@jarvis/core':
+        specifier: workspace:*
+        version: link:../core
+      '@jarvis/database':
+        specifier: workspace:*
+        version: link:../database
+      '@jarvis/shared-contracts':
+        specifier: workspace:*
+        version: link:../shared-contracts
     devDependencies:
       typescript:
         specifier: ^5.7.3

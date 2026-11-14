@@ -11,7 +11,7 @@ export const QueueTaskMessageSchema = z.object({
     'EMERGENCY_STOP',
   ]),
   enqueuedAt: z.string(),
-  payload: z.record(z.unknown()).default({}),
+  payload: z.record(z.string(), z.unknown()).default({}),
 });
 
 export type QueueTaskMessage = z.infer<typeof QueueTaskMessageSchema>;

@@ -76,6 +76,7 @@ app.dependency_overrides[get_db_session] = override_get_db_session
 async def setup_test_database():
     """Sets up fresh database schema and default owner users for each test."""
     async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with test_session_factory() as session:

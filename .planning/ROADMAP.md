@@ -96,19 +96,19 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 7: Execution Planning Engine
-**Status:** ⏳ In Progress (Planning Complete, Ready for Execution)  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Decompose specifications into atomic execution steps with wave-based dependency ordering, risk level scoring, and approval requirement detection.  
 **Depends on:** Phase 6  
 **Requirements:** REQ-PLAN-01, REQ-PLAN-02, REQ-PLAN-03, NFR-REL-02  
 
 **Plans:**
-- [ ] Plan 7.1: Planner Agent prompt engineering, step decomposition, DAG dependency builder, cycle detection, and automated risk scoring.
-- [ ] Plan 7.2: Plan repository, database persistence in `plans`, task state transition (`specifying` -> `planned`), API route handlers, and unit tests.
+- [x] Plan 7.1: Planner Agent prompt engineering, step decomposition, DAG dependency builder, cycle detection, and automated risk scoring.
+- [x] Plan 7.2: Plan repository, database persistence in `plans`, task state transition (`specifying` -> `planned`), API route handlers, and unit tests.
 
 ---
 
 ### Phase 8: Plan Review UI & Approval Gate
-**Status:** ⬜ Not Started  
+**Status:** ⏳ Ready for Planning  
 **Objective:** Construct interactive web review screen displaying plan DAGs, risk assessment, and one-click Plan Approval or revision request actions.  
 **Depends on:** Phase 7  
 **Requirements:** REQ-PLAN-04  
@@ -142,8 +142,8 @@ updated: 2026-11-15T17:35:00+05:30
 | 4 | Provider Adapters & AI Gateway | ✅ | 2/2 | 100% |
 | 5 | Authenticated UI Shell & Dashboard | ✅ | 2/2 | 100% |
 | 6 | Task Intake & Specification Engine | ✅ | 2/2 | 100% |
-| 7 | Execution Planning Engine | ⏳ | 0/2 | — |
-| 8 | Plan Review UI & Approval Gate | ⬜ | 0/2 | — |
+| 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
+| 8 | Plan Review UI & Approval Gate | ⏳ | 0/2 | — |
 
 ---
 

@@ -1,13 +1,13 @@
 ---
 milestone: "v3.0 - Telegram Gateway"
 version: "3.0.0"
-updated: 2026-11-15T22:45:00+05:30
+updated: 2026-11-15T22:55:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 11 - Telegram Interactive Approval Cards & Decision Webhook  
-> **Status:** Ready for Planning (`/gsd-plan-phase 11`)
+> **Current Milestone:** Milestone 3 (v3.0 - Telegram Gateway) — ✅ Complete!  
+> **Status:** Milestone Complete — Ready for Next Milestone (`/gsd-new-milestone`)
 
 ## Must-Haves (Milestone 3 Baseline)
 
@@ -16,7 +16,7 @@ updated: 2026-11-15T22:45:00+05:30
 - [x] Dual-mode update pipeline: Next.js App Router webhook route (`/api/telegram/webhook`) and dev polling script.
 - [x] Essential command router responding to `/start`, `/status`, `/budget`, and `/projects`.
 - [x] Remote task intake from free-text messages routing into `SpecifierAgent` and bidirectional clarification loop.
-- [ ] Rich interactive approval cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and in-place message updates.
+- [x] Rich interactive approval cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and in-place message updates.
 
 ## Must-Haves (Milestone 1 Baseline)
 
@@ -155,14 +155,14 @@ updated: 2026-11-15T22:45:00+05:30
 ---
 
 ### Phase 11: Telegram Interactive Approval Cards & Decision Webhook
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Deliver rich interactive approval cards with inline callback buttons, process callback queries via webhook, update durable approval records, advance task state, and update messages in-place.  
 **Depends on:** Phase 10  
 **Requirements:** REQ-TG-05  
 
 **Plans:**
-- [ ] Plan 11.1: Formatted approval notification cards with inline action buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and message delivery service.
-- [ ] Plan 11.2: Callback query webhook handler, durable approval state transitions, in-place message edit, and end-to-end integration tests.
+- [x] Plan 11.1: Formatted approval notification cards with inline action buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and message delivery service.
+- [x] Plan 11.2: Callback query webhook handler, durable approval state transitions, in-place message edit, and end-to-end integration tests.
 
 ---
 
@@ -192,7 +192,7 @@ updated: 2026-11-15T22:45:00+05:30
 | 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
 | 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
 | 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
-| 11 | Telegram Approval Cards & Decision Webhook | ⏳ | 0/2 | — |
+| 11 | Telegram Approval Cards & Decision Webhook | ✅ | 2/2 | 100% |
 
 ---
 

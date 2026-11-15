@@ -25,7 +25,7 @@
 | **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | **Complete** | 2026-11-15 |
-| **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | Pending | Phase 10 Verification |
+| **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | **Complete** | 2026-11-15 |
 | **Milestone 4** | GitHub Integration & Branchless Discipline | Pending | Milestone 3 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
 | **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |
@@ -37,6 +37,26 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 10 (Phase 11 Execution: Telegram Interactive Approval Cards & Decision Webhook)
+- **Trigger:** `/gsd-execute-phase 11` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 11.1):
+    - Authored approval card formatters (`formatPlanApprovalCard`, `formatActionApprovalCard`, `formatDecisionReceipt`) and `TelegramApprovalService` (`src/lib/telegram/approvals.ts`).
+    - Verified callback payload byte counts strictly stay within Telegram's 64-byte limit.
+    - Authored unit test suite `tests/unit/telegram/approvals.test.ts` (7 tests green).
+  - Implemented Wave 2 (Plan 11.2):
+    - Implemented `TelegramDecisionService` (`src/lib/telegram/decision.ts`) handling callback query instant acknowledgment, atomic database state updates (`PlanRepository`, `ApprovalRepository`, `TaskRepository`), and in-place message editing via `client.editMessageText`.
+    - Added `/approve <id>` and `/reject <id> [reason]` command handlers to `src/lib/telegram/commands.ts`.
+    - Wired `update.callback_query` into App Router webhook (`src/app/api/telegram/webhook/route.ts`) and dev polling runner (`scripts/telegram-polling.ts`).
+    - Authored unit test suites `tests/unit/telegram/decision.test.ts` (9 tests green), updated `commands.test.ts` (14 tests green), and updated `api/telegram-webhook-route.test.ts` (7 tests green).
+  - **Empirical Verification:**
+    - `pnpm test --run`: 41 test files passed, 247 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors across 11 routes.
+  - **Landed Commits:**
+    - `b158ca7`: `feat(phase-11): implement Telegram approval card formatting and delivery service`
+    - `47923f6`: `feat(phase-11): implement callback query decision service, in-place message edits, and CLI approval commands`
+  - **Milestone 3 Complete:** Milestone 3 (v3.0 — Telegram Gateway) successfully delivered and verified end-to-end.
 
 ### 2026-11-15 — Work Session 9 (Phase 10 Execution: Telegram Remote Task Intake & Status Reporting)
 - **Trigger:** `/gsd-execute-phase 10` executed by owner.

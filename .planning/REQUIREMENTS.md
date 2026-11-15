@@ -19,7 +19,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | **REQ-TG-02** | **Owner Allow-List & Webhook Security:** Security guard verifying sender numeric ID matches `OWNER_TELEGRAM_ID` and checking `X-Telegram-Bot-Api-Secret-Token` header. | PRD §7.13, Prompt §2 | 9 | Complete |
 | **REQ-TG-03** | **Dual-Mode Update Ingestion & Command Routing:** Next.js App Router route handler (`/api/telegram/webhook`) and local polling script routing `/start`, `/status`, `/budget`, and `/projects`. | PRD §7.13 | 9 | Complete |
 | **REQ-TG-04** | **Remote Task Intake & Clarification Loop:** Free-text task submission forwarding to `SpecifierAgent`, with bidirectional delivery of Socratic questions and owner answers. | PRD §7.5, §7.13 | 10 | Complete |
-| **REQ-TG-05** | **Interactive Approval Cards & Decision Webhook:** Rich MarkdownV2 notification cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handling, durable approval updates, and in-place card editing. | PRD §7.9, §7.13 | 11 | Pending |
+| **REQ-TG-05** | **Interactive Approval Cards & Decision Webhook:** Rich MarkdownV2 notification cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handling, durable approval updates, and in-place card editing. | PRD §7.9, §7.13 | 11 | Complete |
 
 ---
 
@@ -104,7 +104,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | REQ-PLAN-04 | Phase 8 | Plan 8.1, Plan 8.2 | Plan Review UI rendering tests, approval decision flow | Complete |
 | REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04 | Phase 9 | Plan 9.1, Plan 9.2 | TelegramClient tests, security guard tests, webhook route tests | Complete |
 | REQ-TG-04 | Phase 10 | Plan 10.1, Plan 10.2 | Free-text intake tests, clarification flow tests | Complete |
-| REQ-TG-05 | Phase 11 | Plan 11.1, Plan 11.2 | Approval card rendering tests, callback decision handler tests | Pending |
+| REQ-TG-05 | Phase 11 | Plan 11.1, Plan 11.2 | Approval card rendering tests, callback decision handler tests | Complete |
 
 ---
 

@@ -53,3 +53,4 @@ Jarvis is architected as an event-driven, state-persistent AI command centre sep
 4. **Approval:** If the plan incurs costs or requests external writes, an approval record is created.
 5. **Execution:** Runner Coordinator spins up disposable sandbox, runs agent, runs test suite.
 6. **Verification & Audit:** Captures outputs, diff review, logs run events to Postgres, updates task state.
+

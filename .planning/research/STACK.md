@@ -36,3 +36,4 @@
 ### 5. Coding Agent Candidate: Aider
 - **Architecture:** Packaged into ephemeral Docker container.
 - **Integration:** Invoked via headless CLI execution (`aider --yes --no-auto-commits ...`), reporting diffs and terminal transcript back to Jarvis coordinator.
+

@@ -1,15 +1,24 @@
 ---
-milestone: "v3.0 - Telegram Gateway"
-version: "3.0.0"
-updated: 2026-11-15T22:55:00+05:30
+milestone: "v4.0 - GitHub Integration & Branchless Discipline"
+version: "4.0.0"
+updated: 2026-11-15T22:58:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** Milestone 3 (v3.0 - Telegram Gateway) — ✅ Complete!  
-> **Status:** Milestone Complete — Ready for Next Milestone (`/gsd-new-milestone`)
+> **Current Phase:** 12 - GitHub Client, Authentication & Webhook Receiver  
+> **Status:** Ready for Planning (`/gsd-plan-phase 12`)
 
-## Must-Haves (Milestone 3 Baseline)
+## Must-Haves (Milestone 4 Baseline)
+
+- [ ] Strongly-typed GitHub API client (Octokit / fetch wrapper) supporting repository status, commit retrieval, and tree inspection.
+- [ ] Secure GitHub Webhook receiver (`/api/github/webhook`) verifying HMAC SHA-256 signatures (`X-Hub-Signature-256`).
+- [ ] Remote Git Push Approval Gate enforcing clean working trees, test pass proof, and approval requirement verification before executing `git push origin main`.
+- [ ] Automated branchless safety guard preventing non-`main` checkouts and blocking unapproved remote pushes.
+- [ ] Repository Synchronization Monitor computing ahead/behind commit divergence between local `main` HEAD and `origin/main`.
+- [ ] Real-time synchronization metrics surfaced to Web Dashboard and Telegram (`/status`, `/projects`).
+
+## Must-Haves (Milestone 3 Baseline — Complete)
 
 - [x] Type-safe Telegram Bot API client wrapper (`TelegramClient`) with MarkdownV2 escaping and inline keyboard markup.
 - [x] Single-owner security guard verifying update sender numeric ID matches `OWNER_TELEGRAM_ID`.
@@ -166,9 +175,46 @@ updated: 2026-11-15T22:55:00+05:30
 
 ---
 
+## Milestone 4: GitHub Integration & Branchless Discipline
+
+### Phase 12: GitHub Client, Authentication & Webhook Receiver
+**Status:** ⏳ Pending  
+**Objective:** Author strongly-typed GitHub API client (Octokit / fetch wrapper), configure GitHub App / PAT authentication, and create secure webhook route (`/api/github/webhook`) with HMAC SHA-256 signature verification (`REQ-GH-01`, `REQ-GH-02`).  
+**Depends on:** Phase 11  
+**Requirements:** REQ-GH-01, REQ-GH-02  
+
+**Plans:**
+- [ ] Plan 12.1: Type-safe GitHub API client supporting repository info, commit retrieval, tree diff inspection, and GitHub App / PAT auth.
+- [ ] Plan 12.2: Next.js App Router webhook route (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and event routing (`push`, `workflow_run`, `check_run`).
+
+---
+
+### Phase 13: Remote Git Push Approval Gate & Branchless Safety Guard
+**Status:** ⏳ Pending  
+**Objective:** Build automated pre-push gate verifying working tree cleanliness, 100% test pass proofs, and strict `main`-only branch lock (`NFR-SEC-01`), requiring explicit human approval in `ApprovalRepository` before executing `git push origin main` (`REQ-GH-03`).  
+**Depends on:** Phase 12  
+**Requirements:** REQ-GH-03, NFR-SEC-01  
+
+**Plans:**
+- [ ] Plan 13.1: Pre-push validation engine inspecting git diffs, working tree status, test execution results, and branch invariant.
+- [ ] Plan 13.2: Remote push approval gate service integrating with `ApprovalRepository`, triggering interactive approval cards (Web + Telegram), and executing authenticated push.
+
+---
+
+### Phase 14: Repository Synchronization Monitor & Dual-Channel Status
+**Status:** ⏳ Pending  
+**Objective:** Track commit divergence between local `main` HEAD and remote `origin/main` commit SHA, computing ahead/behind counts, and broadcasting real-time sync metrics to Web Dashboard and Telegram (`REQ-GH-04`).  
+**Depends on:** Phase 13  
+**Requirements:** REQ-GH-04  
+
+**Plans:**
+- [ ] Plan 14.1: Repository Synchronization service polling/listening for remote SHA updates, computing ahead/behind divergence, and persisting sync status.
+- [ ] Plan 14.2: Dual-channel sync status display on Web Dashboard (sync widget) and Telegram command router (`/status`, `/projects`).
+
+---
+
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 4:** GitHub Integration & Branchless Discipline.
 - **Milestone 5:** Coding Execution Sandbox (GitHub Actions, Docker, Aider adapter).
 - **Milestone 6:** Quality, Verification & Self-Review.
 - **Milestone 7:** Projects, Agents & Memory UI (pgvector retrieval).
@@ -193,6 +239,9 @@ updated: 2026-11-15T22:55:00+05:30
 | 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
 | 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
 | 11 | Telegram Approval Cards & Decision Webhook | ✅ | 2/2 | 100% |
+| 12 | GitHub Client, Auth & Webhooks | ⏳ | 0/2 | — |
+| 13 | Remote Push Approval Gate & Branchless Guard | ⏳ | 0/2 | — |
+| 14 | Repository Sync Monitor & Dual-Channel Status | ⏳ | 0/2 | — |
 
 ---
 

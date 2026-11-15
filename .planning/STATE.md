@@ -1,28 +1,29 @@
 ---
-updated: 2026-11-15T22:55:00+05:30
+updated: 2026-11-15T22:58:00+05:30
 ---
 
 # Project State
 
 ## Current Position
 
-**Milestone:** v3.0 - Telegram Gateway (Complete! 🎉)  
-**Phase:** 11 - Telegram Interactive Approval Cards & Decision Webhook  
-**Status:** Complete  
-**Plan:** Milestone 3 Complete — Ready for Milestone 4 (`/gsd-new-milestone`)
+**Milestone:** v4.0 - GitHub Integration & Branchless Discipline (Active)  
+**Phase:** 12 - GitHub Client, Authentication & Webhook Receiver  
+**Status:** Ready for Planning (`/gsd-plan-phase 12`)  
+**Plan:** Ready for Phase 12 Research & Planning
 
 ## Last Action
 
-Executed Phase 11 (Telegram Interactive Approval Cards & Decision Webhook):
-- Plan 11.1: Implemented MarkdownV2 approval card formatting for execution plans and sensitive actions, callback payload packing within 64 bytes, and `TelegramApprovalService` delivery service.
-- Plan 11.2: Implemented `TelegramDecisionService` (`src/lib/telegram/decision.ts`) handling callback query instant acknowledgment, atomic database state updates (`PlanRepository`, `ApprovalRepository`, `TaskRepository`), in-place message replacement, `/approve` and `/reject` CLI commands, and wired webhook/polling routes.
-- Empirical verification: 41/41 test files passed (247/247 tests green), Next.js production build succeeded with 0 errors across 11 routes.
-- Authored `11-SUMMARY.md` and updated roadmap, requirements, and progress trackers.
+Initialized Milestone 4 (GitHub Integration & Branchless Discipline):
+- Completed Milestone 3 (Telegram Gateway) across Phases 9, 10, 11 (247 tests green, build passing).
+- Formulated requirements for Milestone 4: `REQ-GH-01` (GitHub API Client), `REQ-GH-02` (HMAC Webhook Receiver), `REQ-GH-03` (Remote Push Approval Gate & Branchless Safety Guard), and `REQ-GH-04` (Repository Synchronization Monitor).
+- Structured roadmap into Phases 12, 13, and 14.
+- Updated `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `CURRENT_STATE.md`, and `PROGRESS.md`.
 
 ## Next Steps
 
-1. Milestone 3 (Telegram Gateway) is 100% complete across all 3 phases (9, 10, 11).
-2. Run `/gsd-new-milestone` to initialize Milestone 4 (GitHub Integration & Branchless Discipline).
+1. Run `/gsd-plan-phase 12` to research and plan Phase 12 (GitHub Client, Authentication & Webhook Receiver).
+2. Author strongly-typed GitHub API client supporting repository status, commits, and tree diffs.
+3. Implement `/api/github/webhook` App Router endpoint with `X-Hub-Signature-256` HMAC validation.
 
 ## Active Decisions
 

@@ -2,7 +2,7 @@
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
 updated: 2026-11-15T22:10:00+05:30
-milestone: "v3.0 - Telegram Gateway"
+milestone: "v4.0 - GitHub Integration & Branchless Discipline"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -103,18 +103,29 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 3 — Telegram Gateway (v3.0)
+### Milestone 3 / v3.0 — Telegram Gateway (✅ Complete 2026-11-15)
+- **Phase 9: Telegram Core Client & Security Guard:** Type-safe Telegram Bot API client wrapper, MarkdownV2 escaping utilities, single-owner security guard (`OWNER_TELEGRAM_ID`), webhook secret verification, App Router route handler (`/api/telegram/webhook`), dev polling runner, and base command router (`/start`, `/status`, `/budget`, `/projects`).
+- **Phase 10: Telegram Remote Task Intake & Status Reporting:** Free-text task intake forwarding into Specification Engine (`SpecifierAgent`), conversational Socratic clarification loop, `/cancel` command, and real-time status reporting.
+- **Phase 11: Telegram Interactive Approval Cards & Decision Webhook:** Rich interactive cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handler updating durable `public.approvals` and task state machine, in-place message editing, and CLI fallback commands (`/approve`, `/reject`).
 
-The current milestone delivers remote mobile intake and real-time approval cards via Telegram Bot API:
-- **Phase 9: Telegram Core Client & Security Guard:** Telegram API client wrapper, owner allow-list guard (`OWNER_TELEGRAM_ID`), webhook secret verification, App Router route handler (`/api/telegram/webhook`), dev polling runner, and base command router (`/start`, `/status`, `/budget`, `/projects`).
-- **Phase 10: Telegram Remote Task Intake & Status Reporting:** Free-text task intake forwarding into Specification Engine (`SpecifierAgent`), clarification message delivery, and real-time status reporting.
-- **Phase 11: Telegram Interactive Approval Cards & Decision Webhook:** Rich interactive cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handler updating durable `public.approvals` and task state machine, and in-place message editing.
+---
+
+## Active Milestone: Milestone 4 — GitHub Integration & Branchless Discipline (v4.0)
+
+This milestone connects Jarvis with GitHub to manage repository state, verify webhooks, enforce the mandatory branchless discipline (`main`-only commits), and gate remote pushes behind explicit human approval:
+- **Phase 12: GitHub API Client, Authentication & Webhook Receiver:** Strongly-typed GitHub API client (Octokit / fetch wrapper), authentication via GitHub App / Personal Access Token, webhook endpoint (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`), and payload dispatching.
+- **Phase 13: Remote Git Push Approval Gate & Branchless Safety Guard:** Automated validation ensuring working trees are clean, tests are passing, and git operations target only `main`. Integration with `ApprovalRepository` requiring explicit human approval before executing `git push origin main`.
+- **Phase 14: Repository Synchronization Monitor & Dual-Channel Status:** Background service and API querying GitHub commit SHAs vs local `main` HEAD, computing ahead/behind metrics, and surfacing real-time sync cards on Web Dashboard and Telegram (`/status`, `/projects`).
 
 ## Success Criteria
 
-- [ ] Local Supabase development environment running via Docker with automated migrations.
-- [ ] RLS policies verified to prevent unauthorized or cross-context access.
-- [ ] Next.js dashboard renders authenticated shell with zero console errors and accessible navigation.
-- [ ] OpenRouter adapter executes test prompts, tracks token counts, and blocks simulated paid calls when unapproved.
-- [ ] Git safety module successfully rejects any branch operation targeting branches other than `main`.
-- [ ] All code conforms to conventional commits, passes ESLint and TypeScript compilation with zero errors.
+- [x] Local Supabase development environment running via Docker with automated migrations.
+- [x] RLS policies verified to prevent unauthorized or cross-context access.
+- [x] Next.js dashboard renders authenticated shell with zero console errors and accessible navigation.
+- [x] OpenRouter adapter executes test prompts, tracks token counts, and blocks simulated paid calls when unapproved.
+- [x] Git safety module successfully rejects any branch operation targeting branches other than `main`.
+- [x] All code conforms to conventional commits, passes ESLint and TypeScript compilation with zero errors.
+- [x] Telegram Bot Gateway ingests natural language prompts, conducts clarification loops, and delivers interactive approval cards.
+- [ ] GitHub webhook endpoint verifies HMAC signatures and logs events with zero security breaches.
+- [ ] Remote push approval gate strictly blocks pushing to `origin/main` until human owner authorizes.
+- [ ] Repository synchronization monitor accurately tracks commit divergence between local and remote `main`.

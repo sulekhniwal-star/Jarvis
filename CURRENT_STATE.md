@@ -1,15 +1,15 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-15  
-**Current Milestone:** Milestone 3 (v3.0) — Telegram Gateway (✅ Complete!)  
-**Active Phase:** Milestone 3 Complete (Phases 9, 10, 11 verified)  
+**Current Milestone:** Milestone 4 (v4.0) — GitHub Integration & Branchless Discipline (Active)  
+**Active Phase:** Phase 12 — GitHub Client, Authentication & Webhook Receiver (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `47923f6` (`feat(phase-11): implement callback query decision service, in-place message edits, and CLI approval commands`)  
+**Latest Local Commit:** `14dbe7e` (`docs(phase-11): document telegram interactive approval cards and decision webhook completion`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Milestone 3 (Telegram Gateway) fully implemented and empirically verified across all 3 phases (9, 10, 11).
-- Telegram Gateway capabilities: Type-safe client, MarkdownV2 formatting, single-owner security guard (`OWNER_TELEGRAM_ID`), command router (`/start`, `/status`, `/budget`, `/projects`, `/approve`, `/reject`, `/cancel`), natural language task intake with `SpecifierAgent`, conversational Socratic clarification loops, interactive approval cards with inline buttons, `callback_query` decision processing, in-place card updates, and dual-mode execution (App Router webhook + dev polling runner).
+- Milestone 3 (Telegram Gateway) 100% complete across Phases 9, 10, and 11.
+- Milestone 4 initialized: GitHub Integration & Branchless Discipline.
 - Vitest Test Suite: 41/41 test files passed, 247/247 tests green.
 - Next.js Production Build: 11 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.

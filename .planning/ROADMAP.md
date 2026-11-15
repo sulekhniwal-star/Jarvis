@@ -46,14 +46,14 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 3: Core Domain Models & Repositories
-**Status:** ⏳ Planned / Ready for Execution  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Build typed data access layer, state machines for Tasks, Approvals, and Durable Agent Runs with event logging.  
 **Depends on:** Phase 2  
 **Requirements:** REQ-REPO-01, REQ-REPO-02, REQ-REPO-03, REQ-REPO-04, NFR-REL-01  
 
 **Plans:**
-- [ ] Plan 3.1: Conversation schema migration, updated types, typed repositories for Projects, Milestones, Tasks, and Conversations.
-- [ ] Plan 3.2: Domain state machines (Task, Approval, Run), ApprovalRepository, AgentRunRepository, artifact logging, and unit tests.
+- [x] Plan 3.1: Conversation schema migration, updated types, typed repositories for Projects, Milestones, Tasks, and Conversations.
+- [x] Plan 3.2: Domain state machines (Task, Approval, Run), ApprovalRepository, AgentRunRepository, artifact logging, and unit tests.
 
 ---
 

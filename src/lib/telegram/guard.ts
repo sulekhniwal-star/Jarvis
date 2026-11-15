@@ -1,0 +1,69 @@
+import { TelegramUpdate } from "./types";
+
+/**
+ * Validates whether an incoming Telegram sender numeric ID matches the authorized OWNER_TELEGRAM_ID.
+ */
+export function isAuthorizedSender(fromId: number | string | undefined | null): boolean {
+  if (fromId === undefined || fromId === null || fromId === "") {
+    return false;
+  }
+
+  const ownerId = process.env.OWNER_TELEGRAM_ID;
+  if (!ownerId) {
+    console.error("[TelegramSecurityGuard] OWNER_TELEGRAM_ID environment variable is not configured.");
+    return false;
+  }
+
+  return fromId.toString().trim() === ownerId.trim();
+}
+
+/**
+ * Verifies that the X-Telegram-Bot-Api-Secret-Token header matches the configured TELEGRAM_WEBHOOK_SECRET.
+ * If TELEGRAM_WEBHOOK_SECRET is not set (e.g. during local polling development), verification passes.
+ */
+export function verifyWebhookSecret(headerSecret: string | null | undefined): boolean {
+  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!expectedSecret) {
+    // Secret verification is optional when secret is not configured
+    return true;
+  }
+
+  return headerSecret === expectedSecret;
+}
+
+export interface UpdateValidationResult {
+  isAuthorized: boolean;
+  senderId?: number;
+  senderUsername?: string;
+  reason?: string;
+}
+
+/**
+ * Inspects a TelegramUpdate to determine if its message or callback query originates
+ * from the authorized single owner.
+ */
+export function validateUpdate(update: TelegramUpdate): UpdateValidationResult {
+  const sender = update.message?.from ?? update.callback_query?.from;
+
+  if (!sender) {
+    return {
+      isAuthorized: false,
+      reason: "No sender information found in Telegram update.",
+    };
+  }
+
+  if (!isAuthorizedSender(sender.id)) {
+    return {
+      isAuthorized: false,
+      senderId: sender.id,
+      senderUsername: sender.username,
+      reason: `Unauthorized Telegram sender ID: ${sender.id}`,
+    };
+  }
+
+  return {
+    isAuthorized: true,
+    senderId: sender.id,
+    senderUsername: sender.username,
+  };
+}

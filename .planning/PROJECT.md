@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-15T22:10:00+05:30
-milestone: "v4.0 - GitHub Integration & Branchless Discipline"
+updated: 2026-11-15T23:45:00+05:30
+milestone: "v5.0 - Coding Execution Sandbox"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -110,12 +110,20 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 4 — GitHub Integration & Branchless Discipline (v4.0)
+### Milestone 4 / v4.0 — GitHub Integration & Branchless Discipline (✅ Complete 2026-11-15)
+- **Phase 12: GitHub API Client, Authentication & Webhook Receiver:** Strongly-typed GitHub API client (`GitHubClient`), authentication via Personal Access Token / GitHub App, and App Router webhook route (`/api/github/webhook`) with timing-safe HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and branchless enforcement.
+- **Phase 13: Remote Git Push Approval Gate & Branchless Safety Guard:** Pre-push validation engine (`validatePrePush`) enforcing clean tree and zero secrets in outgoing diffs, `PushGateService` requiring human approval in `ApprovalRepository`, `/api/git/push` route, and real-time Telegram inline card push execution.
+- **Phase 14: Repository Synchronization Monitor & Dual-Channel Status:** `RepoSyncMonitor` computing ahead/behind divergence between local `main` HEAD and remote `origin/main`, `/api/git/sync` route, Web Dashboard sync card (`GitSyncStatusCard`), and Telegram `/status` & `/projects` sync reporting.
 
-This milestone connects Jarvis with GitHub to manage repository state, verify webhooks, enforce the mandatory branchless discipline (`main`-only commits), and gate remote pushes behind explicit human approval:
-- **Phase 12: GitHub API Client, Authentication & Webhook Receiver:** Strongly-typed GitHub API client (Octokit / fetch wrapper), authentication via GitHub App / Personal Access Token, webhook endpoint (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`), and payload dispatching.
-- **Phase 13: Remote Git Push Approval Gate & Branchless Safety Guard:** Automated validation ensuring working trees are clean, tests are passing, and git operations target only `main`. Integration with `ApprovalRepository` requiring explicit human approval before executing `git push origin main`.
-- **Phase 14: Repository Synchronization Monitor & Dual-Channel Status:** Background service and API querying GitHub commit SHAs vs local `main` HEAD, computing ahead/behind metrics, and surfacing real-time sync cards on Web Dashboard and Telegram (`/status`, `/projects`).
+---
+
+## Active Milestone: Milestone 5 — Coding Execution Sandbox (v5.0)
+
+This milestone builds the isolated, ephemeral execution harness where approved coding tasks are generated, modified, and tested using headless coding agents under strict security and file-boundary constraints (`docs/CODING_AGENT_INTERFACE.md`):
+- **Phase 15: Coding Agent Interface & Execution Engine Contract:** TypeScript interfaces (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`), engine registry, and context synthesis from approved execution plans.
+- **Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer:** Batch mode execution wrapper, file boundary constraints, OpenRouter model mapping, commit and diff extraction, and bounded repair loop (3-strike rule).
+- **Phase 17: Ephemeral Sandbox Runner Environment:** GitHub Actions workflow dispatcher (`workflow_dispatch`), ephemeral credential scoping, and local development runner fallback.
+- **Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration:** Captures stdout/stderr logs, git diffs, test summaries, updates database `agent_runs` and `tasks` state machines, and broadcasts real-time execution status to Web Dashboard and Telegram.
 
 ## Success Criteria
 
@@ -126,6 +134,10 @@ This milestone connects Jarvis with GitHub to manage repository state, verify we
 - [x] Git safety module successfully rejects any branch operation targeting branches other than `main`.
 - [x] All code conforms to conventional commits, passes ESLint and TypeScript compilation with zero errors.
 - [x] Telegram Bot Gateway ingests natural language prompts, conducts clarification loops, and delivers interactive approval cards.
-- [ ] GitHub webhook endpoint verifies HMAC signatures and logs events with zero security breaches.
-- [ ] Remote push approval gate strictly blocks pushing to `origin/main` until human owner authorizes.
-- [ ] Repository synchronization monitor accurately tracks commit divergence between local and remote `main`.
+- [x] GitHub webhook endpoint verifies HMAC signatures and logs events with zero security breaches.
+- [x] Remote push approval gate strictly blocks pushing to `origin/main` until human owner authorizes.
+- [x] Repository synchronization monitor accurately tracks commit divergence between local and remote `main`.
+- [ ] Coding agent interface abstracts execution engines with uniform input context and output artifacts.
+- [ ] Headless Aider adapter executes task prompts within strict file-modification boundaries in batch mode.
+- [ ] Ephemeral sandbox runner isolates execution with zero exposure of master credentials or persistent host state.
+- [ ] Execution telemetry pipeline records complete build/test logs, diff patches, and transitions `agent_runs` state.

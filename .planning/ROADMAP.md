@@ -1,13 +1,21 @@
 ---
-milestone: "v4.0 - GitHub Integration & Branchless Discipline"
-version: "4.0.0"
-updated: 2026-11-15T23:05:00+05:30
+milestone: "v5.0 - Coding Execution Sandbox"
+version: "5.0.0"
+updated: 2026-11-15T23:45:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v4.0 - GitHub Integration & Branchless Discipline (100% Complete)  
-> **Status:** Milestone Complete! Ready for Next Milestone (`/gsd-new-milestone`)
+> **Current Milestone:** v5.0 - Coding Execution Sandbox (Active)  
+> **Current Phase:** 15 - Coding Agent Interface & Execution Engine Contract  
+> **Status:** Ready for Planning (`/gsd-plan-phase 15`)
+
+## Must-Haves (Milestone 5 Baseline)
+
+- [ ] Standard TypeScript Coding Agent Interface (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`) decoupling orchestration from coding CLI tools.
+- [ ] Headless Aider CLI adapter executing non-interactive batch tasks with strict file-modification boundaries and OpenRouter provider settings.
+- [ ] Ephemeral sandbox runner environment (GitHub Actions workflow dispatcher & local Docker runner fallback) isolating execution without master credential exposure.
+- [ ] Execution telemetry pipeline recording stdout/stderr, git diff patches, test summaries, and updating database `agent_runs` and `tasks` state machines.
 
 ## Must-Haves (Milestone 4 Baseline — Complete)
 
@@ -213,13 +221,60 @@ updated: 2026-11-15T23:05:00+05:30
 
 ---
 
+### Phase 15: Coding Agent Interface & Execution Engine Contract
+**Status:** ⏳ Pending  
+**Objective:** Define the standard TypeScript coding agent interface (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`), engine registry, and context synthesis from approved execution plans (`REQ-EX-01`).  
+**Depends on:** Phase 14  
+**Requirements:** REQ-EX-01  
+
+**Plans:**
+- [ ] Plan 15.1: Coding agent contract types, engine registry, and execution artifact models.
+- [ ] Plan 15.2: Task context synthesizer transforming approved execution plan steps and project workspace into `CodingTaskContext`.
+
+---
+
+### Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer
+**Status:** ⏳ Pending  
+**Objective:** Author headless Aider CLI adapter executing non-interactive batch tasks with strict file-modification boundaries, OpenRouter provider mapping, commit extraction, and bounded repair loop (`REQ-EX-02`).  
+**Depends on:** Phase 15  
+**Requirements:** REQ-EX-02  
+
+**Plans:**
+- [ ] Plan 16.1: Aider configuration synthesizer (`.aider.conf.yml` / CLI arguments generator) and batch command runner.
+- [ ] Plan 16.2: Output parser extracting commit hashes, git diff patches, exit codes, and 3-strike bounded repair handler.
+
+---
+
+### Phase 17: Ephemeral Sandbox Runner Environment (GitHub Actions & Local Fallback)
+**Status:** ⏳ Pending  
+**Objective:** Build ephemeral sandbox runner environment supporting GitHub Actions workflow dispatch (`workflow_dispatch`), ephemeral credential scoping, and local development runner fallback (`REQ-EX-03`).  
+**Depends on:** Phase 16  
+**Requirements:** REQ-EX-03  
+
+**Plans:**
+- [ ] Plan 17.1: GitHub Actions runner workflow dispatch service with scoped repository credentials and workflow run polling.
+- [ ] Plan 17.2: Local process / Docker fallback runner for isolated offline development.
+
+---
+
+### Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration
+**Status:** ⏳ Pending  
+**Objective:** Implement end-to-end execution pipeline capturing build/test logs, diff patches, test summaries, persisting durable state in `public.agent_runs`, and broadcasting real-time updates to Web Dashboard and Telegram (`REQ-EX-04`).  
+**Depends on:** Phase 17  
+**Requirements:** REQ-EX-04  
+
+**Plans:**
+- [ ] Plan 18.1: Execution telemetry and artifact storage service writing diffs and logs to Supabase Storage / database tables.
+- [ ] Plan 18.2: Integration with Agent Run State Machine, Task status transitions, and dual-channel progress notifications.
+
+---
+
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 5:** Coding Execution Sandbox (GitHub Actions, Docker, Aider adapter).
-- **Milestone 6:** Quality, Verification & Self-Review.
-- **Milestone 7:** Projects, Agents & Memory UI (pgvector retrieval).
-- **Milestone 8:** Approvals, Security & Cost Controls (Kill switch, backup/restore).
-- **Milestone 9:** Deployment & Maintenance.
+- **Milestone 6:** Quality, Verification & Self-Review (Automated tests, diff review, secret scanning, bounded repair).
+- **Milestone 7:** Projects, Agents & Memory UI (pgvector semantic memory retrieval).
+- **Milestone 8:** Approvals, Security & Cost Controls (Kill switch, backup/recovery drills).
+- **Milestone 9:** Deployment & Continuous Maintenance.
 - **Milestone 10:** Hardening, Security Audits & Release.
 
 ---
@@ -240,8 +295,12 @@ updated: 2026-11-15T23:05:00+05:30
 | 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
 | 11 | Telegram Approval Cards & Decision Webhook | ✅ | 2/2 | 100% |
 | 12 | GitHub Client, Auth & Webhooks | ✅ | 2/2 | 100% |
-| 13 | Remote Push Approval Gate & Branchless Guard | ⏳ | 0/2 | — |
-| 14 | Repository Sync Monitor & Dual-Channel Status | ⏳ | 0/2 | — |
+| 13 | Remote Push Approval Gate & Branchless Guard | ✅ | 2/2 | 100% |
+| 14 | Repository Sync Monitor & Dual-Channel Status | ✅ | 2/2 | 100% |
+| 15 | Coding Agent Interface & Engine Contract | ⏳ | 0/2 | — |
+| 16 | Headless Aider CLI Adapter | ⏳ | 0/2 | — |
+| 17 | Ephemeral Sandbox Runner Environment | ⏳ | 0/2 | — |
+| 18 | Execution Telemetry & Artifact Pipeline | ⏳ | 0/2 | — |
 
 ---
 

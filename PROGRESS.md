@@ -1,10 +1,10 @@
 # JARVIS — Project Progress Log
 
-**Active Milestone:** Milestone 4 (v4.0) — GitHub Integration & Branchless Discipline  
+**Active Milestone:** Milestone 5 (v5.0) — Coding Execution Sandbox  
 **Owner:** sulekhniwal-star  
 **Branch Policy:** `main`-only strict mode  
 **Current Branch:** `main`  
-**Current Local Commit:** `14dbe7e`  
+**Current Local Commit:** `65fe808`  
 **Last Sync Status:** Ahead of `origin/main` (Remote push pending explicit owner authorization)  
 **AI Budget Status:** INR 0.00 spent of INR 750 monthly ceiling (INR 25 daily limit)
 
@@ -29,13 +29,15 @@
 | **Milestone 4 / Phase 12** | GitHub Client, Auth & Webhooks | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 13** | Remote Push Approval Gate & Branchless Guard | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | **Complete** | 2026-11-15 |
-| **Milestone 5** | Coding Execution Sandbox | Pending | Milestone 4 Verification |
-| **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
-| **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |
-| **Milestone 8** | Projects, Agents & Memory UI | Pending | Milestone 7 Verification |
-| **Milestone 9** | Approvals, Security & Cost Control | Pending | Milestone 8 Verification |
-| **Milestone 10** | Deployment & Maintenance | Pending | Milestone 9 Verification |
-| **Milestone 11** | Hardening & Release | Pending | Milestone 10 Verification |
+| **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Active** (Pending Plan) | 2026-11-16 |
+| **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | Pending | 2026-11-16 |
+| **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | Pending | 2026-11-16 |
+| **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | Pending | 2026-11-16 |
+| **Milestone 6** | Quality & Self-Review | Pending | Milestone 5 Verification |
+| **Milestone 7** | Projects, Agents & Memory UI | Pending | Milestone 6 Verification |
+| **Milestone 8** | Approvals, Security & Cost Control | Pending | Milestone 7 Verification |
+| **Milestone 9** | Deployment & Maintenance | Pending | Milestone 8 Verification |
+| **Milestone 10** | Hardening & Release | Pending | Milestone 9 Verification |
 
 ---
 

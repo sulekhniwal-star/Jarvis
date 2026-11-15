@@ -84,14 +84,14 @@ updated: 2026-11-15T17:35:00+05:30
 ## Milestone 2: Specification & Planning Workflow
 
 ### Phase 6: Task Intake & Specification Engine
-**Status:** ⏳ Ready for Planning  
+**Status:** ⏳ In Progress (Planning Complete, Ready for Execution)  
 **Objective:** Ingest natural language prompts, extract structured scope, exclusions, and acceptance criteria via Specifier Agent, and provide a Socratic clarification loop for underspecified requests.  
 **Depends on:** Phase 5  
 **Requirements:** REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02  
 
 **Plans:**
-- [ ] Plan 6.1: Specifier Agent prompt engineering, structured extraction parser, and Socratic clarification loop.
-- [ ] Plan 6.2: Specification repository, database persistence in `specifications`, task state transition (`intake` -> `specifying`), and unit tests.
+- [ ] Plan 6.1: Specifier Agent prompt engineering, structured extraction parser, Zod validation, and Socratic clarification loop.
+- [ ] Plan 6.2: Specification repository, database persistence in `specifications`, task state transition (`intake` -> `specifying`), API route handlers, and unit tests.
 
 ---
 

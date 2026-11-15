@@ -1,10 +1,10 @@
 # JARVIS — Project Progress Log
 
-**Active Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
+**Active Milestone:** Milestone 3 (v3.0) — Telegram Gateway  
 **Owner:** sulekhniwal-star  
 **Branch Policy:** `main`-only strict mode  
 **Current Branch:** `main`  
-**Current Local Commit:** `808a81f`  
+**Current Local Commit:** `d5e2915`  
 **Last Sync Status:** Ahead of `origin/main` (Remote push pending explicit owner authorization)  
 **AI Budget Status:** INR 0.00 spent of INR 750 monthly ceiling (INR 25 daily limit)
 
@@ -23,8 +23,10 @@
 | **Milestone 2 / Phase 6** | Task Intake & Specification Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 7** | Execution Planning Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | **Complete** | 2026-11-15 |
-| **Milestone 3** | Telegram Gateway | Pending | Milestone 2 Verification |
-| **Milestone 4** | GitHub Integration | Pending | Milestone 3 Verification |
+| **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | In Progress (Planned) | Milestone 3 |
+| **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | Pending | Phase 9 Verification |
+| **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | Pending | Phase 10 Verification |
+| **Milestone 4** | GitHub Integration & Branchless Discipline | Pending | Milestone 3 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
 | **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |
 | **Milestone 8** | Projects, Agents & Memory UI | Pending | Milestone 7 Verification |

@@ -1,28 +1,30 @@
 ---
-updated: 2026-11-15T20:00:00+05:30
+updated: 2026-11-15T22:10:00+05:30
 ---
 
 # Project State
 
 ## Current Position
 
-**Milestone:** v2.0 - Specification & Planning Workflow  
-**Phase:** 8 - Plan Review UI & Approval Gate  
-**Status:** Complete  
-**Plan:** Milestone 2 Complete (Phases 6, 7, 8 fully implemented and verified)
+**Milestone:** v3.0 - Telegram Gateway  
+**Phase:** 9 - Telegram Core Client & Security Guard  
+**Status:** In Progress (Milestone Initialized, Ready for Phase 9 Planning)  
+**Plan:** Ready for `/gsd-plan-phase 9`
 
 ## Last Action
 
-Executed Phase 8 (Plan Review UI & Approval Gate):
-- Plan 8.1: Header, Risk Banner, DAG Viewer by waves, Decision Controls, and `/tasks/[id]/plan` route page.
-- Plan 8.2: TaskStateMachine revision transitions (`planned/awaiting_approval -> specifying`), `POST /api/tasks/[id]/plan/decision` route handler with approval recording and task progression.
-- Empirical verification: 32/32 test files passed (173/173 tests), Next.js production build succeeded with 0 errors.
-- Authored `08-SUMMARY.md` and updated roadmap and requirements.
+Initialized Milestone 3 (Telegram Gateway) via `/gsd-new-milestone`:
+- Updated `PROJECT.md` with Milestone 3 scope and deliverables.
+- Authored domain research in `.planning/research/TELEGRAM.md`.
+- Scoped requirements in `REQUIREMENTS.md` (`REQ-TG-01` to `REQ-TG-05`, `NFR-SEC-04`).
+- Updated `ROADMAP.md` establishing Phases 9, 10, and 11.
+- Updated `CURRENT_STATE.md` and `PROGRESS.md`.
 
 ## Next Steps
 
-1. Initiate Milestone 3 Planning (Telegram Gateway or remote interaction layer) via `/gsd-new-milestone` or owner direction.
-2. Confirm priority for Milestone 3 (Telegram Gateway: Remote mobile intake, real-time approval alerts) vs Milestone 4 (GitHub Integration).
+1. Run `/gsd-plan-phase 9` to research and plan Phase 9 (Telegram Core Client & Security Guard).
+2. Execute Phase 9 plans: `TelegramClient`, MarkdownV2 escaping, owner allow-list guard, webhook route handler, and dev polling runner.
+3. Validate with unit tests and Next.js build.
 
 ## Active Decisions
 
@@ -32,7 +34,9 @@ Executed Phase 8 (Plan Review UI & Approval Gate):
 | Remote Push Policy | Explicit owner approval required before pushing to `origin/main` | 2026-11-15 | All deployment & git sync actions |
 | AI Gateway Routing | OpenRouter with strict free-model preference; paid calls blocked pending approval | 2026-11-15 | Phase 4, AI services, orchestrator |
 | Database & Auth | Managed-first Supabase with local Docker CLI development and 100% RLS | 2026-11-15 | Phase 2, Phase 3, persistence |
-| Frontend Architecture | Next.js 15+ App Router, TypeScript, Tailwind CSS, shadcn/ui, Radix UI | 2026-11-15 | Phase 1, Phase 5 |
+| Frontend Architecture | Next.js 15+ App Router, TypeScript, Tailwind CSS, shadcn/ui, Radix UI | 2026-11-15 | Phase 1, Phase 5, Phase 8 |
+| Telegram Gateway Mode | Dual-mode: Next.js App Router Webhook (`/api/telegram/webhook`) + local long-polling script | 2026-11-15 | Milestone 3 (Phases 9–11) |
+| Telegram Security Policy | Single-owner lockdown (`OWNER_TELEGRAM_ID`) + secret token verification; non-owner drops | 2026-11-15 | Milestone 3 (Phases 9–11) |
 | Workflow Configuration | Quality profile, research enabled, plan-checking enabled, verifier enabled, branching disabled | 2026-11-15 | All planning and execution workflows |
 
 ## Blockers

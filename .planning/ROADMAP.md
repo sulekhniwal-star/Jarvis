@@ -1,13 +1,22 @@
 ---
-milestone: "v2.0 - Specification & Planning Workflow"
-version: "2.0.0"
-updated: 2026-11-15T22:05:00+05:30
+milestone: "v3.0 - Telegram Gateway"
+version: "3.0.0"
+updated: 2026-11-15T22:10:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** Milestone 2 Complete (Phases 6–8)
-> **Status:** Ready for Milestone 3 Planning
+> **Current Phase:** 9 - Telegram Core Client & Security Guard  
+> **Status:** Ready for Planning (`/gsd-plan-phase 9`)
+
+## Must-Haves (Milestone 3 Baseline)
+
+- [ ] Type-safe Telegram Bot API client wrapper (`TelegramClient`) with MarkdownV2 escaping and inline keyboard markup.
+- [ ] Single-owner security guard verifying update sender numeric ID matches `OWNER_TELEGRAM_ID`.
+- [ ] Dual-mode update pipeline: Next.js App Router webhook route (`/api/telegram/webhook`) and dev polling script.
+- [ ] Essential command router responding to `/start`, `/status`, `/budget`, and `/projects`.
+- [ ] Remote task intake from free-text messages routing into `SpecifierAgent` and bidirectional clarification loop.
+- [ ] Rich interactive approval cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and in-place message updates.
 
 ## Must-Haves (Milestone 1 Baseline)
 
@@ -119,9 +128,46 @@ updated: 2026-11-15T22:05:00+05:30
 
 ---
 
+## Milestone 3: Telegram Gateway
+
+### Phase 9: Telegram Core Client & Security Guard
+**Status:** ⏳ In Progress (Ready for Planning)  
+**Objective:** Implement type-safe Telegram Bot API client, single-owner allow-list security guard, dual-mode update pipeline (webhook + dev polling), and core command router.  
+**Depends on:** Phase 8  
+**Requirements:** REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04  
+
+**Plans:**
+- [ ] Plan 9.1: Type-safe Telegram Bot client wrapper, MarkdownV2 escaping utilities, inline keyboard generator, and unit tests.
+- [ ] Plan 9.2: Single-owner security guard, webhook secret authenticator, App Router route handler (`/api/telegram/webhook`), dev long-polling runner, and basic command routing (`/start`, `/status`, `/budget`, `/projects`).
+
+---
+
+### Phase 10: Telegram Remote Task Intake & Status Reporting
+**Status:** ⏳ Pending  
+**Objective:** Ingest free-text prompts from Telegram, feed into Specifier Agent, deliver Socratic clarification questions, capture owner replies, and provide real-time status reporting.  
+**Depends on:** Phase 9  
+**Requirements:** REQ-TG-04  
+
+**Plans:**
+- [ ] Plan 10.1: Free-text task intake handler connecting Telegram messages to Specifier Agent and database persistence.
+- [ ] Plan 10.2: Interactive clarification loop over Telegram and comprehensive status reporting (`/status`, `/budget`).
+
+---
+
+### Phase 11: Telegram Interactive Approval Cards & Decision Webhook
+**Status:** ⏳ Pending  
+**Objective:** Deliver rich interactive approval cards with inline callback buttons, process callback queries via webhook, update durable approval records, advance task state, and update messages in-place.  
+**Depends on:** Phase 10  
+**Requirements:** REQ-TG-05  
+
+**Plans:**
+- [ ] Plan 11.1: Formatted approval notification cards with inline action buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and message delivery service.
+- [ ] Plan 11.2: Callback query webhook handler, durable approval state transitions, in-place message edit, and end-to-end integration tests.
+
+---
+
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 3:** Telegram Gateway (Remote mobile intake, real-time approval alerts).
 - **Milestone 4:** GitHub Integration & Branchless Discipline.
 - **Milestone 5:** Coding Execution Sandbox (GitHub Actions, Docker, Aider adapter).
 - **Milestone 6:** Quality, Verification & Self-Review.
@@ -144,6 +190,9 @@ updated: 2026-11-15T22:05:00+05:30
 | 6 | Task Intake & Specification Engine | ✅ | 2/2 | 100% |
 | 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
 | 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
+| 9 | Telegram Core Client & Security Guard | ⏳ | 0/2 | — |
+| 10 | Telegram Remote Task Intake & Status | ⏳ | 0/2 | — |
+| 11 | Telegram Approval Cards & Decision Webhook | ⏳ | 0/2 | — |
 
 ---
 

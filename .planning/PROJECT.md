@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-15T20:00:00+05:30
-milestone: "v2.0 - Specification & Planning Workflow"
+updated: 2026-11-15T22:10:00+05:30
+milestone: "v3.0 - Telegram Gateway"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -96,14 +96,19 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 - **Phase 4: Provider Adapters & AI Gateway:** OpenRouter adapter, free model failover hierarchy, paid inference approval gate, and budget circuit breakers (₹25/day, ₹750/mo).
 - **Phase 5: Authenticated UI Shell & Dashboard Foundation:** Responsive AppShell, navigation docks, AI Core status widget, approvals counter, active projects grid, and state handling.
 
----
-
-## Active Milestone: Milestone 2 — Specification & Planning Workflow
-
-The current milestone focuses on transforming natural language user intent into structured, dependency-aware plans:
+### Milestone 2 / v2.0 — Specification & Planning Workflow (✅ Complete 2026-11-15)
 - **Phase 6: Task Intake & Specification Engine:** Specifier Agent extracting scope, exclusions, acceptance criteria, and interactive clarification loop for underspecified requests.
 - **Phase 7: Execution Planning Engine:** Planner Agent decomposing specifications into atomic steps, dependency DAGs, risk scoring, and required approval calculation.
-- **Phase 8: Plan Review UI & Approval Gate:** Interactive web review screen displaying plan DAGs, risk factors, and one-click Plan Approval / revision request actions.
+- **Phase 8: Plan Review UI & Approval Gate:** Visual plan review interface, DAG viewer, risk banner, double-submission protected decision controls, and approval lifecycle API.
+
+---
+
+## Active Milestone: Milestone 3 — Telegram Gateway (v3.0)
+
+The current milestone delivers remote mobile intake and real-time approval cards via Telegram Bot API:
+- **Phase 9: Telegram Core Client & Security Guard:** Telegram API client wrapper, owner allow-list guard (`OWNER_TELEGRAM_ID`), webhook secret verification, App Router route handler (`/api/telegram/webhook`), dev polling runner, and base command router (`/start`, `/status`, `/budget`, `/projects`).
+- **Phase 10: Telegram Remote Task Intake & Status Reporting:** Free-text task intake forwarding into Specification Engine (`SpecifierAgent`), clarification message delivery, and real-time status reporting.
+- **Phase 11: Telegram Interactive Approval Cards & Decision Webhook:** Rich interactive cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handler updating durable `public.approvals` and task state machine, and in-place message editing.
 
 ## Success Criteria
 

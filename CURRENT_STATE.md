@@ -1,18 +1,17 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-15  
-**Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow (Complete)  
-**Active Phase:** Phase 8 — Plan Review UI & Approval Gate (Complete)  
+**Current Milestone:** Milestone 3 (v3.0) — Telegram Gateway (Active)  
+**Active Phase:** Phase 9 — Telegram Core Client & Security Guard (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `5a01ef9` (`feat(phase-8): implement Plan Decision API, TaskStateMachine revision transitions, and approval lifecycle`)  
+**Latest Local Commit:** `d5e2915` (`docs(phase-8): document plan review ui and approval gate completion and milestone 2 summary`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Milestone 1 (Phases 1-5) and Milestone 2 (Phases 6-8) fully implemented and empirically verified.
-- Milestone 2 Deliverables:
-  - Phase 6: Specifier Agent, Zod runtime validation, Socratic clarification loop, `SpecificationRepository`, intake/clarify route handlers.
-  - Phase 7: Planner Agent, DAG dependency builder, cycle detection (Kahn's algorithm), wave ordering, automated risk evaluation, `PlanRepository`, planning route handler.
-  - Phase 8: Visual Plan Review UI (`PlanReviewHeader`, `PlanRiskBanner`, `PlanDagViewer`, `PlanDecisionControls`), Next.js dynamic page (`/tasks/[id]/plan`), TaskStateMachine revision transitions, and `POST /api/tasks/[id]/plan/decision` route handler.
+- Milestone 1 (Phases 1-5) and Milestone 2 (Phases 6-8) fully implemented and empirically verified (173/173 tests passing).
+- Milestone 3 (Telegram Gateway) initialized: `PROJECT.md`, `ROADMAP.md`, `REQUIREMENTS.md` updated with Phases 9, 10, and 11.
+- Telegram Domain Research: `.planning/research/TELEGRAM.md` authored covering client architecture, MarkdownV2 formatting, single-owner allow-list security, and approval sequence.
+- Dual-mode update pipeline selected: App Router webhook (`/api/telegram/webhook`) for production + local long-polling runner for development.
 - Vitest Test Suite: 32/32 test files passed, 173/173 tests green.
 - Next.js Production Build: 10 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.

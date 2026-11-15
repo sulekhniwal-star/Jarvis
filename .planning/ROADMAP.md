@@ -70,14 +70,14 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 5: Authenticated UI Shell & Dashboard Foundation
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Construct responsive, accessible navigation shell, AI Core overview widget, project cards, and approval alerts.  
 **Depends on:** Phase 4  
 **Requirements:** REQ-UI-01, REQ-UI-02, REQ-UI-03, REQ-UI-04, NFR-PERF-01  
 
 **Plans:**
-- [ ] Plan 5.1: Navigation shell (desktop sidebar, mobile drawer, topbar) with Jarvis cinematic dark styling and accessibility compliance.
-- [ ] Plan 5.2: Dashboard overview page integrating real-time agent status, project summary, pending approvals list, and state handling.
+- [x] Plan 5.1: Navigation shell (desktop sidebar, mobile drawer, topbar) with Jarvis cinematic dark styling and accessibility compliance.
+- [x] Plan 5.2: Dashboard overview page integrating real-time agent status, project summary, pending approvals list, and state handling.
 
 ---
 

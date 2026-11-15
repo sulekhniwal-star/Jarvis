@@ -100,6 +100,16 @@ export function formatActionApprovalCard(data: ActionApprovalCardData): {
     lines.push(`📋 ${bold("Task:")} ${escapeMarkdownV2(task.title)}`);
   }
 
+  const scope = (approval.scope as Record<string, unknown>) || {};
+  if (approval.action_type === "git_remote_push") {
+    if (scope.aheadCount !== undefined) {
+      lines.push(`📦 ${bold("Commits Ahead:")} ${escapeMarkdownV2(String(scope.aheadCount))}`);
+    }
+    if (scope.headCommitSha) {
+      lines.push(`🔗 ${bold("HEAD Commit:")} ${code(String(scope.headCommitSha).substring(0, 7))}`);
+    }
+  }
+
   lines.push(`⏳ ${bold("Expires:")} ${escapeMarkdownV2(expiresAt)}`);
   lines.push("");
   lines.push(escapeMarkdownV2("Do you authorize this operation?"));

@@ -3,6 +3,7 @@ import { TelegramClient } from "./client";
 import { PlanRepository } from "../repositories/plan-repository";
 import { ApprovalRepository } from "../repositories/approval-repository";
 import { TaskRepository } from "../repositories/task-repository";
+import { PushGateService } from "../git/push-gate";
 import { createAdminClient } from "../supabase/admin";
 import { formatDecisionReceipt, ApprovalDecisionType } from "./approvals";
 import { bold, code } from "./format";
@@ -12,6 +13,7 @@ export interface DecisionDependencies {
   planRepo?: PlanRepository;
   approvalRepo?: ApprovalRepository;
   taskRepo?: TaskRepository;
+  pushGateService?: PushGateService;
 }
 
 export interface DecisionResult {
@@ -28,6 +30,7 @@ export class TelegramDecisionService {
   private planRepo: PlanRepository;
   private approvalRepo: ApprovalRepository;
   private taskRepo: TaskRepository;
+  private pushGateService: PushGateService;
 
   constructor(deps?: DecisionDependencies) {
     this.client = deps?.client ?? new TelegramClient();
@@ -42,6 +45,10 @@ export class TelegramDecisionService {
       this.approvalRepo = deps?.approvalRepo ?? new ApprovalRepository(supabase);
       this.taskRepo = deps?.taskRepo ?? new TaskRepository(supabase);
     }
+
+    this.pushGateService =
+      deps?.pushGateService ??
+      new PushGateService({ approvalRepo: this.approvalRepo });
   }
 
   /**
@@ -221,13 +228,24 @@ export class TelegramDecisionService {
       "Decided via Telegram inline card"
     );
 
+    let pushNote = "";
+    if (decision === "approved" && approval.action_type === "git_remote_push") {
+      try {
+        const pushResult = await this.pushGateService.executePush(approvalId, userId);
+        pushNote = `Pushed ${pushResult.pushedCommit.substring(0, 7)} to origin/main`;
+      } catch (pushErr) {
+        pushNote = `Push failed: ${(pushErr as Error).message}`;
+      }
+    }
+
     // Edit Telegram message in-place
     if (callbackQuery.message) {
       const receipt = formatDecisionReceipt(
         "action",
         approval.action_type,
         decision,
-        new Date()
+        new Date(),
+        pushNote || undefined
       );
 
       await this.client.editMessageText(
@@ -278,12 +296,26 @@ export class TelegramDecisionService {
         reason ?? "Decided via Telegram CLI"
       );
 
+      let pushNote = reason;
+      if (decision === "approved" && approval.action_type === "git_remote_push") {
+        try {
+          const pushResult = await this.pushGateService.executePush(targetId, userId);
+          pushNote = pushNote
+            ? `${pushNote} (Pushed ${pushResult.pushedCommit.substring(0, 7)} to origin/main)`
+            : `Pushed ${pushResult.pushedCommit.substring(0, 7)} to origin/main`;
+        } catch (pushErr) {
+          pushNote = pushNote
+            ? `${pushNote} (Push failed: ${(pushErr as Error).message})`
+            : `Push failed: ${(pushErr as Error).message}`;
+        }
+      }
+
       return formatDecisionReceipt(
         "action",
         approval.action_type,
         decision,
         new Date(),
-        reason
+        pushNote
       );
     }
 

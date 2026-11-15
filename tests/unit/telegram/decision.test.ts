@@ -160,7 +160,26 @@ describe("TelegramDecisionService", () => {
       );
     });
 
-    it("approves sensitive action via callback query", async () => {
+    it("approves sensitive action via callback query and executes push for git_remote_push", async () => {
+      const mockPushGateService = {
+        executePush: vi.fn().mockResolvedValue({
+          success: true,
+          pushedCommit: "1122334455667788",
+          remoteRef: "origin/main",
+          aheadCount: 1,
+          output: "Push successful",
+          executedAt: new Date().toISOString(),
+        }),
+      } as any;
+
+      const pushDecisionService = new TelegramDecisionService({
+        client: mockClient,
+        planRepo: mockPlanRepo,
+        approvalRepo: mockApprovalRepo,
+        taskRepo: mockTaskRepo,
+        pushGateService: mockPushGateService,
+      });
+
       const query: TelegramCallbackQuery = {
         id: "cb-789",
         from: { id: 999999, is_bot: false, first_name: "Owner" },
@@ -172,7 +191,7 @@ describe("TelegramDecisionService", () => {
         data: `appr:act:${mockApproval.id}`,
       };
 
-      const result = await service.handleCallbackQuery(query, "user-1");
+      const result = await pushDecisionService.handleCallbackQuery(query, "user-1");
 
       expect(result.success).toBe(true);
       expect(mockApprovalRepo.recordDecision).toHaveBeenCalledWith(
@@ -181,10 +200,14 @@ describe("TelegramDecisionService", () => {
         "approved",
         expect.any(String)
       );
+      expect(mockPushGateService.executePush).toHaveBeenCalledWith(
+        mockApproval.id,
+        "user-1"
+      );
       expect(mockClient.editMessageText).toHaveBeenCalledWith(
         12345,
         42,
-        expect.stringContaining("ACTION APPROVED"),
+        expect.stringContaining("Pushed 1122334 to origin/main"),
         expect.objectContaining({
           reply_markup: { inline_keyboard: [] },
         })

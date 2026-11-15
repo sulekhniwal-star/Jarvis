@@ -15,9 +15,9 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `WORK
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-SPEC-01** | **Specifier Agent:** Analyzes natural language prompts to extract structured scope, exclusions, raw prompt history, and testable acceptance criteria. | PRD §7.5, Workflow §2 | 6 | Pending |
-| **REQ-SPEC-02** | **Clarification Loop:** Socratic clarification engine detecting ambiguity and prompting user with targeted questions before plan generation. | PRD §7.5, Prompt §2 | 6 | Pending |
-| **REQ-SPEC-03** | **Specification Repository:** Strongly-typed CRUD and versioning for specifications in `public.specifications`. | PRD §7.5, §8.4 | 6 | Pending |
+| **REQ-SPEC-01** | **Specifier Agent:** Analyzes natural language prompts to extract structured scope, exclusions, raw prompt history, and testable acceptance criteria. | PRD §7.5, Workflow §2 | 6 | Complete |
+| **REQ-SPEC-02** | **Clarification Loop:** Socratic clarification engine detecting ambiguity and prompting user with targeted questions before plan generation. | PRD §7.5, Prompt §2 | 6 | Complete |
+| **REQ-SPEC-03** | **Specification Repository:** Strongly-typed CRUD and versioning for specifications in `public.specifications`. | PRD §7.5, §8.4 | 6 | Complete |
 | **REQ-PLAN-01** | **Planner Agent:** Decomposes specifications into atomic execution steps with wave-based dependency ordering and rollback procedures. | PRD §7.5, Workflow §3 | 7 | Pending |
 | **REQ-PLAN-02** | **Risk Assessment & Approval Gate Detection:** Evaluates proposed steps against security policies and flags actions requiring human approval. | PRD §7.5, §7.9 | 7 | Pending |
 | **REQ-PLAN-03** | **Plan Repository:** Strongly-typed CRUD, dependency DAG storage, and versioning for plans in `public.plans`. | PRD §7.5, §8.4 | 7 | Pending |
@@ -85,7 +85,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `WORK
 | REQ-REPO-01, REQ-REPO-02, REQ-REPO-03, REQ-REPO-04, NFR-REL-01 | Phase 3 | Plan 3.1, Plan 3.2 | Repository unit tests, state machine transition test | Complete |
 | REQ-AI-01, REQ-AI-02, REQ-AI-03, REQ-AI-04, NFR-COST-01 | Phase 4 | Plan 4.1, Plan 4.2 | Gateway mock tests, paid-model blocking test, ledger audit | Complete |
 | REQ-UI-01, REQ-UI-02, REQ-UI-03, REQ-UI-04, NFR-PERF-01 | Phase 5 | Plan 5.1, Plan 5.2 | Component rendering tests, responsiveness & accessibility audit | Complete |
-| REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02 | Phase 6 | Plan 6.1, Plan 6.2 | Specifier Agent unit tests, ambiguity scoring tests | Pending |
+| REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02 | Phase 6 | Plan 6.1, Plan 6.2 | Specifier Agent unit tests, ambiguity scoring tests | Complete |
 | REQ-PLAN-01, REQ-PLAN-02, REQ-PLAN-03, NFR-REL-02 | Phase 7 | Plan 7.1, Plan 7.2 | Planner Agent unit tests, DAG dependency ordering tests | Pending |
 | REQ-PLAN-04 | Phase 8 | Plan 8.1, Plan 8.2 | Plan Review UI rendering tests, approval decision flow | Pending |
 

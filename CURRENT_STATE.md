@@ -2,15 +2,15 @@
 
 **Status Date:** 2026-11-15  
 **Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
-**Active Phase:** Phase 6 — Task Intake & Specification Engine (In Progress — Planning Complete)  
+**Active Phase:** Phase 7 — Execution Planning Engine (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `b416144` (`docs(milestone-2): initialize milestone 2 specification and planning workflow`)  
+**Latest Local Commit:** `7a32bf8` (`feat(phase-6): implement SpecificationRepository, task state transition, and intake/clarify API routes`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phase 1, Phase 2, Phase 3, Phase 4, and Phase 5 fully implemented and empirically verified.
-- Milestone 2 initialized; Phase 6 planned with `06-RESEARCH.md`, `06-01-PLAN.md`, and `06-02-PLAN.md`.
-- Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (129/129 tests passing across 23 suites), and Git Safety Guard active.
+- Phases 1 through 6 fully implemented and empirically verified.
+- Milestone 2 Phase 6 completed: Specifier Agent, Zod runtime validation, Socratic clarification loop, SpecificationRepository, and `/api/tasks/intake` & `/api/tasks/[id]/clarify` routes.
+- Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (144/144 tests passing across 26 suites), and Git Safety Guard active.
 - Supabase relational schema migrations (14 core tables + pgvector HNSW indexing, conversations/messages), 100% RLS policies, SSR client factories, and Auth route handlers active.
 - Domain models and repositories: `ProjectRepository`, `MilestoneRepository`, `TaskRepository`, `ConversationRepository`, `ApprovalRepository`, `AgentRunRepository`.
 - Domain state machines: `TaskStateMachine`, `ApprovalStateMachine`, `AgentRunStateMachine`.

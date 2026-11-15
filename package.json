@@ -11,7 +11,8 @@
     "format:write": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "git:guard": "tsx scripts/git-guard.ts"
+    "git:guard": "tsx scripts/git-guard.ts",
+    "telegram:dev": "tsx scripts/telegram-polling.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

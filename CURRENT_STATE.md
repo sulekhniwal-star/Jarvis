@@ -2,14 +2,14 @@
 
 **Status Date:** 2026-11-15  
 **Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
-**Active Phase:** Phase 8 — Plan Review UI & Approval Gate (Ready for Planning)  
+**Active Phase:** Phase 8 — Plan Review UI & Approval Gate (In Progress — Planning Complete)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `1d5b1f3` (`feat(phase-7): implement PlanRepository, planning API route, and task state transition`)  
+**Latest Local Commit:** `808a81f` (`docs(phase-7): document execution planning engine completion and summary`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
 - Phases 1 through 7 fully implemented and empirically verified.
-- Milestone 2 Phase 7 completed: Planner Agent, DAG cycle detection, automated risk evaluation, PlanRepository, and `/api/tasks/[id]/plan` route handler.
+- Milestone 2 Phase 8 planned: `08-RESEARCH.md`, `08-01-PLAN.md`, and `08-02-PLAN.md`.
 - Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (162/162 tests passing across 30 suites), and Git Safety Guard active.
 - Supabase relational schema migrations (14 core tables + pgvector HNSW indexing, conversations/messages), 100% RLS policies, SSR client factories, and Auth route handlers active.
 - Domain models and repositories: `ProjectRepository`, `MilestoneRepository`, `TaskRepository`, `ConversationRepository`, `ApprovalRepository`, `AgentRunRepository`.

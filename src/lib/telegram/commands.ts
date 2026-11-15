@@ -21,6 +21,9 @@ export interface CommandDependencies {
     getDailySpendInr: (userId: string) => Promise<number>;
     getMonthlySpendInr: (userId: string) => Promise<number>;
   };
+  intakeService?: {
+    cancelClarification: (userId: string) => Promise<string>;
+  };
   userId?: string;
 }
 
@@ -46,9 +49,20 @@ export async function handleTelegramCommand(
         "• /status — Active tasks and execution state",
         "• /budget — Daily and monthly INR expenditure",
         "• /projects — Active projects and repositories",
+        "• /cancel — Cancel active task clarification session",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
+    }
+
+    case "/cancel": {
+      const userId = deps?.userId ?? "00000000-0000-0000-0000-000000000000";
+      if (deps?.intakeService) {
+        return deps.intakeService.cancelClarification(userId);
+      }
+      const { TelegramIntakeService } = await import("./intake");
+      const intakeService = new TelegramIntakeService();
+      return intakeService.cancelClarification(userId);
     }
 
     case "/status": {

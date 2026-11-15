@@ -30,6 +30,16 @@ export interface IntakeDependencies {
   client?: TelegramClient;
 }
 
+interface TelegramConversationMetadata {
+  taskId?: string;
+  originalPrompt?: string;
+  questions?: ClarificationQuestion[];
+  round?: number;
+  awaitingClarification?: boolean;
+  completed?: boolean;
+  cancelled?: boolean;
+}
+
 export class TelegramIntakeService {
   private readonly specifierAgent: SpecifierAgent;
   private readonly taskRepo?: TaskRepository;
@@ -212,11 +222,11 @@ export class TelegramIntakeService {
       return null;
     }
 
-    const meta = activeConv.metadata as Record<string, any>;
+    const meta = activeConv.metadata as unknown as TelegramConversationMetadata;
     return {
       conversationId: activeConv.id,
-      taskId: meta.taskId,
-      originalPrompt: meta.originalPrompt,
+      taskId: meta.taskId || "",
+      originalPrompt: meta.originalPrompt || "",
       questions: meta.questions || [],
       round: Number(meta.round || 1),
     };

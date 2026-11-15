@@ -111,6 +111,20 @@ describe("Telegram Command Router", () => {
     });
   });
 
+  it("handles /cancel command", async () => {
+    const mockIntakeService = {
+      cancelClarification: vi.fn().mockResolvedValue("Clarification Cancelled"),
+    };
+
+    const response = await handleTelegramCommand("/cancel", {
+      intakeService: mockIntakeService,
+      userId: "test-user-id",
+    });
+
+    expect(response).toBe("Clarification Cancelled");
+    expect(mockIntakeService.cancelClarification).toHaveBeenCalledWith("test-user-id");
+  });
+
   it("handles unknown commands with fallback guidance", async () => {
     const response = await handleTelegramCommand("/foo_bar");
     expect(response).toContain("Unknown Command: /foo\\_bar");

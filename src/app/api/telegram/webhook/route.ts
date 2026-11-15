@@ -5,8 +5,7 @@ import {
   verifyWebhookSecret,
   validateUpdate,
   handleTelegramCommand,
-  bold,
-  italic,
+  TelegramIntakeService,
 } from "@/lib/telegram";
 
 export async function POST(req: NextRequest) {
@@ -42,6 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     const client = new TelegramClient();
+    const userId = process.env.OWNER_USER_ID ?? "00000000-0000-0000-0000-000000000000";
 
     // 4. Handle incoming message text
     if (update.message?.text) {
@@ -49,19 +49,21 @@ export async function POST(req: NextRequest) {
       const chatId = update.message.chat.id;
 
       if (text.startsWith("/")) {
-        const reply = await handleTelegramCommand(text);
+        const reply = await handleTelegramCommand(text, { userId });
         await client.sendMessage(chatId, reply);
       } else {
-        // Natural language task prompt
-        const ackMessage = [
-          `📥 ${bold("Task Prompt Received")}`,
-          "",
-          "Your prompt has been acknowledged by Jarvis\\. Full autonomous specification and clarification will process this in Phase 10\\.",
-          "",
-          italic("Use /status to inspect active workloads or /budget for quota\\."),
-        ].join("\n");
+        // Natural language task prompt or clarification answer
+        const intakeService = new TelegramIntakeService();
+        const activeSession = await intakeService.getActiveClarificationSession(userId);
 
-        await client.sendMessage(chatId, ackMessage);
+        let reply: string;
+        if (activeSession) {
+          reply = await intakeService.handleClarificationAnswer(userId, text);
+        } else {
+          reply = await intakeService.handleNewTaskPrompt(userId, text);
+        }
+
+        await client.sendMessage(chatId, reply);
       }
     }
 

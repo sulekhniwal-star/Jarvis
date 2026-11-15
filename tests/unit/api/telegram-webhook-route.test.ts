@@ -2,11 +2,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { POST } from "@/app/api/telegram/webhook/route";
 import { NextRequest } from "next/server";
 import { TelegramClient } from "@/lib/telegram/client";
+import { TelegramIntakeService } from "@/lib/telegram/intake";
 
 vi.mock("@/lib/telegram/client", () => {
   return {
     TelegramClient: vi.fn().mockImplementation(() => ({
       sendMessage: vi.fn().mockResolvedValue({ message_id: 123 }),
+    })),
+  };
+});
+
+vi.mock("@/lib/telegram/intake", () => {
+  return {
+    TelegramIntakeService: vi.fn().mockImplementation(() => ({
+      getActiveClarificationSession: vi.fn().mockResolvedValue(null),
+      handleNewTaskPrompt: vi.fn().mockResolvedValue("Specification Formulated: Health check"),
+      handleClarificationAnswer: vi.fn().mockResolvedValue("Specification Formulated: Answer processed"),
+      cancelClarification: vi.fn().mockResolvedValue("Clarification Cancelled"),
     })),
   };
 });
@@ -106,7 +118,7 @@ describe("POST /api/telegram/webhook", () => {
     );
   });
 
-  it("processes natural language prompt from authorized owner and sends acknowledgment", async () => {
+  it("processes natural language prompt from authorized owner and routes through intake service", async () => {
     const authorizedUpdate = {
       update_id: 3,
       message: {
@@ -125,10 +137,54 @@ describe("POST /api/telegram/webhook", () => {
     const data = await res.json();
     expect(data.ok).toBe(true);
 
+    const intakeInstance = (TelegramIntakeService as any).mock.results[0]?.value;
+    expect(intakeInstance.handleNewTaskPrompt).toHaveBeenCalledWith(
+      "00000000-0000-0000-0000-000000000000",
+      "Please add a health check endpoint"
+    );
+
     const clientInstance = (TelegramClient as any).mock.results[0]?.value;
     expect(clientInstance.sendMessage).toHaveBeenCalledWith(
       987654321,
-      expect.stringContaining("Task Prompt Received")
+      "Specification Formulated: Health check"
+    );
+  });
+
+  it("routes answer to active clarification session when one is pending", async () => {
+    const mockSession = {
+      conversationId: "conv-1",
+      taskId: "task-1",
+      originalPrompt: "Fix stuff",
+      questions: [],
+      round: 1,
+    };
+
+    (TelegramIntakeService as any).mockImplementationOnce(() => ({
+      getActiveClarificationSession: vi.fn().mockResolvedValue(mockSession),
+      handleNewTaskPrompt: vi.fn(),
+      handleClarificationAnswer: vi.fn().mockResolvedValue("Specification Formulated: Answer processed"),
+      cancelClarification: vi.fn(),
+    }));
+
+    const authorizedUpdate = {
+      update_id: 4,
+      message: {
+        message_id: 40,
+        chat: { id: 987654321, type: "private" },
+        from: { id: 987654321, is_bot: false, first_name: "Owner" },
+        date: 1700000000,
+        text: "Use PostgreSQL",
+      },
+    };
+
+    const req = createRequest(authorizedUpdate, "test-secret-token");
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    const clientInstance = (TelegramClient as any).mock.results[0]?.value;
+    expect(clientInstance.sendMessage).toHaveBeenCalledWith(
+      987654321,
+      "Specification Formulated: Answer processed"
     );
   });
 });

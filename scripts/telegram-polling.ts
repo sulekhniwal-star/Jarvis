@@ -4,8 +4,7 @@ import {
   TelegramClient,
   validateUpdate,
   handleTelegramCommand,
-  bold,
-  italic,
+  TelegramIntakeService,
 } from "../src/lib/telegram";
 
 /**
@@ -97,20 +96,24 @@ async function main() {
             console.log(`📩 Received message from owner: "${text}"`);
 
             if (text.startsWith("/")) {
-              const reply = await handleTelegramCommand(text);
+              const reply = await handleTelegramCommand(text, { userId: ownerId });
               await client.sendMessage(chatId, reply);
               console.log(`📤 Dispatched command response for: ${text.split(" ")[0]}`);
             } else {
-              const ackMessage = [
-                `📥 ${bold("Task Prompt Received")}`,
-                "",
-                "Your prompt has been acknowledged by Jarvis\\. Full autonomous specification and clarification will process this in Phase 10\\.",
-                "",
-                italic("Use /status to inspect active workloads or /budget for quota\\."),
-              ].join("\n");
+              const intakeService = new TelegramIntakeService();
+              const activeSession = await intakeService.getActiveClarificationSession(ownerId);
 
-              await client.sendMessage(chatId, ackMessage);
-              console.log("📤 Sent task intake acknowledgment message.");
+              let reply: string;
+              if (activeSession) {
+                console.log(`💬 Processing clarification answer for task: ${activeSession.taskId}`);
+                reply = await intakeService.handleClarificationAnswer(ownerId, text);
+              } else {
+                console.log("📝 Ingesting new task prompt...");
+                reply = await intakeService.handleNewTaskPrompt(ownerId, text);
+              }
+
+              await client.sendMessage(chatId, reply);
+              console.log("📤 Sent task intake / clarification response.");
             }
           }
         }

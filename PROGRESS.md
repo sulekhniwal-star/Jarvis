@@ -22,9 +22,9 @@
 | **Phase 5** | Authenticated UI Shell & Dashboard Foundation | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 6** | Task Intake & Specification Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 7** | Execution Planning Engine | **Complete** | 2026-11-15 |
-| **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | In Progress (Planned) | Milestone 2 |
-| **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | Pending | Phase 7 Verification |
-| **Milestone 5** | GitHub Integration | Pending | Milestone 4 Verification |
+| **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | **Complete** | 2026-11-15 |
+| **Milestone 3** | Telegram Gateway | Pending | Milestone 2 Verification |
+| **Milestone 4** | GitHub Integration | Pending | Milestone 3 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
 | **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |
 | **Milestone 8** | Projects, Agents & Memory UI | Pending | Milestone 7 Verification |
@@ -35,6 +35,28 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 7 (Phase 8 Execution & Milestone 2 Completion)
+- **Trigger:** `/gsd-execute-phase 8` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 8.1):
+    - Authored `PlanReviewHeader` displaying task metadata, version, status pill, and counters.
+    - Authored `PlanRiskBanner` evaluating risk level, factors, approval pills, and mitigations.
+    - Authored `PlanDagViewer` organizing steps by wave with expandable files, verification, and rollbacks.
+    - Authored `PlanDecisionControls` with double-submission protection and revision feedback textarea.
+    - Authored `PlanReviewView` client coordinator and `/tasks/[id]/plan` server route page.
+    - Authored unit test suite `tests/unit/components/plan-review.test.tsx` (5/5 tests passing).
+  - Implemented Wave 2 (Plan 8.2):
+    - Updated `TaskStateMachine` to permit revision transitions (`planned -> specifying` and `awaiting_approval -> specifying`).
+    - Implemented `POST /api/tasks/[id]/plan/decision` route handler supporting `approve` and `request_revision`.
+    - Integrated `ApprovalRepository` and `TaskRepository` for atomic approval records and task progression.
+    - Authored unit test suite `tests/unit/api/tasks-plan-decision-route.test.ts` (5/5 tests passing).
+  - **Empirical Verification:**
+    - `pnpm test --run`: 32 test suites, 173 tests passed (100% green).
+    - `pnpm build`: Next.js production compilation succeeded (10 routes generated, 0 errors, 0 warnings).
+  - **Landed Commits:**
+    - `9233bae`: `feat(phase-8): implement Plan Review UI components, DAG viewer, and decision controls`
+    - `5a01ef9`: `feat(phase-8): implement Plan Decision API, TaskStateMachine revision transitions, and approval lifecycle`
 
 ### 2026-11-15 — Work Session 4 (Phase 2 Execution & Verification)
 - **Trigger:** `/gsd-execute-phase 2` executed by owner.

@@ -21,7 +21,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `WORK
 | **REQ-PLAN-01** | **Planner Agent:** Decomposes specifications into atomic execution steps with wave-based dependency ordering and rollback procedures. | PRD §7.5, Workflow §3 | 7 | Complete |
 | **REQ-PLAN-02** | **Risk Assessment & Approval Gate Detection:** Evaluates proposed steps against security policies and flags actions requiring human approval. | PRD §7.5, §7.9 | 7 | Complete |
 | **REQ-PLAN-03** | **Plan Repository:** Strongly-typed CRUD, dependency DAG storage, and versioning for plans in `public.plans`. | PRD §7.5, §8.4 | 7 | Complete |
-| **REQ-PLAN-04** | **Visual Plan Review UI:** Interactive plan review interface displaying steps, dependencies, risk breakdown, and one-click Plan Approval or revision request controls. | PRD §7.5, UI Spec | 8 | Pending |
+| **REQ-PLAN-04** | **Visual Plan Review UI:** Interactive plan review interface displaying steps, dependencies, risk breakdown, and one-click Plan Approval or revision request controls. | PRD §7.5, UI Spec | 8 | Complete |
 
 ---
 
@@ -59,7 +59,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `WORK
 | **NFR-SEC-02** | **Zero Secret Leakage:** No API keys, service-role tokens, or private credentials committed or surfaced to browser bundles. | Security | All | Complete |
 | **NFR-SEC-03** | **Row-Level Security Coverage:** 100% of owner-specific tables have active RLS policies tested against cross-user reads/writes. | Security | 2 | Complete |
 | **NFR-REL-01** | **Durable Persistence:** All agent runs, approvals, and tasks survive application/worker restarts and refresh without data loss. | Reliability | 2, 3 | Complete |
-| **NFR-REL-02** | **Deterministic Schema Validation:** Structured JSON payloads for specifications and plans validated against strict schemas. | Reliability | 6, 7 | Pending |
+| **NFR-REL-02** | **Deterministic Schema Validation:** Structured JSON payloads for specifications and plans validated against strict schemas. | Reliability | 6, 7 | Complete |
 | **NFR-COST-01** | **Strict Cost Ceiling:** Zero paid inference or external cloud expenditure without explicit owner approval. | Cost Control | 4 | Complete |
 | **NFR-PERF-01** | **Responsive Dashboard:** Initial shell page load under 1.5s on desktop and mobile environments. | Performance | 5 | Complete |
 
@@ -87,7 +87,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `WORK
 | REQ-UI-01, REQ-UI-02, REQ-UI-03, REQ-UI-04, NFR-PERF-01 | Phase 5 | Plan 5.1, Plan 5.2 | Component rendering tests, responsiveness & accessibility audit | Complete |
 | REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02 | Phase 6 | Plan 6.1, Plan 6.2 | Specifier Agent unit tests, ambiguity scoring tests | Complete |
 | REQ-PLAN-01, REQ-PLAN-02, REQ-PLAN-03, NFR-REL-02 | Phase 7 | Plan 7.1, Plan 7.2 | Planner Agent unit tests, DAG dependency ordering tests | Complete |
-| REQ-PLAN-04 | Phase 8 | Plan 8.1, Plan 8.2 | Plan Review UI rendering tests, approval decision flow | Pending |
+| REQ-PLAN-04 | Phase 8 | Plan 8.1, Plan 8.2 | Plan Review UI rendering tests, approval decision flow | Complete |
 
 ---
 

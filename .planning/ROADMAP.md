@@ -1,13 +1,13 @@
 ---
-milestone: "v1.0 - Core Platform Foundation & Architecture"
-version: "1.0.0"
-updated: 2026-11-15T17:35:00+05:30
+milestone: "v2.0 - Specification & Planning Workflow"
+version: "2.0.0"
+updated: 2026-11-15T22:05:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 3 - Core Domain Models & Repositories
-> **Status:** Ready for Planning
+> **Current Phase:** Milestone 2 Complete (Phases 6–8)
+> **Status:** Ready for Milestone 3 Planning
 
 ## Must-Haves (Milestone 1 Baseline)
 
@@ -108,14 +108,14 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 8: Plan Review UI & Approval Gate
-**Status:** ⏳ In Progress (Planning Complete, Ready for Execution)  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Construct interactive web review screen displaying plan DAGs, risk assessment, and one-click Plan Approval or revision request actions.  
 **Depends on:** Phase 7  
 **Requirements:** REQ-PLAN-04  
 
 **Plans:**
-- [ ] Plan 8.1: Visual Plan Review interface displaying scope, steps, dependencies, and risk level badges.
-- [ ] Plan 8.2: Human decision actions (Approve Plan, Request Revision), approval state transitions, and integration tests.
+- [x] Plan 8.1: Visual Plan Review interface displaying scope, steps, dependencies, and risk level badges.
+- [x] Plan 8.2: Human decision actions (Approve Plan, Request Revision), approval state transitions, and integration tests.
 
 ---
 
@@ -143,7 +143,7 @@ updated: 2026-11-15T17:35:00+05:30
 | 5 | Authenticated UI Shell & Dashboard | ✅ | 2/2 | 100% |
 | 6 | Task Intake & Specification Engine | ✅ | 2/2 | 100% |
 | 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
-| 8 | Plan Review UI & Approval Gate | ⏳ | 0/2 | — |
+| 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
 
 ---
 

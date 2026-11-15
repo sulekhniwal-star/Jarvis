@@ -8,21 +8,21 @@ updated: 2026-11-15T20:00:00+05:30
 
 **Milestone:** v2.0 - Specification & Planning Workflow  
 **Phase:** 8 - Plan Review UI & Approval Gate  
-**Status:** In Progress (Planning Complete)  
-**Plan:** Ready for Plan 8.1 execution (`/gsd-execute-phase 8`)
+**Status:** Complete  
+**Plan:** Milestone 2 Complete (Phases 6, 7, 8 fully implemented and verified)
 
 ## Last Action
 
-Authored Phase 8 planning artifacts:
-- `08-RESEARCH.md`: Safety-critical approval UI design, component hierarchy, double-submission protection, and decision lifecycle.
-- `08-01-PLAN.md`: PlanReviewHeader, PlanRiskBanner, PlanDagViewer, PlanDecisionControls, PlanReviewView, and `/tasks/[id]/plan` route page.
-- `08-02-PLAN.md`: TaskStateMachine revision transition updates, decision route handler `POST /api/tasks/[id]/plan/decision`, and integration unit tests.
+Executed Phase 8 (Plan Review UI & Approval Gate):
+- Plan 8.1: Header, Risk Banner, DAG Viewer by waves, Decision Controls, and `/tasks/[id]/plan` route page.
+- Plan 8.2: TaskStateMachine revision transitions (`planned/awaiting_approval -> specifying`), `POST /api/tasks/[id]/plan/decision` route handler with approval recording and task progression.
+- Empirical verification: 32/32 test files passed (173/173 tests), Next.js production build succeeded with 0 errors.
+- Authored `08-SUMMARY.md` and updated roadmap and requirements.
 
 ## Next Steps
 
-1. Run `/gsd-execute-phase 8` to execute Plan 8.1 (Plan Review UI components) and Plan 8.2 (Decision API route & state machine updates).
-2. Validate with automated unit tests (`pnpm test`) and Next.js build (`pnpm build`).
-3. Complete Milestone 2 verification and summary.
+1. Initiate Milestone 3 Planning (Telegram Gateway or remote interaction layer) via `/gsd-new-milestone` or owner direction.
+2. Confirm priority for Milestone 3 (Telegram Gateway: Remote mobile intake, real-time approval alerts) vs Milestone 4 (GitHub Integration).
 
 ## Active Decisions
 

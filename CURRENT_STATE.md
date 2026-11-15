@@ -1,21 +1,20 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-15  
-**Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
-**Active Phase:** Phase 8 — Plan Review UI & Approval Gate (In Progress — Planning Complete)  
+**Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow (Complete)  
+**Active Phase:** Phase 8 — Plan Review UI & Approval Gate (Complete)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `808a81f` (`docs(phase-7): document execution planning engine completion and summary`)  
+**Latest Local Commit:** `5a01ef9` (`feat(phase-8): implement Plan Decision API, TaskStateMachine revision transitions, and approval lifecycle`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phases 1 through 7 fully implemented and empirically verified.
-- Milestone 2 Phase 8 planned: `08-RESEARCH.md`, `08-01-PLAN.md`, and `08-02-PLAN.md`.
-- Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (162/162 tests passing across 30 suites), and Git Safety Guard active.
-- Supabase relational schema migrations (14 core tables + pgvector HNSW indexing, conversations/messages), 100% RLS policies, SSR client factories, and Auth route handlers active.
-- Domain models and repositories: `ProjectRepository`, `MilestoneRepository`, `TaskRepository`, `ConversationRepository`, `ApprovalRepository`, `AgentRunRepository`.
-- Domain state machines: `TaskStateMachine`, `ApprovalStateMachine`, `AgentRunStateMachine`.
-- AI Gateway & Adapters: `OpenRouterAdapter`, `MockAIAdapter`, `AIGateway` (free failover, paid approval barrier), `UsageLedgerService`, `BudgetService` (daily ₹25 cap, monthly ₹750 ceiling).
-- Authenticated UI Shell & Dashboard: `AppShell`, `Sidebar`, `Topbar`, `MobileNav`, `AICoreStatus`, `PendingApprovalsCard`, `ActiveProjectsList`, `RecentActivityFeed`, `EmptyState`, `ErrorBoundary`.
+- Milestone 1 (Phases 1-5) and Milestone 2 (Phases 6-8) fully implemented and empirically verified.
+- Milestone 2 Deliverables:
+  - Phase 6: Specifier Agent, Zod runtime validation, Socratic clarification loop, `SpecificationRepository`, intake/clarify route handlers.
+  - Phase 7: Planner Agent, DAG dependency builder, cycle detection (Kahn's algorithm), wave ordering, automated risk evaluation, `PlanRepository`, planning route handler.
+  - Phase 8: Visual Plan Review UI (`PlanReviewHeader`, `PlanRiskBanner`, `PlanDagViewer`, `PlanDecisionControls`), Next.js dynamic page (`/tasks/[id]/plan`), TaskStateMachine revision transitions, and `POST /api/tasks/[id]/plan/decision` route handler.
+- Vitest Test Suite: 32/32 test files passed, 173/173 tests green.
+- Next.js Production Build: 10 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.
 
 ---

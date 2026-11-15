@@ -28,7 +28,7 @@
 | **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 12** | GitHub Client, Auth & Webhooks | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 13** | Remote Push Approval Gate & Branchless Guard | **Complete** | 2026-11-15 |
-| **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | Pending | Phase 13 Verification |
+| **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | **Complete** | 2026-11-15 |
 | **Milestone 5** | Coding Execution Sandbox | Pending | Milestone 4 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
 | **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |
@@ -40,6 +40,27 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 13 (Phase 14 Execution: Repository Synchronization Monitor & Dual-Channel Status)
+- **Trigger:** `/gsd-execute-phase 14` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 14.1):
+    - Added `GitSyncState`, `GitSyncStatus`, and `SyncMonitorOptions` to `src/lib/github/types.ts`.
+    - Implemented `RepoSyncMonitor` (`src/lib/github/sync-monitor.ts`) computing ahead/behind divergence, branch lock verification, and working tree cleanliness with in-memory caching.
+    - Implemented App Router route `src/app/api/git/sync/route.ts` handling `GET` (cached/live status) and `POST` (force refresh).
+    - Authored unit test suites `tests/unit/github/sync-monitor.test.ts` (8 tests green) and `tests/unit/api/git-sync-route.test.ts` (3 tests green).
+  - Implemented Wave 2 (Plan 14.2):
+    - Implemented Web Dashboard widget `GitSyncStatusCard` (`src/components/dashboard/git-sync-status.tsx`) presenting branch lock state, ahead/behind metrics, and refresh action.
+    - Integrated `GitSyncStatusCard` into Dashboard Overview (`src/app/page.tsx`).
+    - Enriched Telegram slash commands (`src/lib/telegram/commands.ts`): `/status` reports Git sync status, branch lock indicator, and ahead commit count; `/projects` displays connected repository branch lock and sync metrics.
+    - Authored unit test suites `tests/unit/components/git-sync-status.test.tsx` (6 tests green) and updated `tests/unit/telegram/commands.test.ts` (16 tests green).
+  - **Empirical Verification:**
+    - `pnpm test`: 50/50 test files passed, 305/305 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors and 0 warnings across 13 routes.
+  - **Landed Commits:**
+    - `b16589e`: `feat(github): implement repository sync monitor and sync api route`
+    - `eab1ecd`: `feat(github): implement git sync widget, dashboard integration, and telegram sync reporting`
+  - **Milestone Completion:** **Milestone 4 (v4.0 - GitHub Integration & Branchless Discipline) 100% Complete!**
 
 ### 2026-11-15 — Work Session 12 (Phase 13 Execution: Remote Git Push Approval Gate & Branchless Safety Guard)
 - **Trigger:** `/gsd-execute-phase 13` executed by owner.

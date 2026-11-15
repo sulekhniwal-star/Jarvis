@@ -24,7 +24,7 @@
 | **Milestone 2 / Phase 7** | Execution Planning Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | **Complete** | 2026-11-15 |
-| **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | In Progress (Planned) | Milestone 3 |
+| **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | Pending | Phase 10 Verification |
 | **Milestone 4** | GitHub Integration & Branchless Discipline | Pending | Milestone 3 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
@@ -37,6 +37,26 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 9 (Phase 10 Execution: Telegram Remote Task Intake & Status Reporting)
+- **Trigger:** `/gsd-execute-phase 10` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 10.1):
+    - Added `updateMetadata` method to `ConversationRepository`.
+    - Implemented `TelegramIntakeService` (`src/lib/telegram/intake.ts`) orchestrating `SpecifierAgent`, `TaskRepository`, `SpecificationRepository`, `ConversationRepository`, and `ProjectRepository`.
+    - Implemented project auto-resolution, task creation, ambiguity evaluation, and MarkdownV2 Socratic prompt formatting.
+    - Authored unit test suite `tests/unit/telegram/intake.test.ts` (5 tests green).
+  - Implemented Wave 2 (Plan 10.2):
+    - Implemented conversational clarification loop engine (`getActiveClarificationSession`, `handleClarificationAnswer`, `cancelClarification`).
+    - Added `/cancel` command to `src/lib/telegram/commands.ts`.
+    - Wired task intake and clarification routing into `src/app/api/telegram/webhook/route.ts` and `scripts/telegram-polling.ts`.
+    - Authored unit test suites `tests/unit/telegram/clarification.test.ts` (4 tests green), `tests/unit/api/telegram-webhook-route.test.ts` (6 tests green), and updated `commands.test.ts`.
+  - **Empirical Verification:**
+    - `pnpm test --run`: 39 test files passed, 226 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors across 11 routes.
+  - **Landed Commits:**
+    - `1ce55f2`: `feat(phase-10): implement Telegram task intake service and specifier agent integration`
+    - `8b4f294`: `feat(phase-10): implement conversational clarification loop, session cancel, and webhook integration`
 
 ### 2026-11-15 — Work Session 8 (Phase 9 Execution: Telegram Core Client & Security Guard)
 - **Trigger:** `/gsd-execute-phase 9` executed by owner.

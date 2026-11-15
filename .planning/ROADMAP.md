@@ -1,13 +1,13 @@
 ---
 milestone: "v3.0 - Telegram Gateway"
 version: "3.0.0"
-updated: 2026-11-15T22:10:00+05:30
+updated: 2026-11-15T22:45:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 10 - Telegram Remote Task Intake & Status Reporting  
-> **Status:** Ready for Planning (`/gsd-plan-phase 10`)
+> **Current Phase:** 11 - Telegram Interactive Approval Cards & Decision Webhook  
+> **Status:** Ready for Planning (`/gsd-plan-phase 11`)
 
 ## Must-Haves (Milestone 3 Baseline)
 
@@ -15,7 +15,7 @@ updated: 2026-11-15T22:10:00+05:30
 - [x] Single-owner security guard verifying update sender numeric ID matches `OWNER_TELEGRAM_ID`.
 - [x] Dual-mode update pipeline: Next.js App Router webhook route (`/api/telegram/webhook`) and dev polling script.
 - [x] Essential command router responding to `/start`, `/status`, `/budget`, and `/projects`.
-- [ ] Remote task intake from free-text messages routing into `SpecifierAgent` and bidirectional clarification loop.
+- [x] Remote task intake from free-text messages routing into `SpecifierAgent` and bidirectional clarification loop.
 - [ ] Rich interactive approval cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and in-place message updates.
 
 ## Must-Haves (Milestone 1 Baseline)
@@ -143,14 +143,14 @@ updated: 2026-11-15T22:10:00+05:30
 ---
 
 ### Phase 10: Telegram Remote Task Intake & Status Reporting
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Ingest free-text prompts from Telegram, feed into Specifier Agent, deliver Socratic clarification questions, capture owner replies, and provide real-time status reporting.  
 **Depends on:** Phase 9  
 **Requirements:** REQ-TG-04  
 
 **Plans:**
-- [ ] Plan 10.1: Free-text task intake handler connecting Telegram messages to Specifier Agent and database persistence.
-- [ ] Plan 10.2: Interactive clarification loop over Telegram and comprehensive status reporting (`/status`, `/budget`).
+- [x] Plan 10.1: Free-text task intake handler connecting Telegram messages to Specifier Agent and database persistence.
+- [x] Plan 10.2: Interactive clarification loop over Telegram and comprehensive status reporting (`/status`, `/budget`, `/cancel`).
 
 ---
 
@@ -191,7 +191,7 @@ updated: 2026-11-15T22:10:00+05:30
 | 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
 | 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
 | 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
-| 10 | Telegram Remote Task Intake & Status | ⏳ | 0/2 | — |
+| 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
 | 11 | Telegram Approval Cards & Decision Webhook | ⏳ | 0/2 | — |
 
 ---

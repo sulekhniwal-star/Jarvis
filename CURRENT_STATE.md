@@ -2,15 +2,15 @@
 
 **Status Date:** 2026-11-15  
 **Current Milestone:** Milestone 3 (v3.0) — Telegram Gateway (Active)  
-**Active Phase:** Phase 10 — Telegram Remote Task Intake & Status Reporting (Ready for Planning)  
+**Active Phase:** Phase 11 — Telegram Interactive Approval Cards & Decision Webhook (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `cfa3ea7` (`feat(phase-9): implement Telegram command router, App Router webhook endpoint, and dev polling runner`)  
+**Latest Local Commit:** `8b4f294` (`feat(phase-10): implement conversational clarification loop, session cancel, and webhook integration`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phase 9 fully implemented and empirically verified.
-- Telegram Gateway foundation: `TelegramClient`, MarkdownV2 formatter, single-owner security guard (`OWNER_TELEGRAM_ID`), command router (`/start`, `/status`, `/budget`, `/projects`), App Router Webhook route (`/api/telegram/webhook`), and dev polling runner (`scripts/telegram-polling.ts`).
-- Vitest Test Suite: 37/37 test files passed, 215/215 tests green.
+- Phase 10 fully implemented and empirically verified.
+- Telegram Gateway task intake & clarification: `TelegramIntakeService`, `SpecifierAgent` integration, automatic workspace project resolution, MarkdownV2 clarification prompts, multi-round answers handler, `/cancel` escape hatch, App Router Webhook route integration, and dev polling runner.
+- Vitest Test Suite: 39/39 test files passed, 226/226 tests green.
 - Next.js Production Build: 11 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.
 

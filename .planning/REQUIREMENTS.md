@@ -15,8 +15,8 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, and `
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-ENV-01** | Repository tooling initialization with Next.js 15+, TypeScript, Tailwind CSS, ESLint, Prettier, and Vitest test harness. | PRD §8.1 | 1 | Pending |
-| **REQ-ENV-02** | Git safety guard utility enforcing the mandatory `main`-only policy and blocking creation or checkout of other branches. | Prompt §1, PRD §7.7 | 1 | Pending |
+| **REQ-ENV-01** | Repository tooling initialization with Next.js 15+, TypeScript, Tailwind CSS, ESLint, Prettier, and Vitest test harness. | PRD §8.1 | 1 | Complete |
+| **REQ-ENV-02** | Git safety guard utility enforcing the mandatory `main`-only policy and blocking creation or checkout of other branches. | Prompt §1, PRD §7.7 | 1 | Complete |
 | **REQ-DB-01** | Local Supabase Docker development environment with reproducible migration scripts. | PRD §8.1, §12 (M1) | 2 | Pending |
 | **REQ-DB-02** | Core database schema defining `profiles`, `projects`, `milestones`, `tasks`, `task_dependencies`, `conversations`, `messages`, `approvals`, `agent_runs`, and `audit_events`. | PRD §8.4 | 2 | Pending |
 | **REQ-DB-03** | Row-Level Security (RLS) policies ensuring all records are strictly owner-scoped via `auth.uid()`. | PRD §7.1, §9.1 | 2 | Pending |
@@ -41,8 +41,8 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, and `
 
 | ID | Requirement | Category | Phase | Status |
 |---|---|---|---|---|
-| **NFR-SEC-01** | **Main-Only Branch Lock:** No tool, agent, or script may create or check out a non-`main` branch or perform force-pushes. | Security / Governance | All | Pending |
-| **NFR-SEC-02** | **Zero Secret Leakage:** No API keys, service-role tokens, or private credentials committed or surfaced to browser bundles. | Security | All | Pending |
+| **NFR-SEC-01** | **Main-Only Branch Lock:** No tool, agent, or script may create or check out a non-`main` branch or perform force-pushes. | Security / Governance | All | Complete |
+| **NFR-SEC-02** | **Zero Secret Leakage:** No API keys, service-role tokens, or private credentials committed or surfaced to browser bundles. | Security | All | Complete |
 | **NFR-SEC-03** | **Row-Level Security Coverage:** 100% of owner-specific tables have active RLS policies tested against cross-user reads/writes. | Security | 2 | Pending |
 | **NFR-REL-01** | **Durable Persistence:** All agent runs, approvals, and tasks survive application/worker restarts and refresh without data loss. | Reliability | 2, 3 | Pending |
 | **NFR-COST-01** | **Strict Cost Ceiling:** Zero paid inference or external cloud expenditure without explicit owner approval. | Cost Control | 4 | Pending |

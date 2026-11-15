@@ -6,13 +6,13 @@ updated: 2026-11-15T17:35:00+05:30
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 1 - Environment & Project Foundation
-> **Status:** Planning
+> **Current Phase:** 2 - Database & Authentication Infrastructure
+> **Status:** Ready for Planning
 
 ## Must-Haves (Milestone 1 Baseline)
 
-- [ ] Complete Next.js 15+ App Router baseline configured with TypeScript, Tailwind CSS, and test harness.
-- [ ] Automated Git branch safety guard enforcing `main`-only commits and rejecting non-main branch actions.
+- [x] Complete Next.js 15+ App Router baseline configured with TypeScript, Tailwind CSS, and test harness.
+- [x] Automated Git branch safety guard enforcing `main`-only commits and rejecting non-main branch actions.
 - [ ] Reproducible Supabase Docker environment with automated migrations and 100% RLS coverage.
 - [ ] Data access layer for Projects, Tasks, Milestones, Conversations, Approvals, and Durable Agent Runs.
 - [ ] OpenRouter AI Gateway adapter with free-model fallback and strict paid-inference approval gating.
@@ -23,13 +23,13 @@ updated: 2026-11-15T17:35:00+05:30
 ## Phases for Milestone 1: Core Platform Foundation & Architecture
 
 ### Phase 1: Environment & Project Foundation
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Establish reproducible codebase scaffold, build configuration, test framework, and Git safety invariants.  
 **Requirements:** REQ-ENV-01, REQ-ENV-02, NFR-SEC-01, NFR-SEC-02  
 
 **Plans:**
-- [ ] Plan 1.1: Next.js 15+ App Router initialization, TypeScript config, Tailwind CSS tokens, and Vitest test suite.
-- [ ] Plan 1.2: Git safety guard utility enforcing strict `main`-only policy and commit diff inspection tools.
+- [x] Plan 1.1: Next.js 15+ App Router initialization, TypeScript config, Tailwind CSS tokens, and Vitest test suite.
+- [x] Plan 1.2: Git safety guard utility enforcing strict `main`-only policy and commit diff inspection tools.
 
 ---
 
@@ -100,7 +100,7 @@ updated: 2026-11-15T17:35:00+05:30
 
 | Phase | Description | Status | Plans | Complete |
 |---|---|---|---|---|
-| 1 | Environment & Project Foundation | ⬜ | 0/2 | — |
+| 1 | Environment & Project Foundation | ✅ | 2/2 | 100% |
 | 2 | Database & Auth Infrastructure | ⬜ | 0/2 | — |
 | 3 | Core Domain Models & Repositories | ⬜ | 0/2 | — |
 | 4 | Provider Adapters & AI Gateway | ⬜ | 0/2 | — |
@@ -112,7 +112,7 @@ updated: 2026-11-15T17:35:00+05:30
 
 | Phase | Started | Completed | Duration |
 |---|---|---|---|
-| Phase 1 | — | — | — |
+| Phase 1 | 2026-11-15 | 2026-11-15 | ~45m |
 | Phase 2 | — | — | — |
 | Phase 3 | — | — | — |
 | Phase 4 | — | — | — |

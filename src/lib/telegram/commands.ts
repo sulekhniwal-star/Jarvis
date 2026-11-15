@@ -24,6 +24,14 @@ export interface CommandDependencies {
   intakeService?: {
     cancelClarification: (userId: string) => Promise<string>;
   };
+  decisionService?: {
+    handleCliDecision: (
+      command: "approve" | "reject",
+      targetId: string,
+      userId: string,
+      reason?: string
+    ) => Promise<string>;
+  };
   userId?: string;
 }
 
@@ -49,10 +57,43 @@ export async function handleTelegramCommand(
         "• /status — Active tasks and execution state",
         "• /budget — Daily and monthly INR expenditure",
         "• /projects — Active projects and repositories",
+        "• /approve <id> — Approve pending plan or action",
+        "• /reject <id> — Reject pending plan or action",
         "• /cancel — Cancel active task clarification session",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
+    }
+
+    case "/approve": {
+      const parts = trimmed.split(/\s+/);
+      const targetId = parts[1];
+      if (!targetId) {
+        return `⚠️ ${bold("Usage:")} ${code("/approve <id>")}\n\nPlease provide the UUID of the plan or approval request\\.`;
+      }
+      const userId = deps?.userId ?? "00000000-0000-0000-0000-000000000000";
+      if (deps?.decisionService) {
+        return deps.decisionService.handleCliDecision("approve", targetId, userId);
+      }
+      const { TelegramDecisionService } = await import("./decision");
+      const decisionService = new TelegramDecisionService();
+      return decisionService.handleCliDecision("approve", targetId, userId);
+    }
+
+    case "/reject": {
+      const parts = trimmed.split(/\s+/);
+      const targetId = parts[1];
+      if (!targetId) {
+        return `⚠️ ${bold("Usage:")} ${code("/reject <id> [reason]")}\n\nPlease provide the UUID of the plan or approval request\\.`;
+      }
+      const reason = parts.slice(2).join(" ").trim() || undefined;
+      const userId = deps?.userId ?? "00000000-0000-0000-0000-000000000000";
+      if (deps?.decisionService) {
+        return deps.decisionService.handleCliDecision("reject", targetId, userId, reason);
+      }
+      const { TelegramDecisionService } = await import("./decision");
+      const decisionService = new TelegramDecisionService();
+      return decisionService.handleCliDecision("reject", targetId, userId, reason);
     }
 
     case "/cancel": {

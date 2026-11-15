@@ -3,6 +3,7 @@ import { POST } from "@/app/api/telegram/webhook/route";
 import { NextRequest } from "next/server";
 import { TelegramClient } from "@/lib/telegram/client";
 import { TelegramIntakeService } from "@/lib/telegram/intake";
+import { TelegramDecisionService } from "@/lib/telegram/decision";
 
 vi.mock("@/lib/telegram/client", () => {
   return {
@@ -19,6 +20,14 @@ vi.mock("@/lib/telegram/intake", () => {
       handleNewTaskPrompt: vi.fn().mockResolvedValue("Specification Formulated: Health check"),
       handleClarificationAnswer: vi.fn().mockResolvedValue("Specification Formulated: Answer processed"),
       cancelClarification: vi.fn().mockResolvedValue("Clarification Cancelled"),
+    })),
+  };
+});
+
+vi.mock("@/lib/telegram/decision", () => {
+  return {
+    TelegramDecisionService: vi.fn().mockImplementation(() => ({
+      handleCallbackQuery: vi.fn().mockResolvedValue({ success: true, message: "Decided" }),
     })),
   };
 });
@@ -185,6 +194,35 @@ describe("POST /api/telegram/webhook", () => {
     expect(clientInstance.sendMessage).toHaveBeenCalledWith(
       987654321,
       "Specification Formulated: Answer processed"
+    );
+  });
+
+  it("processes callback query update from authorized owner and delegates to decision service", async () => {
+    const callbackUpdate = {
+      update_id: 5,
+      callback_query: {
+        id: "cb-test-1",
+        from: { id: 987654321, is_bot: false, first_name: "Owner" },
+        message: {
+          message_id: 50,
+          chat: { id: 987654321, type: "private" },
+          date: 1700000000,
+        },
+        data: "appr:plan:11111111-2222-3333-4444-555555555555",
+      },
+    };
+
+    const req = createRequest(callbackUpdate, "test-secret-token");
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+
+    const decisionInstance = (TelegramDecisionService as any).mock.results[0]?.value;
+    expect(decisionInstance.handleCallbackQuery).toHaveBeenCalledWith(
+      callbackUpdate.callback_query,
+      "00000000-0000-0000-0000-000000000000"
     );
   });
 });

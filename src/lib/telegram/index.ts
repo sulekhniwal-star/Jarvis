@@ -5,3 +5,4 @@ export * from "./guard";
 export * from "./commands";
 export * from "./intake";
 export * from "./approvals";
+export * from "./decision";

@@ -6,6 +6,7 @@ import {
   validateUpdate,
   handleTelegramCommand,
   TelegramIntakeService,
+  TelegramDecisionService,
 } from "@/lib/telegram";
 
 export async function POST(req: NextRequest) {
@@ -43,7 +44,14 @@ export async function POST(req: NextRequest) {
     const client = new TelegramClient();
     const userId = process.env.OWNER_USER_ID ?? "00000000-0000-0000-0000-000000000000";
 
-    // 4. Handle incoming message text
+    // 4. Handle incoming callback query (inline button clicks on approval cards)
+    if (update.callback_query) {
+      const decisionService = new TelegramDecisionService({ client });
+      await decisionService.handleCallbackQuery(update.callback_query, userId);
+      return NextResponse.json({ ok: true });
+    }
+
+    // 5. Handle incoming message text
     if (update.message?.text) {
       const text = update.message.text.trim();
       const chatId = update.message.chat.id;

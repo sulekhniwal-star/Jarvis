@@ -5,6 +5,7 @@ import {
   validateUpdate,
   handleTelegramCommand,
   TelegramIntakeService,
+  TelegramDecisionService,
 } from "../src/lib/telegram";
 
 /**
@@ -86,6 +87,14 @@ async function main() {
             console.warn(
               `⚠️ Dropped update from unauthorized sender: ${validation.senderId} (${validation.reason})`
             );
+            continue;
+          }
+
+          if (update.callback_query) {
+            console.log(`🔘 Received callback query: ${update.callback_query.data}`);
+            const decisionService = new TelegramDecisionService({ client });
+            await decisionService.handleCallbackQuery(update.callback_query, ownerId);
+            console.log("📤 Processed approval callback query.");
             continue;
           }
 

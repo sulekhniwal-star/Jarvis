@@ -150,7 +150,7 @@ export function formatDecisionReceipt(
     lines.push("");
     lines.push(
       `🚀 ${bold("Next:")} ${escapeMarkdownV2(
-        "Task transitioned to queued for autonomous execution."
+        "Task transitioned to running for autonomous execution."
       )}`
     );
   }

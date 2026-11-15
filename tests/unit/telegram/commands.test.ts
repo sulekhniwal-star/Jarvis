@@ -125,6 +125,60 @@ describe("Telegram Command Router", () => {
     expect(mockIntakeService.cancelClarification).toHaveBeenCalledWith("test-user-id");
   });
 
+  describe("/approve and /reject commands", () => {
+    it("handles /approve command with target ID", async () => {
+      const mockDecisionService = {
+        handleCliDecision: vi.fn().mockResolvedValue("PLAN APPROVED"),
+      };
+
+      const response = await handleTelegramCommand("/approve 11111111-2222-3333-4444-555555555555", {
+        decisionService: mockDecisionService,
+        userId: "test-user-id",
+      });
+
+      expect(response).toBe("PLAN APPROVED");
+      expect(mockDecisionService.handleCliDecision).toHaveBeenCalledWith(
+        "approve",
+        "11111111-2222-3333-4444-555555555555",
+        "test-user-id"
+      );
+    });
+
+    it("handles /approve command without target ID", async () => {
+      const response = await handleTelegramCommand("/approve");
+      expect(response).toContain("Usage:");
+      expect(response).toContain("/approve <id>");
+    });
+
+    it("handles /reject command with target ID and optional reason", async () => {
+      const mockDecisionService = {
+        handleCliDecision: vi.fn().mockResolvedValue("ACTION REJECTED"),
+      };
+
+      const response = await handleTelegramCommand(
+        "/reject aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee Too dangerous to run",
+        {
+          decisionService: mockDecisionService,
+          userId: "test-user-id",
+        }
+      );
+
+      expect(response).toBe("ACTION REJECTED");
+      expect(mockDecisionService.handleCliDecision).toHaveBeenCalledWith(
+        "reject",
+        "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "test-user-id",
+        "Too dangerous to run"
+      );
+    });
+
+    it("handles /reject command without target ID", async () => {
+      const response = await handleTelegramCommand("/reject");
+      expect(response).toContain("Usage:");
+      expect(response).toContain("/reject <id> [reason]");
+    });
+  });
+
   it("handles unknown commands with fallback guidance", async () => {
     const response = await handleTelegramCommand("/foo_bar");
     expect(response).toContain("Unknown Command: /foo\\_bar");

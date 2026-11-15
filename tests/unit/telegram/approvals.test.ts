@@ -131,7 +131,7 @@ describe("Telegram Approval Cards & Formatting", () => {
       expect(receipt).toContain("PLAN APPROVED");
       expect(receipt).toContain("Implement OAuth Login");
       expect(receipt).toContain("Ready to run");
-      expect(receipt).toContain("Task transitioned to queued for autonomous execution");
+      expect(receipt).toContain("Task transitioned to running for autonomous execution");
     });
 
     it("formats rejected action decision receipt", () => {
@@ -147,7 +147,7 @@ describe("Telegram Approval Cards & Formatting", () => {
       expect(receipt).toContain("ACTION REJECTED");
       expect(receipt).toContain("git\\_remote\\_push");
       expect(receipt).toContain("Risk too high");
-      expect(receipt).not.toContain("Task transitioned to queued");
+      expect(receipt).not.toContain("Task transitioned to running");
     });
   });
 

@@ -58,14 +58,14 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 4: Provider Adapters & AI Gateway
-**Status:** ⬜ Not Started  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Implement modular AI Gateway with OpenRouter client, free-model failover, paid-inference approval gate, and token usage ledger.  
 **Depends on:** Phase 3  
 **Requirements:** REQ-AI-01, REQ-AI-02, REQ-AI-03, REQ-AI-04, NFR-COST-01  
 
 **Plans:**
-- [ ] Plan 4.1: OpenRouter API adapter supporting streaming, structured JSON output, and model routing.
-- [ ] Plan 4.2: Free-model prioritization policy, paid-inference approval verification gate, and usage ledger service.
+- [x] Plan 4.1: OpenRouter API adapter supporting streaming, structured JSON output, and model routing.
+- [x] Plan 4.2: Free-model prioritization policy, paid-inference approval verification gate, and usage ledger service.
 
 ---
 

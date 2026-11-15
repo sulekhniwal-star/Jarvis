@@ -1,17 +1,18 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-15  
-**Current Milestone:** Milestone 1 / Phase 3 Complete; Phase 4 Ready  
+**Current Milestone:** Milestone 1 / Phase 4 Complete; Phase 5 Ready  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `79d65b5` (`feat(phase-3): implement domain state machines, approval repository, and agent run tracking`)  
+**Latest Local Commit:** `c1a4baa` (`feat(phase-4): implement ai gateway with free failover, approval gate, and budget ledger`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phase 1, Phase 2, and Phase 3 fully implemented and empirically verified.
-- Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (83/83 tests passing across 15 suites), and Git Safety Guard active.
+- Phase 1, Phase 2, Phase 3, and Phase 4 fully implemented and empirically verified.
+- Next.js 15+ App Router, React 19, Tailwind CSS theme tokens, Vitest (104/104 tests passing across 19 suites), and Git Safety Guard active.
 - Supabase relational schema migrations (14 core tables + pgvector HNSW indexing, conversations/messages), 100% RLS policies, SSR client factories, and Auth route handlers active.
 - Domain models and repositories: `ProjectRepository`, `MilestoneRepository`, `TaskRepository`, `ConversationRepository`, `ApprovalRepository`, `AgentRunRepository`.
 - Domain state machines: `TaskStateMachine`, `ApprovalStateMachine`, `AgentRunStateMachine`.
+- AI Gateway & Adapters: `OpenRouterAdapter`, `MockAIAdapter`, `AIGateway` (free failover, paid approval barrier), `UsageLedgerService`, `BudgetService` (daily ₹25 cap, monthly ₹750 ceiling).
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.
 
 ---

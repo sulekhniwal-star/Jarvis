@@ -6,15 +6,15 @@ updated: 2026-11-15T22:10:00+05:30
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 9 - Telegram Core Client & Security Guard  
-> **Status:** Ready for Planning (`/gsd-plan-phase 9`)
+> **Current Phase:** 10 - Telegram Remote Task Intake & Status Reporting  
+> **Status:** Ready for Planning (`/gsd-plan-phase 10`)
 
 ## Must-Haves (Milestone 3 Baseline)
 
-- [ ] Type-safe Telegram Bot API client wrapper (`TelegramClient`) with MarkdownV2 escaping and inline keyboard markup.
-- [ ] Single-owner security guard verifying update sender numeric ID matches `OWNER_TELEGRAM_ID`.
-- [ ] Dual-mode update pipeline: Next.js App Router webhook route (`/api/telegram/webhook`) and dev polling script.
-- [ ] Essential command router responding to `/start`, `/status`, `/budget`, and `/projects`.
+- [x] Type-safe Telegram Bot API client wrapper (`TelegramClient`) with MarkdownV2 escaping and inline keyboard markup.
+- [x] Single-owner security guard verifying update sender numeric ID matches `OWNER_TELEGRAM_ID`.
+- [x] Dual-mode update pipeline: Next.js App Router webhook route (`/api/telegram/webhook`) and dev polling script.
+- [x] Essential command router responding to `/start`, `/status`, `/budget`, and `/projects`.
 - [ ] Remote task intake from free-text messages routing into `SpecifierAgent` and bidirectional clarification loop.
 - [ ] Rich interactive approval cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`) and in-place message updates.
 
@@ -131,14 +131,14 @@ updated: 2026-11-15T22:10:00+05:30
 ## Milestone 3: Telegram Gateway
 
 ### Phase 9: Telegram Core Client & Security Guard
-**Status:** ⏳ In Progress (Ready for Planning)  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Implement type-safe Telegram Bot API client, single-owner allow-list security guard, dual-mode update pipeline (webhook + dev polling), and core command router.  
 **Depends on:** Phase 8  
 **Requirements:** REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04  
 
 **Plans:**
-- [ ] Plan 9.1: Type-safe Telegram Bot client wrapper, MarkdownV2 escaping utilities, inline keyboard generator, and unit tests.
-- [ ] Plan 9.2: Single-owner security guard, webhook secret authenticator, App Router route handler (`/api/telegram/webhook`), dev long-polling runner, and basic command routing (`/start`, `/status`, `/budget`, `/projects`).
+- [x] Plan 9.1: Type-safe Telegram Bot client wrapper, MarkdownV2 escaping utilities, inline keyboard generator, and unit tests.
+- [x] Plan 9.2: Single-owner security guard, webhook secret authenticator, App Router route handler (`/api/telegram/webhook`), dev long-polling runner, and basic command routing (`/start`, `/status`, `/budget`, `/projects`).
 
 ---
 
@@ -190,7 +190,7 @@ updated: 2026-11-15T22:10:00+05:30
 | 6 | Task Intake & Specification Engine | ✅ | 2/2 | 100% |
 | 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
 | 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
-| 9 | Telegram Core Client & Security Guard | ⏳ | 0/2 | — |
+| 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
 | 10 | Telegram Remote Task Intake & Status | ⏳ | 0/2 | — |
 | 11 | Telegram Approval Cards & Decision Webhook | ⏳ | 0/2 | — |
 

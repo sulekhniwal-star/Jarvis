@@ -23,8 +23,8 @@
 | **Milestone 2 / Phase 6** | Task Intake & Specification Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 7** | Execution Planning Engine | **Complete** | 2026-11-15 |
 | **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | **Complete** | 2026-11-15 |
-| **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | In Progress (Planned) | Milestone 3 |
-| **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | Pending | Phase 9 Verification |
+| **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | **Complete** | 2026-11-15 |
+| **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | In Progress (Planned) | Milestone 3 |
 | **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | Pending | Phase 10 Verification |
 | **Milestone 4** | GitHub Integration & Branchless Discipline | Pending | Milestone 3 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
@@ -37,6 +37,27 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 8 (Phase 9 Execution: Telegram Core Client & Security Guard)
+- **Trigger:** `/gsd-execute-phase 9` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 9.1):
+    - Authored Telegram type definitions (`src/lib/telegram/types.ts`).
+    - Implemented MarkdownV2 character escaping and typography helpers (`src/lib/telegram/format.ts`).
+    - Implemented native fetch-based `TelegramClient` with full endpoint coverage (`src/lib/telegram/client.ts`).
+    - Implemented single-owner security guard verifying `OWNER_TELEGRAM_ID` and secret token (`src/lib/telegram/guard.ts`).
+    - Authored unit test suites `tests/unit/telegram/format.test.ts`, `client.test.ts`, and `guard.test.ts` (28 tests green).
+  - Implemented Wave 2 (Plan 9.2):
+    - Implemented command router handling `/start`, `/status`, `/budget`, and `/projects` (`src/lib/telegram/commands.ts`).
+    - Implemented App Router route handler `POST /api/telegram/webhook` (`src/app/api/telegram/webhook/route.ts`).
+    - Implemented dev long-polling runner script `scripts/telegram-polling.ts` (`pnpm run telegram:dev`).
+    - Authored unit test suites `tests/unit/telegram/commands.test.ts` and `tests/unit/api/telegram-webhook-route.test.ts` (14 tests green).
+  - **Empirical Verification:**
+    - `pnpm test --run`: 37 test files passed, 215 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 11 static and dynamic routes.
+  - **Landed Commits:**
+    - `5923ad6`: `feat(phase-9): implement Telegram Bot API client, MarkdownV2 formatting, and security guard`
+    - `cfa3ea7`: `feat(phase-9): implement Telegram command router, App Router webhook endpoint, and dev polling runner`
 
 ### 2026-11-15 — Work Session 7 (Phase 8 Execution & Milestone 2 Completion)
 - **Trigger:** `/gsd-execute-phase 8` executed by owner.

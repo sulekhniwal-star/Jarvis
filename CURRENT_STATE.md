@@ -2,18 +2,16 @@
 
 **Status Date:** 2026-11-15  
 **Current Milestone:** Milestone 3 (v3.0) — Telegram Gateway (Active)  
-**Active Phase:** Phase 9 — Telegram Core Client & Security Guard (Ready for Planning)  
+**Active Phase:** Phase 10 — Telegram Remote Task Intake & Status Reporting (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `d5e2915` (`docs(phase-8): document plan review ui and approval gate completion and milestone 2 summary`)  
+**Latest Local Commit:** `cfa3ea7` (`feat(phase-9): implement Telegram command router, App Router webhook endpoint, and dev polling runner`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Milestone 1 (Phases 1-5) and Milestone 2 (Phases 6-8) fully implemented and empirically verified (173/173 tests passing).
-- Milestone 3 (Telegram Gateway) initialized: `PROJECT.md`, `ROADMAP.md`, `REQUIREMENTS.md` updated with Phases 9, 10, and 11.
-- Telegram Domain Research: `.planning/research/TELEGRAM.md` authored covering client architecture, MarkdownV2 formatting, single-owner allow-list security, and approval sequence.
-- Dual-mode update pipeline selected: App Router webhook (`/api/telegram/webhook`) for production + local long-polling runner for development.
-- Vitest Test Suite: 32/32 test files passed, 173/173 tests green.
-- Next.js Production Build: 10 static and dynamic routes compiled with 0 errors and 0 warnings.
+- Phase 9 fully implemented and empirically verified.
+- Telegram Gateway foundation: `TelegramClient`, MarkdownV2 formatter, single-owner security guard (`OWNER_TELEGRAM_ID`), command router (`/start`, `/status`, `/budget`, `/projects`), App Router Webhook route (`/api/telegram/webhook`), and dev polling runner (`scripts/telegram-polling.ts`).
+- Vitest Test Suite: 37/37 test files passed, 215/215 tests green.
+- Next.js Production Build: 11 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.
 
 ---

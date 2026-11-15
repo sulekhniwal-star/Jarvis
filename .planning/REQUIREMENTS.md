@@ -15,9 +15,9 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-TG-01** | **Telegram Bot Client:** Type-safe Telegram Bot API client supporting message delivery, MarkdownV2 escaping, inline keyboard markup, and error handling. | PRD §7.13, docs/TELEGRAM | 9 | Pending |
-| **REQ-TG-02** | **Owner Allow-List & Webhook Security:** Security guard verifying sender numeric ID matches `OWNER_TELEGRAM_ID` and checking `X-Telegram-Bot-Api-Secret-Token` header. | PRD §7.13, Prompt §2 | 9 | Pending |
-| **REQ-TG-03** | **Dual-Mode Update Ingestion & Command Routing:** Next.js App Router route handler (`/api/telegram/webhook`) and local polling script routing `/start`, `/status`, `/budget`, and `/projects`. | PRD §7.13 | 9 | Pending |
+| **REQ-TG-01** | **Telegram Bot Client:** Type-safe Telegram Bot API client supporting message delivery, MarkdownV2 escaping, inline keyboard markup, and error handling. | PRD §7.13, docs/TELEGRAM | 9 | Complete |
+| **REQ-TG-02** | **Owner Allow-List & Webhook Security:** Security guard verifying sender numeric ID matches `OWNER_TELEGRAM_ID` and checking `X-Telegram-Bot-Api-Secret-Token` header. | PRD §7.13, Prompt §2 | 9 | Complete |
+| **REQ-TG-03** | **Dual-Mode Update Ingestion & Command Routing:** Next.js App Router route handler (`/api/telegram/webhook`) and local polling script routing `/start`, `/status`, `/budget`, and `/projects`. | PRD §7.13 | 9 | Complete |
 | **REQ-TG-04** | **Remote Task Intake & Clarification Loop:** Free-text task submission forwarding to `SpecifierAgent`, with bidirectional delivery of Socratic questions and owner answers. | PRD §7.5, §7.13 | 10 | Pending |
 | **REQ-TG-05** | **Interactive Approval Cards & Decision Webhook:** Rich MarkdownV2 notification cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handling, durable approval updates, and in-place card editing. | PRD §7.9, §7.13 | 11 | Pending |
 
@@ -70,7 +70,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | **NFR-SEC-01** | **Main-Only Branch Lock:** No tool, agent, or script may create or check out a non-`main` branch or perform force-pushes. | Security / Governance | All | Complete |
 | **NFR-SEC-02** | **Zero Secret Leakage:** No API keys, service-role tokens, or private credentials committed or surfaced to browser bundles. | Security | All | Complete |
 | **NFR-SEC-03** | **Row-Level Security Coverage:** 100% of owner-specific tables have active RLS policies tested against cross-user reads/writes. | Security | 2 | Complete |
-| **NFR-SEC-04** | **Owner Telegram Isolation:** 100% of unauthorized Telegram updates (mismatched `from.id`) rejected with zero data leakage or execution. | Security | 9 | Pending |
+| **NFR-SEC-04** | **Owner Telegram Isolation:** 100% of unauthorized Telegram updates (mismatched `from.id`) rejected with zero data leakage or execution. | Security | 9 | Complete |
 | **NFR-REL-01** | **Durable Persistence:** All agent runs, approvals, and tasks survive application/worker restarts and refresh without data loss. | Reliability | 2, 3 | Complete |
 | **NFR-REL-02** | **Deterministic Schema Validation:** Structured JSON payloads for specifications and plans validated against strict schemas. | Reliability | 6, 7 | Complete |
 | **NFR-COST-01** | **Strict Cost Ceiling:** Zero paid inference or external cloud expenditure without explicit owner approval. | Cost Control | 4 | Complete |
@@ -102,7 +102,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02 | Phase 6 | Plan 6.1, Plan 6.2 | Specifier Agent unit tests, ambiguity scoring tests | Complete |
 | REQ-PLAN-01, REQ-PLAN-02, REQ-PLAN-03, NFR-REL-02 | Phase 7 | Plan 7.1, Plan 7.2 | Planner Agent unit tests, DAG dependency ordering tests | Complete |
 | REQ-PLAN-04 | Phase 8 | Plan 8.1, Plan 8.2 | Plan Review UI rendering tests, approval decision flow | Complete |
-| REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04 | Phase 9 | Plan 9.1, Plan 9.2 | TelegramClient tests, security guard tests, webhook route tests | Pending |
+| REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04 | Phase 9 | Plan 9.1, Plan 9.2 | TelegramClient tests, security guard tests, webhook route tests | Complete |
 | REQ-TG-04 | Phase 10 | Plan 10.1, Plan 10.2 | Free-text intake tests, clarification flow tests | Pending |
 | REQ-TG-05 | Phase 11 | Plan 11.1, Plan 11.2 | Approval card rendering tests, callback decision handler tests | Pending |
 

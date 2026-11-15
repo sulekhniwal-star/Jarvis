@@ -8,23 +8,22 @@ updated: 2026-11-15T22:10:00+05:30
 
 **Milestone:** v3.0 - Telegram Gateway  
 **Phase:** 9 - Telegram Core Client & Security Guard  
-**Status:** In Progress (Milestone Initialized, Ready for Phase 9 Planning)  
-**Plan:** Ready for `/gsd-plan-phase 9`
+**Status:** Complete  
+**Plan:** Ready for Phase 10 Planning (`/gsd-plan-phase 10`)
 
 ## Last Action
 
-Initialized Milestone 3 (Telegram Gateway) via `/gsd-new-milestone`:
-- Updated `PROJECT.md` with Milestone 3 scope and deliverables.
-- Authored domain research in `.planning/research/TELEGRAM.md`.
-- Scoped requirements in `REQUIREMENTS.md` (`REQ-TG-01` to `REQ-TG-05`, `NFR-SEC-04`).
-- Updated `ROADMAP.md` establishing Phases 9, 10, and 11.
-- Updated `CURRENT_STATE.md` and `PROGRESS.md`.
+Executed Phase 9 (Telegram Core Client & Security Guard):
+- Plan 9.1: Types, MarkdownV2 escaping formatter, `TelegramClient` (fetch-based), single-owner security guard (`OWNER_TELEGRAM_ID`), and secret token authenticator.
+- Plan 9.2: Command router (`/start`, `/status`, `/budget`, `/projects`), App Router Webhook route (`POST /api/telegram/webhook`), and dev long-polling runner (`scripts/telegram-polling.ts`).
+- Empirical verification: 37/37 test files passed (215/215 tests green), Next.js production build succeeded with 0 errors.
+- Authored `09-SUMMARY.md` and updated roadmap and requirements.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 9` to research and plan Phase 9 (Telegram Core Client & Security Guard).
-2. Execute Phase 9 plans: `TelegramClient`, MarkdownV2 escaping, owner allow-list guard, webhook route handler, and dev polling runner.
-3. Validate with unit tests and Next.js build.
+1. Run `/gsd-plan-phase 10` to research and plan Phase 10 (Telegram Remote Task Intake & Status Reporting).
+2. Implement free-text message intake dispatcher linking Telegram messages into `SpecifierAgent`.
+3. Deliver interactive clarification loops over Telegram and full task progress updates.
 
 ## Active Decisions
 

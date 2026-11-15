@@ -26,7 +26,7 @@
 | **Milestone 3 / Phase 9** | Telegram Core Client & Security Guard | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 10** | Telegram Remote Task Intake & Status | **Complete** | 2026-11-15 |
 | **Milestone 3 / Phase 11** | Telegram Approval Cards & Decision Webhook | **Complete** | 2026-11-15 |
-| **Milestone 4 / Phase 12** | GitHub Client, Auth & Webhooks | In Progress (Planning) | Milestone 4 |
+| **Milestone 4 / Phase 12** | GitHub Client, Auth & Webhooks | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 13** | Remote Push Approval Gate & Branchless Guard | Pending | Phase 12 Verification |
 | **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | Pending | Phase 13 Verification |
 | **Milestone 5** | Coding Execution Sandbox | Pending | Milestone 4 Verification |
@@ -40,6 +40,24 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-15 — Work Session 11 (Phase 12 Execution: GitHub API Client, Authentication & Webhook Receiver)
+- **Trigger:** `/gsd-execute-phase 12` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 12.1):
+    - Authored GitHub domain models and custom error class (`src/lib/github/types.ts`).
+    - Implemented zero-dependency `GitHubClient` (`src/lib/github/client.ts`) supporting `getRepository`, `getBranch`, `getCommit`, `compareCommits`, and `listWorkflowRuns`.
+    - Authored unit test suite `tests/unit/github/client.test.ts` (7 tests green).
+  - Implemented Wave 2 (Plan 12.2):
+    - Implemented timing-safe HMAC SHA-256 signature verifier (`src/lib/github/webhook.ts`).
+    - Authored Next.js App Router webhook route (`src/app/api/github/webhook/route.ts`) routing `push`, `workflow_run`, and `ping` events while enforcing the branchless `main`-only rule.
+    - Authored unit test suites `tests/unit/github/webhook.test.ts` (6 tests green) and `tests/unit/api/github-webhook-route.test.ts` (7 tests green).
+  - **Empirical Verification:**
+    - `pnpm test --run`: 44 test files passed, 267 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors across 12 routes.
+  - **Landed Commits:**
+    - `852e601`: `feat(phase-12): implement type-safe GitHub API client and domain models`
+    - `3fa319b`: `feat(phase-12): implement GitHub webhook receiver with HMAC signature verification and event routing`
 
 ### 2026-11-15 — Work Session 10 (Phase 11 Execution: Telegram Interactive Approval Cards & Decision Webhook)
 - **Trigger:** `/gsd-execute-phase 11` executed by owner.

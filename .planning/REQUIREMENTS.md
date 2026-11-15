@@ -15,8 +15,8 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-GH-01** | **GitHub API Client:** Type-safe GitHub API client supporting repository status checks, commit SHA retrieval, tree diff inspection, and GitHub App / PAT authentication. | PRD §7.7, §7.11 | 12 | Pending |
-| **REQ-GH-02** | **GitHub Webhook Ingestion & HMAC Verification:** Secure App Router route handler (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and event routing. | PRD §7.7 | 12 | Pending |
+| **REQ-GH-01** | **GitHub API Client:** Type-safe GitHub API client supporting repository status checks, commit SHA retrieval, tree diff inspection, and GitHub App / PAT authentication. | PRD §7.7, §7.11 | 12 | Complete |
+| **REQ-GH-02** | **GitHub Webhook Ingestion & HMAC Verification:** Secure App Router route handler (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and event routing. | PRD §7.7 | 12 | Complete |
 | **REQ-GH-03** | **Remote Git Push Approval Gate & Branchless Safety Guard:** Automated gate verifying working trees are clean, tests are passing, and git operations target only `main`. Strictly blocks `git push origin main` until approved in `ApprovalRepository`. | Prompt §1, PRD §7.7, §7.9 | 13 | Pending |
 | **REQ-GH-04** | **Repository Synchronization Monitor:** Service tracking commit divergence between local `main` HEAD and remote `origin/main`, surfacing ahead/behind counts in Web Dashboard and Telegram (`/status`, `/projects`). | PRD §7.7, §7.11 | 14 | Pending |
 
@@ -116,7 +116,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | REQ-TG-01, REQ-TG-02, REQ-TG-03, NFR-SEC-04 | Phase 9 | Plan 9.1, Plan 9.2 | TelegramClient tests, security guard tests, webhook route tests | Complete |
 | REQ-TG-04 | Phase 10 | Plan 10.1, Plan 10.2 | Free-text intake tests, clarification flow tests | Complete |
 | REQ-TG-05 | Phase 11 | Plan 11.1, Plan 11.2 | Approval card rendering tests, callback decision handler tests | Complete |
-| REQ-GH-01, REQ-GH-02 | Phase 12 | Plan 12.1, Plan 12.2 | GitHub API client tests, HMAC webhook verification tests | Pending |
+| REQ-GH-01, REQ-GH-02 | Phase 12 | Plan 12.1, Plan 12.2 | GitHub API client tests, HMAC webhook verification tests | Complete |
 | REQ-GH-03, NFR-SEC-01 | Phase 13 | Plan 13.1, Plan 13.2 | Remote push gate tests, branchless safety guard tests | Pending |
 | REQ-GH-04 | Phase 14 | Plan 14.1, Plan 14.2 | Commit sync comparison tests, status card rendering tests | Pending |
 

@@ -2,16 +2,16 @@
 
 **Status Date:** 2026-11-15  
 **Current Milestone:** Milestone 4 (v4.0) — GitHub Integration & Branchless Discipline (Active)  
-**Active Phase:** Phase 12 — GitHub Client, Authentication & Webhook Receiver (Ready for Planning)  
+**Active Phase:** Phase 13 — Remote Git Push Approval Gate & Branchless Safety Guard (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `14dbe7e` (`docs(phase-11): document telegram interactive approval cards and decision webhook completion`)  
+**Latest Local Commit:** `3fa319b` (`feat(phase-12): implement GitHub webhook receiver with HMAC signature verification and event routing`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Milestone 3 (Telegram Gateway) 100% complete across Phases 9, 10, and 11.
-- Milestone 4 initialized: GitHub Integration & Branchless Discipline.
-- Vitest Test Suite: 41/41 test files passed, 247/247 tests green.
-- Next.js Production Build: 11 static and dynamic routes compiled with 0 errors and 0 warnings.
+- Phase 12 fully implemented and empirically verified.
+- GitHub Integration foundation: Type-safe `GitHubClient` (`src/lib/github/client.ts`), domain types (`src/lib/github/types.ts`), commit comparison (`compareCommits`), HMAC SHA-256 signature verifier (`verifyGitHubWebhookSignature`), and Next.js App Router webhook route (`/api/github/webhook`) with branchless assertion.
+- Vitest Test Suite: 44/44 test files passed, 267/267 tests green.
+- Next.js Production Build: 12 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit and CLI validator.
 
 ---

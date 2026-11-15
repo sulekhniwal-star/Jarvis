@@ -1,18 +1,18 @@
 ---
 milestone: "v4.0 - GitHub Integration & Branchless Discipline"
 version: "4.0.0"
-updated: 2026-11-15T22:58:00+05:30
+updated: 2026-11-15T23:05:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 12 - GitHub Client, Authentication & Webhook Receiver  
-> **Status:** Ready for Planning (`/gsd-plan-phase 12`)
+> **Current Phase:** 13 - Remote Git Push Approval Gate & Branchless Safety Guard  
+> **Status:** Ready for Planning (`/gsd-plan-phase 13`)
 
 ## Must-Haves (Milestone 4 Baseline)
 
-- [ ] Strongly-typed GitHub API client (Octokit / fetch wrapper) supporting repository status, commit retrieval, and tree inspection.
-- [ ] Secure GitHub Webhook receiver (`/api/github/webhook`) verifying HMAC SHA-256 signatures (`X-Hub-Signature-256`).
+- [x] Strongly-typed GitHub API client (Octokit / fetch wrapper) supporting repository status, commit retrieval, and tree inspection.
+- [x] Secure GitHub Webhook receiver (`/api/github/webhook`) verifying HMAC SHA-256 signatures (`X-Hub-Signature-256`).
 - [ ] Remote Git Push Approval Gate enforcing clean working trees, test pass proof, and approval requirement verification before executing `git push origin main`.
 - [ ] Automated branchless safety guard preventing non-`main` checkouts and blocking unapproved remote pushes.
 - [ ] Repository Synchronization Monitor computing ahead/behind commit divergence between local `main` HEAD and `origin/main`.
@@ -178,14 +178,14 @@ updated: 2026-11-15T22:58:00+05:30
 ## Milestone 4: GitHub Integration & Branchless Discipline
 
 ### Phase 12: GitHub Client, Authentication & Webhook Receiver
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Author strongly-typed GitHub API client (Octokit / fetch wrapper), configure GitHub App / PAT authentication, and create secure webhook route (`/api/github/webhook`) with HMAC SHA-256 signature verification (`REQ-GH-01`, `REQ-GH-02`).  
 **Depends on:** Phase 11  
 **Requirements:** REQ-GH-01, REQ-GH-02  
 
 **Plans:**
-- [ ] Plan 12.1: Type-safe GitHub API client supporting repository info, commit retrieval, tree diff inspection, and GitHub App / PAT auth.
-- [ ] Plan 12.2: Next.js App Router webhook route (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and event routing (`push`, `workflow_run`, `check_run`).
+- [x] Plan 12.1: Type-safe GitHub API client supporting repository info, commit retrieval, tree diff inspection, and GitHub App / PAT auth.
+- [x] Plan 12.2: Next.js App Router webhook route (`/api/github/webhook`) with HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and event routing (`push`, `workflow_run`, `check_run`).
 
 ---
 
@@ -239,7 +239,7 @@ updated: 2026-11-15T22:58:00+05:30
 | 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
 | 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
 | 11 | Telegram Approval Cards & Decision Webhook | ✅ | 2/2 | 100% |
-| 12 | GitHub Client, Auth & Webhooks | ⏳ | 0/2 | — |
+| 12 | GitHub Client, Auth & Webhooks | ✅ | 2/2 | 100% |
 | 13 | Remote Push Approval Gate & Branchless Guard | ⏳ | 0/2 | — |
 | 14 | Repository Sync Monitor & Dual-Channel Status | ⏳ | 0/2 | — |
 

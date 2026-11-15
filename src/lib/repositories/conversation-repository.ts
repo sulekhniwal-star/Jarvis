@@ -7,6 +7,7 @@ import {
   PaginationOptions,
   PaginatedResult,
   RepositoryError,
+  Json,
 } from "./types";
 
 export class ConversationRepository extends BaseRepository {
@@ -157,6 +158,33 @@ export class ConversationRepository extends BaseRepository {
       return data ?? [];
     } catch (err) {
       this.handleError(err, `Failed to list messages for conversation '${conversationId}'`);
+    }
+  }
+
+  public async updateMetadata(
+    id: string,
+    userId: string,
+    metadata: Json
+  ): Promise<Conversation> {
+    try {
+      const { data, error } = await this.client
+        .from("conversations")
+        .update({
+          metadata,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) {
+        this.handleError(error, `Failed to update metadata for conversation '${id}'`);
+      }
+
+      return data;
+    } catch (err) {
+      this.handleError(err, `Failed to update metadata for conversation '${id}'`);
     }
   }
 

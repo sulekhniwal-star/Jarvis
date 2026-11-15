@@ -29,6 +29,10 @@ import type {
   TablesUpdate,
 } from "@/types/database";
 
+export type Specification = Tables<"specifications">;
+export type SpecificationInsert = TablesInsert<"specifications">;
+export type SpecificationUpdate = TablesUpdate<"specifications">;
+
 export type {
   Project,
   ProjectStatus,
@@ -166,3 +170,14 @@ export interface CreateMessageDTO {
   payload?: Record<string, unknown>;
   tokenCount?: number;
 }
+
+// Specification DTOs
+export interface CreateSpecificationDTO {
+  taskId: string;
+  scope: string;
+  exclusions: string;
+  acceptanceCriteria: unknown[] | Json;
+  rawUserPrompt: string;
+  version?: number;
+}
+

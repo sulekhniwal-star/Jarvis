@@ -1,4 +1,5 @@
 import { BaseRepository } from "./base";
+import { TaskStateMachine } from "../state-machines/task-state-machine";
 import {
   Task,
   TaskStatus,
@@ -133,6 +134,8 @@ export class TaskRepository extends BaseRepository {
   }
 
   public async updateStatus(id: string, status: TaskStatus): Promise<Task> {
+    const current = await this.getById(id);
+    TaskStateMachine.assertTransition(current.status, status);
     return this.update(id, { status });
   }
 

@@ -12,7 +12,8 @@ import {
 } from "./models";
 import { ApprovalRepository } from "../repositories/approval-repository";
 import { BudgetService, UsageLedgerService } from "./ledger";
-import { OpenRouterError } from "./adapters/openrouter";
+import { OpenRouterAdapter, OpenRouterError } from "./adapters/openrouter";
+import { MockAIAdapter } from "./adapters/mock";
 
 export class PaidInferenceApprovalRequiredError extends Error {
   constructor(
@@ -198,3 +199,21 @@ export class AIGateway {
     }
   }
 }
+
+export function createDefaultAIGateway(
+  options?: Partial<AIGatewayOptions>
+): AIGateway {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const adapter =
+    options?.adapter ??
+    (apiKey ? new OpenRouterAdapter({ apiKey }) : new MockAIAdapter());
+
+  return new AIGateway({
+    adapter,
+    approvalRepo: options?.approvalRepo,
+    ledgerService: options?.ledgerService,
+    budgetService: options?.budgetService,
+    freeFallbackChain: options?.freeFallbackChain,
+  });
+}
+

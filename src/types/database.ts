@@ -58,6 +58,10 @@ export type MemoryCategory =
   | "architecture_pattern"
   | "historical_error";
 
+export type ConversationChannel = "web" | "telegram";
+export type ConversationStatus = "active" | "archived";
+export type MessageSenderType = "user" | "agent" | "system";
+
 export interface Database {
   public: {
     Tables: {
@@ -514,6 +518,70 @@ export interface Database {
           updated_at?: string;
         };
       };
+      conversations: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          title: string;
+          channel: ConversationChannel;
+          status: ConversationStatus;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id?: string | null;
+          title: string;
+          channel?: ConversationChannel;
+          status?: ConversationStatus;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          project_id?: string | null;
+          title?: string;
+          channel?: ConversationChannel;
+          status?: ConversationStatus;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_type: MessageSenderType;
+          content: string;
+          payload: Json;
+          token_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_type: MessageSenderType;
+          content: string;
+          payload?: Json;
+          token_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          sender_type?: MessageSenderType;
+          content?: string;
+          payload?: Json;
+          token_count?: number;
+          created_at?: string;
+        };
+      };
     };
   };
 }
@@ -531,3 +599,5 @@ export type RunArtifact = Database["public"]["Tables"]["run_artifacts"]["Row"];
 export type CostRecord = Database["public"]["Tables"]["cost_records"]["Row"];
 export type AuditEvent = Database["public"]["Tables"]["audit_events"]["Row"];
 export type Memory = Database["public"]["Tables"]["memories"]["Row"];
+export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
+export type Message = Database["public"]["Tables"]["messages"]["Row"];

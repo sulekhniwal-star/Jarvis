@@ -48,7 +48,7 @@ describe("Supabase Client Factories", () => {
   it("blocks admin client initialization in production browser environment", () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
-    process.env.NODE_ENV = "production";
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
 
     expect(() => createAdminClient()).toThrow(/Blocked by NFR-SEC-02/i);
   });

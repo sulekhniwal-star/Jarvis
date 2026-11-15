@@ -7,6 +7,7 @@ import {
   TaskFilterOptions,
   PaginatedResult,
   RepositoryError,
+  TablesUpdate,
 } from "./types";
 
 export class TaskRepository extends BaseRepository {
@@ -101,7 +102,7 @@ export class TaskRepository extends BaseRepository {
 
   public async update(id: string, data: UpdateTaskDTO): Promise<Task> {
     try {
-      const updatePayload: Record<string, unknown> = {
+      const updatePayload: TablesUpdate<"tasks"> = {
         updated_at: new Date().toISOString(),
       };
 

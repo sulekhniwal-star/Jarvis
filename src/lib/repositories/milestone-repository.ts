@@ -5,6 +5,7 @@ import {
   CreateMilestoneDTO,
   UpdateMilestoneDTO,
   RepositoryError,
+  TablesUpdate,
 } from "./types";
 
 export class MilestoneRepository extends BaseRepository {
@@ -92,7 +93,7 @@ export class MilestoneRepository extends BaseRepository {
 
   public async update(id: string, data: UpdateMilestoneDTO): Promise<Milestone> {
     try {
-      const updatePayload: Record<string, unknown> = {
+      const updatePayload: TablesUpdate<"milestones"> = {
         updated_at: new Date().toISOString(),
       };
 

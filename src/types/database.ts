@@ -4,7 +4,8 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
+  | Record<string, unknown>;
 
 export type ProjectStatus = "active" | "archived" | "paused";
 export type MilestoneStatus = "pending" | "in_progress" | "completed" | "blocked";
@@ -99,6 +100,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       projects: {
         Row: {
@@ -140,6 +142,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       milestones: {
         Row: {
@@ -172,6 +175,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       tasks: {
         Row: {
@@ -216,6 +220,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       specifications: {
         Row: {
@@ -248,6 +253,7 @@ export interface Database {
           version?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       plans: {
         Row: {
@@ -283,6 +289,7 @@ export interface Database {
           version?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       approvals: {
         Row: {
@@ -324,6 +331,7 @@ export interface Database {
           decided_at?: string | null;
           expires_at?: string;
         };
+        Relationships: [];
       };
       agent_runs: {
         Row: {
@@ -374,6 +382,7 @@ export interface Database {
           completed_at?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       run_artifacts: {
         Row: {
@@ -406,6 +415,7 @@ export interface Database {
           checksum_sha256?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       cost_records: {
         Row: {
@@ -447,6 +457,7 @@ export interface Database {
           is_estimated?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       audit_events: {
         Row: {
@@ -482,6 +493,7 @@ export interface Database {
           user_agent?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       memories: {
         Row: {
@@ -517,6 +529,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       conversations: {
         Row: {
@@ -552,6 +565,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       messages: {
         Row: {
@@ -581,10 +595,31 @@ export interface Database {
           token_count?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }
+
+// Helper Types for Row, Insert, and Update
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"];
+export type TablesInsert<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Insert"];
+export type TablesUpdate<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Update"];
 
 // Convenience Row Types
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];

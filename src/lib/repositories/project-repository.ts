@@ -6,6 +6,7 @@ import {
   PaginationOptions,
   PaginatedResult,
   RepositoryError,
+  TablesUpdate,
 } from "./types";
 
 export class ProjectRepository extends BaseRepository {
@@ -127,7 +128,7 @@ export class ProjectRepository extends BaseRepository {
     data: UpdateProjectDTO
   ): Promise<Project> {
     try {
-      const updatePayload: Record<string, unknown> = {
+      const updatePayload: TablesUpdate<"projects"> = {
         updated_at: new Date().toISOString(),
       };
 

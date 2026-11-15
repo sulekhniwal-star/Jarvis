@@ -23,6 +23,7 @@ export interface MockAdapterOptions {
 export class MockAIAdapter implements AIProviderAdapter {
   public readonly providerName = "mock";
   public defaultResponse: string;
+  public customHandler?: (req: AICompletionRequest) => string;
   public simulatedError: { status: number; message: string } | null = null;
   public simulatedLatencyMs: number;
   public simulatedPromptTokens: number;
@@ -35,6 +36,10 @@ export class MockAIAdapter implements AIProviderAdapter {
     this.simulatedLatencyMs = options.simulatedLatencyMs ?? 5;
     this.simulatedPromptTokens = options.simulatedPromptTokens ?? 25;
     this.simulatedCompletionTokens = options.simulatedCompletionTokens ?? 40;
+  }
+
+  public setCustomHandler(handler: (req: AICompletionRequest) => string): void {
+    this.customHandler = handler;
   }
 
   public async isAvailable(): Promise<boolean> {
@@ -67,8 +72,10 @@ export class MockAIAdapter implements AIProviderAdapter {
     const totalTokens = promptTokens + completionTokens;
     const costInr = calculateCostInr(model, promptTokens, completionTokens);
 
-    let content = this.defaultResponse;
-    if (request.responseFormat === "json") {
+    let content = this.customHandler
+      ? this.customHandler(request)
+      : this.defaultResponse;
+    if (request.responseFormat === "json" && !this.customHandler) {
       try {
         JSON.parse(content);
       } catch {

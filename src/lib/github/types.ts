@@ -107,3 +107,31 @@ export class GitHubApiError extends Error {
     Object.setPrototypeOf(this, GitHubApiError.prototype);
   }
 }
+
+export type GitSyncState = "synced" | "ahead" | "behind" | "diverged" | "unknown";
+
+export interface GitSyncStatus {
+  branch: string;
+  isMainLocked: boolean;
+  localCommitSha: string;
+  localShortSha: string;
+  localCommitMessage: string;
+  localCommitDate: string;
+  remoteRef: string;
+  remoteCommitSha: string;
+  remoteShortSha: string;
+  aheadCount: number;
+  behindCount: number;
+  status: GitSyncState;
+  isClean: boolean;
+  uncommittedCount: number;
+  lastCheckedAt: string;
+}
+
+export interface SyncMonitorOptions {
+  cwd?: string;
+  remoteRef?: string;
+  gitExec?: (args: string[]) => string;
+  bypassCache?: boolean;
+}
+

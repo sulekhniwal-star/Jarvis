@@ -81,18 +81,54 @@ updated: 2026-11-15T17:35:00+05:30
 
 ---
 
+## Milestone 2: Specification & Planning Workflow
+
+### Phase 6: Task Intake & Specification Engine
+**Status:** ⏳ Ready for Planning  
+**Objective:** Ingest natural language prompts, extract structured scope, exclusions, and acceptance criteria via Specifier Agent, and provide a Socratic clarification loop for underspecified requests.  
+**Depends on:** Phase 5  
+**Requirements:** REQ-SPEC-01, REQ-SPEC-02, REQ-SPEC-03, NFR-REL-02  
+
+**Plans:**
+- [ ] Plan 6.1: Specifier Agent prompt engineering, structured extraction parser, and Socratic clarification loop.
+- [ ] Plan 6.2: Specification repository, database persistence in `specifications`, task state transition (`intake` -> `specifying`), and unit tests.
+
+---
+
+### Phase 7: Execution Planning Engine
+**Status:** ⬜ Not Started  
+**Objective:** Decompose specifications into atomic execution steps with wave-based dependency ordering, risk level scoring, and approval requirement detection.  
+**Depends on:** Phase 6  
+**Requirements:** REQ-PLAN-01, REQ-PLAN-02, REQ-PLAN-03, NFR-REL-02  
+
+**Plans:**
+- [ ] Plan 7.1: Planner Agent prompt engineering, step decomposition, dependency DAG builder, and automated risk scoring.
+- [ ] Plan 7.2: Plan repository, database persistence in `plans`, task state transition (`specifying` -> `planned`), and unit tests.
+
+---
+
+### Phase 8: Plan Review UI & Approval Gate
+**Status:** ⬜ Not Started  
+**Objective:** Construct interactive web review screen displaying plan DAGs, risk assessment, and one-click Plan Approval or revision request actions.  
+**Depends on:** Phase 7  
+**Requirements:** REQ-PLAN-04  
+
+**Plans:**
+- [ ] Plan 8.1: Visual Plan Review interface displaying scope, steps, dependencies, and risk level badges.
+- [ ] Plan 8.2: Human decision actions (Approve Plan, Request Revision), approval state transitions, and integration tests.
+
+---
+
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 2:** Core Control Plane (State machines, advisory locks, budget accounting).
-- **Milestone 3:** UI Shell & Telegram Gateway.
-- **Milestone 4:** Specification & Planning Workflow.
-- **Milestone 5:** GitHub Integration & Branchless Discipline.
-- **Milestone 6:** Coding Execution Sandbox (GitHub Actions, Docker, Aider adapter).
-- **Milestone 7:** Quality, Verification & Self-Review.
-- **Milestone 8:** Projects, Agents & Memory UI (pgvector retrieval).
-- **Milestone 9:** Approvals, Security & Cost Controls (Kill switch, backup/restore).
-- **Milestone 10:** Deployment & Maintenance.
-- **Milestone 11:** Hardening, Security Audits & Release.
+- **Milestone 3:** Telegram Gateway (Remote mobile intake, real-time approval alerts).
+- **Milestone 4:** GitHub Integration & Branchless Discipline.
+- **Milestone 5:** Coding Execution Sandbox (GitHub Actions, Docker, Aider adapter).
+- **Milestone 6:** Quality, Verification & Self-Review.
+- **Milestone 7:** Projects, Agents & Memory UI (pgvector retrieval).
+- **Milestone 8:** Approvals, Security & Cost Controls (Kill switch, backup/restore).
+- **Milestone 9:** Deployment & Maintenance.
+- **Milestone 10:** Hardening, Security Audits & Release.
 
 ---
 
@@ -102,9 +138,12 @@ updated: 2026-11-15T17:35:00+05:30
 |---|---|---|---|---|
 | 1 | Environment & Project Foundation | ✅ | 2/2 | 100% |
 | 2 | Database & Auth Infrastructure | ✅ | 2/2 | 100% |
-| 3 | Core Domain Models & Repositories | ⬜ | 0/2 | — |
-| 4 | Provider Adapters & AI Gateway | ⬜ | 0/2 | — |
-| 5 | Authenticated UI Shell & Dashboard | ⬜ | 0/2 | — |
+| 3 | Core Domain Models & Repositories | ✅ | 2/2 | 100% |
+| 4 | Provider Adapters & AI Gateway | ✅ | 2/2 | 100% |
+| 5 | Authenticated UI Shell & Dashboard | ✅ | 2/2 | 100% |
+| 6 | Task Intake & Specification Engine | ⏳ | 0/2 | — |
+| 7 | Execution Planning Engine | ⬜ | 0/2 | — |
+| 8 | Plan Review UI & Approval Gate | ⬜ | 0/2 | — |
 
 ---
 

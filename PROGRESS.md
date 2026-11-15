@@ -1,10 +1,10 @@
 # JARVIS — Project Progress Log
 
-**Active Milestone:** Milestone 0 / v1.0 Core Platform Foundation Complete  
+**Active Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
 **Owner:** sulekhniwal-star  
 **Branch Policy:** `main`-only strict mode  
 **Current Branch:** `main`  
-**Current Local Commit:** `8cc3629`  
+**Current Local Commit:** `ccdcf7b`  
 **Last Sync Status:** Ahead of `origin/main` (Remote push pending explicit owner authorization)  
 **AI Budget Status:** INR 0.00 spent of INR 750 monthly ceiling (INR 25 daily limit)
 
@@ -20,7 +20,9 @@
 | **Phase 3** | Core Domain Models & Repositories | **Complete** | 2026-11-15 |
 | **Phase 4** | Provider Adapters & AI Gateway | **Complete** | 2026-11-15 |
 | **Phase 5** | Authenticated UI Shell & Dashboard Foundation | **Complete** | 2026-11-15 |
-| **Milestone 4** | Specification & Planning | Ready for Planning | Next Sprint |
+| **Milestone 2 / Phase 6** | Task Intake & Specification Engine | Ready for Planning | Next Sprint |
+| **Milestone 2 / Phase 7** | Execution Planning Engine | Pending | Phase 6 Verification |
+| **Milestone 2 / Phase 8** | Plan Review UI & Approval Gate | Pending | Phase 7 Verification |
 | **Milestone 5** | GitHub Integration | Pending | Milestone 4 Verification |
 | **Milestone 6** | Coding Execution | Pending | Milestone 5 Verification |
 | **Milestone 7** | Quality & Self-Review | Pending | Milestone 6 Verification |

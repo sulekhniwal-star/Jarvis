@@ -1,8 +1,8 @@
 ---
-status: FINALIZED
+status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-finalized: 2026-11-15T17:35:00+05:30
-milestone: "v1.0 - Core Platform Foundation & Architecture"
+updated: 2026-11-15T20:00:00+05:30
+milestone: "v2.0 - Specification & Planning Workflow"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -87,17 +87,23 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Milestone 1 Target: Core Platform Foundation & Architecture
+## Completed Milestones
 
-The immediate milestone focuses on delivering the robust foundation:
-- Supabase local environment, migration tooling, and Auth integration.
-- Database schema for core domain entities (`profiles`, `projects`, `milestones`, `tasks`, `conversations`, `messages`, `approvals`, `agent_runs`, `audit_events`).
-- Typed TypeScript database client and repositories with Row-Level Security.
-- Next.js authenticated shell with navigation, theme tokens, and dashboard overview layout.
-- OpenRouter gateway adapter with free-model fallback and approval gating mock.
-- GitHub connection and branch-enforcement validator utility.
+### Milestone 0 / v1.0 — Core Platform Foundation & Architecture (✅ Complete 2026-11-15)
+- **Phase 1: Environment & Project Foundation:** Next.js 15+ App Router, Tailwind CSS tokens, Vitest test harness, and Git safety guard.
+- **Phase 2: Database & Authentication Infrastructure:** Supabase 14 core tables, 100% RLS policies, SSR client factories, and Auth route handlers.
+- **Phase 3: Core Domain Models & Repositories:** Typed repositories for Projects, Milestones, Tasks, Conversations, Approvals, Runs, and domain state machines.
+- **Phase 4: Provider Adapters & AI Gateway:** OpenRouter adapter, free model failover hierarchy, paid inference approval gate, and budget circuit breakers (₹25/day, ₹750/mo).
+- **Phase 5: Authenticated UI Shell & Dashboard Foundation:** Responsive AppShell, navigation docks, AI Core status widget, approvals counter, active projects grid, and state handling.
 
 ---
+
+## Active Milestone: Milestone 2 — Specification & Planning Workflow
+
+The current milestone focuses on transforming natural language user intent into structured, dependency-aware plans:
+- **Phase 6: Task Intake & Specification Engine:** Specifier Agent extracting scope, exclusions, acceptance criteria, and interactive clarification loop for underspecified requests.
+- **Phase 7: Execution Planning Engine:** Planner Agent decomposing specifications into atomic steps, dependency DAGs, risk scoring, and required approval calculation.
+- **Phase 8: Plan Review UI & Approval Gate:** Interactive web review screen displaying plan DAGs, risk factors, and one-click Plan Approval / revision request actions.
 
 ## Success Criteria
 

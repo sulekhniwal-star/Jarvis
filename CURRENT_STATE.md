@@ -1,9 +1,10 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-15  
-**Current Milestone:** Milestone 0 / v1.0 Core Platform Foundation Complete  
+**Current Milestone:** Milestone 2 (v2.0) — Specification & Planning Workflow  
+**Active Phase:** Phase 6 — Task Intake & Specification Engine (Ready for Planning)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `8cc3629` (`feat(phase-5): implement dashboard overview widgets and robust state handling`)  
+**Latest Local Commit:** `ccdcf7b` (`docs(phase-5): document phase 5 completion and milestone 0 foundation summary`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  

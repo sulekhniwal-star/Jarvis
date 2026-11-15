@@ -6,14 +6,14 @@ updated: 2026-11-15T17:35:00+05:30
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Phase:** 2 - Database & Authentication Infrastructure
+> **Current Phase:** 3 - Core Domain Models & Repositories
 > **Status:** Ready for Planning
 
 ## Must-Haves (Milestone 1 Baseline)
 
 - [x] Complete Next.js 15+ App Router baseline configured with TypeScript, Tailwind CSS, and test harness.
 - [x] Automated Git branch safety guard enforcing `main`-only commits and rejecting non-main branch actions.
-- [ ] Reproducible Supabase Docker environment with automated migrations and 100% RLS coverage.
+- [x] Reproducible Supabase Docker environment with automated migrations and 100% RLS coverage.
 - [ ] Data access layer for Projects, Tasks, Milestones, Conversations, Approvals, and Durable Agent Runs.
 - [ ] OpenRouter AI Gateway adapter with free-model fallback and strict paid-inference approval gating.
 - [ ] Responsive, accessible, authenticated UI shell and dashboard matching `UI_DESIGN_SYSTEM.md`.
@@ -34,14 +34,14 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 2: Database & Authentication Infrastructure
-**Status:** ⏳ Planned / Ready for Execution  
+**Status:** ✅ Complete (2026-11-15)  
 **Objective:** Deploy local Supabase development environment, apply core relational migrations, enforce RLS policies, and wire Supabase Auth.  
 **Depends on:** Phase 1  
 **Requirements:** REQ-DB-01, REQ-DB-02, REQ-DB-03, REQ-DB-04, REQ-AUTH-01, NFR-SEC-03  
 
 **Plans:**
-- [ ] Plan 2.1: Supabase local configuration, migration scripts for core entities (`profiles`, `projects`, `tasks`, etc.), and RLS policies.
-- [ ] Plan 2.2: Supabase client factories (server & browser), automated TypeScript type generation, and Auth route handlers.
+- [x] Plan 2.1: Supabase local configuration, migration scripts for core entities (`profiles`, `projects`, `tasks`, etc.), and RLS policies.
+- [x] Plan 2.2: Supabase client factories (server & browser), automated TypeScript type generation, and Auth route handlers.
 
 ---
 
@@ -101,7 +101,7 @@ updated: 2026-11-15T17:35:00+05:30
 | Phase | Description | Status | Plans | Complete |
 |---|---|---|---|---|
 | 1 | Environment & Project Foundation | ✅ | 2/2 | 100% |
-| 2 | Database & Auth Infrastructure | ⬜ | 0/2 | — |
+| 2 | Database & Auth Infrastructure | ✅ | 2/2 | 100% |
 | 3 | Core Domain Models & Repositories | ⬜ | 0/2 | — |
 | 4 | Provider Adapters & AI Gateway | ⬜ | 0/2 | — |
 | 5 | Authenticated UI Shell & Dashboard | ⬜ | 0/2 | — |
@@ -113,7 +113,8 @@ updated: 2026-11-15T17:35:00+05:30
 | Phase | Started | Completed | Duration |
 |---|---|---|---|
 | Phase 1 | 2026-11-15 | 2026-11-15 | ~45m |
-| Phase 2 | — | — | — |
+| Phase 2 | 2026-11-15 | 2026-11-15 | ~35m |
+| Phase 3 | — | — | — |
 | Phase 3 | — | — | — |
 | Phase 4 | — | — | — |
 | Phase 5 | — | — | — |

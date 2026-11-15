@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Layers, GitBranch, FileCode2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Layers, GitBranch, FileCode2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface PlanReviewHeaderProps {
@@ -52,6 +52,12 @@ export function PlanReviewHeader({
           <span>Dashboard</span>
         </Link>
         <span>/</span>
+        {projectId ? (
+          <>
+            <span className="text-slate-400">Project {projectId.slice(0, 8)}</span>
+            <span>/</span>
+          </>
+        ) : null}
         <span>Tasks</span>
         <span>/</span>
         <span className="text-slate-200 font-mono">{taskId.slice(0, 8)}...</span>

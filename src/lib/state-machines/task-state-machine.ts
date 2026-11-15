@@ -5,8 +5,8 @@ export class TaskStateMachine {
   private static readonly TRANSITIONS: StateTransitionMap<TaskStatus> = {
     intake: ["specifying", "cancelled"],
     specifying: ["planned", "cancelled"],
-    planned: ["awaiting_approval", "running", "cancelled"],
-    awaiting_approval: ["running", "cancelled"],
+    planned: ["awaiting_approval", "running", "cancelled", "specifying"],
+    awaiting_approval: ["running", "cancelled", "specifying"],
     running: ["verifying", "failed", "cancelled"],
     verifying: ["completed", "failed"],
     failed: ["intake", "specifying", "planned", "running", "cancelled"],

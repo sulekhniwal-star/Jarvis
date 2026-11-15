@@ -31,6 +31,11 @@ describe("TaskStateMachine — Deterministic Task Transitions", () => {
     expect(TaskStateMachine.canTransition("failed", "planned")).toBe(true);
   });
 
+  it("permits revision transitions back to specifying", () => {
+    expect(TaskStateMachine.canTransition("planned", "specifying")).toBe(true);
+    expect(TaskStateMachine.canTransition("awaiting_approval", "specifying")).toBe(true);
+  });
+
   it("identifies terminal states correctly", () => {
     expect(TaskStateMachine.isTerminal("completed")).toBe(true);
     expect(TaskStateMachine.isTerminal("cancelled")).toBe(true);

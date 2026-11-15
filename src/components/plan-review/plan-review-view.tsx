@@ -144,6 +144,12 @@ export function PlanReviewView({
         isProcessing={isProcessing}
         requiresHumanApproval={plan.riskAssessment.requiresHumanApproval}
       />
+
+      {/* Footer Audit Metadata */}
+      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-white/5">
+        <span>Plan Record: <code className="text-slate-400 font-mono">{planId}</code></span>
+        <span>Milestone 2 Workflow</span>
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { PlanRepository } from "@/lib/repositories/plan-repository";
-import { PlanPayload, PlanPayloadSchema } from "@/lib/agents/planner/types";
+import { PlanPayloadSchema } from "@/lib/agents/planner/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FileQuestion } from "lucide-react";
 
@@ -76,19 +76,19 @@ export default async function PlanReviewPage({ params }: PlanReviewPageProps) {
 
   const parsed = PlanPayloadSchema.safeParse(rawPayload);
 
-  const planPayload: PlanPayload = parsed.success
-    ? parsed.data
-    : {
-        steps: (planRecord.steps as any) ?? [],
-        dependencies: (planRecord.dependencies as any) ?? [],
-        riskAssessment: (planRecord.risk_assessment as any) ?? {
-          overallRisk: "low",
-          riskFactors: [],
-          requiresHumanApproval: false,
-          mitigations: [],
-        },
-        requiredApprovals: (planRecord.required_approvals as any) ?? [],
-      };
+  if (!parsed.success) {
+    return (
+      <AppShell>
+        <EmptyState
+          icon={FileQuestion}
+          title="Corrupted Plan Data"
+          description={`Plan '${planRecord.id}' does not conform to the expected execution plan schema.`}
+        />
+      </AppShell>
+    );
+  }
+
+  const planPayload = parsed.data;
 
   return (
     <AppShell>

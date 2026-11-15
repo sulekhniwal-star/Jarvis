@@ -127,4 +127,29 @@ export class ApprovalRepository extends BaseRepository {
       this.handleError(err, "Failed to list pending approvals");
     }
   }
+
+  public async hasActiveApproval(
+    userId: string,
+    actionType: ApprovalActionType
+  ): Promise<boolean> {
+    try {
+      const nowIso = new Date().toISOString();
+      const { data, error } = await this.client
+        .from("approvals")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("action_type", actionType)
+        .eq("status", "approved")
+        .gt("expires_at", nowIso)
+        .limit(1);
+
+      if (error) {
+        this.handleError(error, "Failed to check active approvals");
+      }
+
+      return Boolean(data && data.length > 0);
+    } catch (err) {
+      this.handleError(err, "Failed to check active approvals");
+    }
+  }
 }

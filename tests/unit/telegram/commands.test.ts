@@ -47,6 +47,31 @@ describe("Telegram Command Router", () => {
       expect(response).toContain("System Status Warning");
       expect(response).toContain("Database offline");
     });
+
+    it("surfaces git synchronization status and branch lock in /status output", async () => {
+      const mockFetchTasks = vi.fn().mockResolvedValue([]);
+      const mockSyncMonitor = {
+        getSyncStatus: vi.fn().mockResolvedValue({
+          branch: "main",
+          isMainLocked: true,
+          status: "ahead",
+          aheadCount: 2,
+          behindCount: 0,
+          localShortSha: "260ffd2",
+        }),
+      };
+
+      const response = await handleTelegramCommand("/status", {
+        fetchTasks: mockFetchTasks,
+        syncMonitor: mockSyncMonitor as any,
+      });
+
+      expect(response).toContain("Git Sync:");
+      expect(response).toContain("main");
+      expect(response).toContain("Locked");
+      expect(response).toContain("2 ahead");
+      expect(response).toContain("260ffd2");
+    });
   });
 
   describe("/budget command", () => {
@@ -108,6 +133,34 @@ describe("Telegram Command Router", () => {
       });
 
       expect(response).toContain("No projects registered yet");
+    });
+
+    it("surfaces git synchronization status for active projects", async () => {
+      const mockFetchProjects = vi.fn().mockResolvedValue([
+        {
+          id: "p1",
+          name: "Jarvis",
+          repository_url: "https://github.com/user/jarvis",
+        },
+      ]);
+      const mockSyncMonitor = {
+        getSyncStatus: vi.fn().mockResolvedValue({
+          branch: "main",
+          isMainLocked: true,
+          status: "synced",
+        }),
+      };
+
+      const response = await handleTelegramCommand("/projects", {
+        fetchProjects: mockFetchProjects,
+        syncMonitor: mockSyncMonitor as any,
+      });
+
+      expect(response).toContain("Active Projects");
+      expect(response).toContain("Jarvis");
+      expect(response).toContain("Branch:");
+      expect(response).toContain("main");
+      expect(response).toContain("Synced");
     });
   });
 

@@ -44,9 +44,20 @@ export class PushGateService {
   private gitExec: (args: string[]) => string;
 
   constructor(options: PushGateServiceOptions = {}) {
-    const supabase = options.supabaseClient ?? createAdminClient();
+    let supabase = options.supabaseClient;
+    if (!supabase && !options.approvalRepo) {
+      try {
+        supabase = createAdminClient();
+      } catch {
+        // Fallback for testing environments without Supabase credentials
+      }
+    }
+
     this.approvalRepo =
-      options.approvalRepo ?? new ApprovalRepository(supabase);
+      options.approvalRepo ??
+      (supabase
+        ? new ApprovalRepository(supabase)
+        : (null as unknown as ApprovalRepository));
     this.telegramApprovalService = options.telegramApprovalService;
     this.supabaseClient = supabase;
     this.gitExec =

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { RepoSyncMonitor } from "@/lib/github/sync-monitor";
 
 const monitor = new RepoSyncMonitor();
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const status = await monitor.getSyncStatus();
     return NextResponse.json(status, { status: 200 });
@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     monitor.clearCache();
     const status = await monitor.getSyncStatus({ bypassCache: true });

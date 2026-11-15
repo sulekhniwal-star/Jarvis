@@ -2,6 +2,7 @@ import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { AICoreStatus } from "@/components/dashboard/ai-core-status";
 import { PendingApprovalsCard } from "@/components/dashboard/pending-approvals-card";
+import { GitSyncStatusCard } from "@/components/dashboard/git-sync-status";
 import { ActiveProjectsList } from "@/components/dashboard/active-projects-list";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -21,8 +22,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Top Row: AI Core Gateway & Pending Approvals */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Row: AI Core Gateway, Repository Sync & Pending Approvals */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AICoreStatus
               model="meta-llama/llama-3.3-70b-instruct:free"
               provider="OpenRouter"
@@ -31,6 +32,7 @@ export default function Home() {
               monthlySpendInr={0.0}
               monthlyLimitInr={750.0}
             />
+            <GitSyncStatusCard />
             <PendingApprovalsCard approvals={[]} />
           </div>
 

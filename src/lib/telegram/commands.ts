@@ -1,6 +1,7 @@
 import { escapeMarkdownV2, bold, code, italic } from "./format";
 import { BudgetService } from "../ai/ledger";
 import { createAdminClient } from "../supabase/admin";
+import { GitSyncStatus } from "../github/types";
 
 export interface CommandTask {
   id: string;
@@ -17,6 +18,9 @@ export interface CommandProject {
 export interface CommandDependencies {
   fetchTasks?: () => Promise<CommandTask[]>;
   fetchProjects?: () => Promise<CommandProject[]>;
+  syncMonitor?: {
+    getSyncStatus: () => Promise<GitSyncStatus>;
+  };
   budgetService?: {
     getDailySpendInr: (userId: string) => Promise<number>;
     getMonthlySpendInr: (userId: string) => Promise<number>;
@@ -126,28 +130,57 @@ export async function handleTelegramCommand(
           items = data ?? [];
         }
 
-        if (items.length === 0) {
-          return [
-            `📊 ${bold("Jarvis System Status")}`,
-            "",
-            "No active tasks in progress\\. System is idle\\.",
-          ].join("\n");
+        let syncInfo: GitSyncStatus | null = null;
+        try {
+          if (deps?.syncMonitor) {
+            syncInfo = await deps.syncMonitor.getSyncStatus();
+          } else {
+            const { RepoSyncMonitor } = await import("../github/sync-monitor");
+            const monitor = new RepoSyncMonitor();
+            syncInfo = await monitor.getSyncStatus();
+          }
+        } catch {
+          syncInfo = null;
         }
 
-        const taskLines = items.slice(0, 5).map((t) => {
-          const status = escapeMarkdownV2(t.status || "unknown");
-          const title = escapeMarkdownV2(t.title || "Untitled Task");
-          return `• ${title} \\(${code(status)}\\)`;
-        });
+        const lines: string[] = [`📊 ${bold("Jarvis System Status")}`, ""];
 
-        return [
-          `📊 ${bold("Jarvis System Status")}`,
-          "",
-          `${bold("Recent Tasks:")}`,
-          ...taskLines,
-          "",
-          `Total listed: ${items.length}`,
-        ].join("\n");
+        if (items.length === 0) {
+          lines.push("No active tasks in progress\\. System is idle\\.");
+        } else {
+          lines.push(`${bold("Recent Tasks:")}`);
+          const taskLines = items.slice(0, 5).map((t) => {
+            const status = escapeMarkdownV2(t.status || "unknown");
+            const title = escapeMarkdownV2(t.title || "Untitled Task");
+            return `• ${title} \\(${code(status)}\\)`;
+          });
+          lines.push(...taskLines);
+          lines.push("", `Total listed: ${items.length}`);
+        }
+
+        if (syncInfo) {
+          const syncStatusLabel =
+            syncInfo.status === "synced"
+              ? "Synced with origin/main"
+              : syncInfo.status === "ahead"
+              ? `${syncInfo.aheadCount} ahead \\(Push Pending\\)`
+              : syncInfo.status === "behind"
+              ? `${syncInfo.behindCount} behind \\(Sync Required\\)`
+              : escapeMarkdownV2(syncInfo.status);
+
+          lines.push(
+            "",
+            `🐙 ${bold("Git Sync:")}`,
+            `• Branch: ${code(syncInfo.branch)} \\(${syncInfo.isMainLocked ? "🔒 Locked" : "⚠️ Unlocked"}\\)`,
+            `• Status: ${syncStatusLabel}`
+          );
+
+          if (syncInfo.localShortSha) {
+            lines.push(`• HEAD: ${code(syncInfo.localShortSha)}`);
+          }
+        }
+
+        return lines.join("\n");
       } catch (err) {
         return [
           `⚠️ ${bold("System Status Warning")}`,
@@ -219,10 +252,35 @@ export async function handleTelegramCommand(
           ].join("\n");
         }
 
+        let syncInfo: GitSyncStatus | null = null;
+        try {
+          if (deps?.syncMonitor) {
+            syncInfo = await deps.syncMonitor.getSyncStatus();
+          } else {
+            const { RepoSyncMonitor } = await import("../github/sync-monitor");
+            const monitor = new RepoSyncMonitor();
+            syncInfo = await monitor.getSyncStatus();
+          }
+        } catch {
+          syncInfo = null;
+        }
+
         const projectLines = items.map((p) => {
           const name = escapeMarkdownV2(p.name || "Untitled Project");
           const repo = p.repository_url ? escapeMarkdownV2(p.repository_url) : "Local";
-          return `• ${bold(name)}\n  ${italic("Repo:")} ${repo}`;
+          const lines = [`• ${bold(name)}`, `  ${italic("Repo:")} ${repo}`];
+          if (syncInfo && syncInfo.isMainLocked) {
+            lines.push(
+              `  ${italic("Branch:")} main \\(🔒\\) • ${escapeMarkdownV2(
+                syncInfo.status === "synced"
+                  ? "Synced"
+                  : syncInfo.status === "ahead"
+                  ? `${syncInfo.aheadCount} ahead`
+                  : syncInfo.status
+              )}`
+            );
+          }
+          return lines.join("\n");
         });
 
         return [`📁 ${bold("Active Projects")}`, "", ...projectLines].join("\n");

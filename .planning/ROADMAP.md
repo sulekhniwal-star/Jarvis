@@ -34,7 +34,7 @@ updated: 2026-11-15T17:35:00+05:30
 ---
 
 ### Phase 2: Database & Authentication Infrastructure
-**Status:** ⬜ Not Started  
+**Status:** ⏳ Planned / Ready for Execution  
 **Objective:** Deploy local Supabase development environment, apply core relational migrations, enforce RLS policies, and wire Supabase Auth.  
 **Depends on:** Phase 1  
 **Requirements:** REQ-DB-01, REQ-DB-02, REQ-DB-03, REQ-DB-04, REQ-AUTH-01, NFR-SEC-03  

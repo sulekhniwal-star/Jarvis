@@ -7,7 +7,7 @@ interface InspectDiffOptions {
   cwd?: string;
 }
 
-const SECRET_PATTERNS: Array<{ name: string; regex: RegExp }> = [
+export const SECRET_PATTERNS: Array<{ name: string; regex: RegExp }> = [
   {
     name: "Private Key",
     regex: /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/,

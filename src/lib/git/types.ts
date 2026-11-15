@@ -37,3 +37,35 @@ export class GitPolicyViolationError extends Error {
     this.name = "GitPolicyViolationError";
   }
 }
+
+export interface PrePushCommitSummary {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  date: string;
+}
+
+export interface PrePushValidationOptions {
+  cwd?: string;
+  remoteRef?: string;
+  skipSecretScan?: boolean;
+  gitExec?: (args: string[]) => string;
+}
+
+export interface PrePushValidationResult {
+  isReady: boolean;
+  activeBranch: string;
+  isClean: boolean;
+  aheadCount: number;
+  behindCount: number;
+  remoteRef: string;
+  headCommitSha: string;
+  headCommitMessage: string;
+  commits: PrePushCommitSummary[];
+  filesChanged: string[];
+  hasSecrets: boolean;
+  detectedSecretPatterns: string[];
+  errors: string[];
+}
+

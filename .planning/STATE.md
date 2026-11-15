@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-15T19:15:00+05:30
+updated: 2026-11-15T19:21:00+05:30
 ---
 
 # Project State
@@ -7,22 +7,22 @@ updated: 2026-11-15T19:15:00+05:30
 ## Current Position
 
 **Milestone:** v1.0 - Core Platform Foundation & Architecture  
-**Phase:** 3 - Core Domain Models & Repositories  
-**Status:** Complete (Ready for Phase 4)  
-**Plan:** 03-01 & 03-02 Executed & Verified (03-SUMMARY.md authored)
+**Phase:** 4 - Provider Adapters & AI Gateway  
+**Status:** Ready for Execution  
+**Plan:** Plans verified (04-01-PLAN.md & 04-02-PLAN.md); ready for execution
 
 ## Last Action
 
-Completed execution and verification of Phase 3 (Core Domain Models & Repositories):
-- Wave 1 (Commit `3c0dea2`): Conversation migration (`20261115000003_conversations.sql`), updated Supabase database types, base repository, project repository, milestone repository, task repository, and conversation repository with unit tests.
-- Wave 2 (Commit `79d65b5`): Task, Approval, and Agent Run deterministic state machines, approval repository, agent run repository with artifact tracking, and unit tests.
-- Full verification: 83 tests passing in Vitest across 15 test files; `next build` passes with 0 warnings.
-- Authored `03-SUMMARY.md`.
+Completed deep research and authored wave-based execution plans for Phase 4 (Provider Adapters & AI Gateway):
+- `04-RESEARCH.md`: OpenRouter API specs, free model hierarchy, paid approval gate, usage ledger, and budget circuit breakers.
+- `04-01-PLAN.md` (Wave 1): AI types, Model Catalog, OpenRouter client adapter with JSON mode and SSE streaming, offline mock adapter, and unit tests.
+- `04-02-PLAN.md` (Wave 2): Usage Ledger and Budget Service with INR conversion, AIGateway with free-model failover and paid-inference approval verification gate, and unit tests.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 4` to research and plan Phase 4: Provider Adapters & AI Gateway Configuration.
-2. Implement AI Provider Adapters (OpenRouter, Gemini CLI, Groq, Ollama), AI Gateway router with strict free-model fallback, cost-tracking, and budget circuit breakers (`REQ-LLM-01` through `REQ-LLM-05`).
+1. Run `/gsd-execute-phase 4` to execute Wave 1 (`04-01-PLAN.md`) and Wave 2 (`04-02-PLAN.md`).
+2. Verify all adapter mocks, streaming parsers, fallback chains, approval gates, and budget circuit breakers pass cleanly.
+3. Advance to Phase 5 (Authenticated UI Shell & Dashboard Foundation).
 
 ## Active Decisions
 

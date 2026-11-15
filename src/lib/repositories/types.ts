@@ -23,6 +23,7 @@ import type {
   AuditEvent,
   Memory,
   MemoryCategory,
+  PlanStatus,
   Json,
   Tables,
   TablesInsert,
@@ -33,11 +34,16 @@ export type Specification = Tables<"specifications">;
 export type SpecificationInsert = TablesInsert<"specifications">;
 export type SpecificationUpdate = TablesUpdate<"specifications">;
 
+export type Plan = Tables<"plans">;
+export type PlanInsert = TablesInsert<"plans">;
+export type PlanUpdate = TablesUpdate<"plans">;
+
 export type {
   Project,
   ProjectStatus,
   Milestone,
   MilestoneStatus,
+  PlanStatus,
   Task,
   TaskPriority,
   TaskRiskLevel,
@@ -180,4 +186,24 @@ export interface CreateSpecificationDTO {
   rawUserPrompt: string;
   version?: number;
 }
+
+// Plan DTOs
+export interface CreatePlanDTO {
+  taskId: string;
+  steps: unknown[] | Json;
+  dependencies: unknown[] | Json;
+  riskAssessment: Record<string, unknown> | Json;
+  requiredApprovals: string[] | Json;
+  status?: PlanStatus;
+  version?: number;
+}
+
+export interface UpdatePlanDTO {
+  steps?: unknown[] | Json;
+  dependencies?: unknown[] | Json;
+  riskAssessment?: Record<string, unknown> | Json;
+  requiredApprovals?: string[] | Json;
+  status?: PlanStatus;
+}
+
 

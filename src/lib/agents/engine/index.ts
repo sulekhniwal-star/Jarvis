@@ -17,6 +17,12 @@ export * from "./aider/output-parser";
 export * from "./aider/repair-handler";
 export * from "./aider/aider-adapter";
 
+// Sandbox Runner Environment
+export * from "./sandbox/types";
+export * from "./sandbox/github-actions-runner";
+export * from "./sandbox/local-sandbox-runner";
+export * from "./sandbox/sandbox-orchestrator";
+
 import { codingEngineRegistry } from "./registry";
 import { AiderCliAdapter } from "./aider/aider-adapter";
 

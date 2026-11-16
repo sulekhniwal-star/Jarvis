@@ -1,0 +1,93 @@
+name: Jarvis Ephemeral Coding Agent Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: "Task UUID"
+        required: true
+        type: string
+      run_id:
+        description: "Agent Run UUID"
+        required: true
+        type: string
+      step_id:
+        description: "Plan Step Identifier"
+        required: false
+        type: string
+      allowed_files:
+        description: "JSON array of allowed file paths"
+        required: true
+        type: string
+      instructions:
+        description: "Scoped prompt instructions"
+        required: true
+        type: string
+
+# Ensure permissions are strictly scoped to repository contents on main
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  execute-task:
+    name: Ephemeral Coding Sandbox
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Verify Ref is Main
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::Branch security violation: executions are restricted strictly to main (NFR-SEC-01)."
+            exit 1
+          fi
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Execute Coding Agent Sandbox
+        env:
+          TASK_ID: ${{ inputs.task_id }}
+          RUN_ID: ${{ inputs.run_id }}
+          STEP_ID: ${{ inputs.step_id }}
+          ALLOWED_FILES: ${{ inputs.allowed_files }}
+          INSTRUCTIONS: ${{ inputs.instructions }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          echo "Executing task in isolated container..."
+          echo "Task ID: $TASK_ID | Run ID: $RUN_ID"
+
+      - name: Run Test Verification
+        run: pnpm test
+
+      - name: Upload Execution Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandbox-artifacts-${{ inputs.run_id }}
+          path: |
+            *.log
+            *.diff
+          retention-days: 7

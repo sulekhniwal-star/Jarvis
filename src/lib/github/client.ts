@@ -181,4 +181,49 @@ export class GitHubClient {
 
     return response.workflow_runs ?? [];
   }
+
+  /**
+   * Dispatches a GitHub Actions workflow with inputs.
+   * Note: The ref is locked strictly to 'main' (NFR-SEC-01).
+   */
+  public async dispatchWorkflow(
+    owner: string,
+    repo: string,
+    workflowId: string,
+    ref: string = "main",
+    inputs?: Record<string, unknown>
+  ): Promise<void> {
+    if (ref !== "main") {
+      throw new Error(
+        `Branch security violation: workflow dispatch ref must strictly be 'main'. Attempted: '${ref}' (NFR-SEC-01).`
+      );
+    }
+
+    await this.request<void>(
+      `/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ref: "main",
+          inputs: inputs || {},
+        }),
+      }
+    );
+  }
+
+  /**
+   * Retrieves single workflow run details by run ID.
+   */
+  public async getWorkflowRun(
+    owner: string,
+    repo: string,
+    runId: number
+  ): Promise<GitHubWorkflowRun> {
+    return this.request<GitHubWorkflowRun>(
+      `/repos/${owner}/${repo}/actions/runs/${runId}`
+    );
+  }
 }

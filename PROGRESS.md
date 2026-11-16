@@ -32,7 +32,7 @@
 | **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | **Complete** | 2026-11-16 |
-| **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | Pending | 2026-11-16 |
+| **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | **Complete** | 2026-11-16 |
 | **Milestone 6** | Quality & Self-Review | Pending | Milestone 5 Verification |
 | **Milestone 7** | Projects, Agents & Memory UI | Pending | Milestone 6 Verification |
 | **Milestone 8** | Approvals, Security & Cost Control | Pending | Milestone 7 Verification |
@@ -42,6 +42,26 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-16 — Work Session 17 (Phase 18 Execution: Execution Telemetry, Artifact Capture & Run State Machine Integration)
+- **Trigger:** `/gsd-execute-phase 18` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 18.1):
+    - Defined `ExecutionRunSummary` and `CoordinatorExecutionParams` in `src/lib/agents/engine/telemetry/types.ts`.
+    - Implemented `ArtifactPipeline` (`src/lib/agents/engine/telemetry/artifact-pipeline.ts`) with SHA-256 checksum computation, secret credential redaction (`NFR-SEC-02`), and structured markdown execution summary generator.
+    - Implemented `ExecutionCoordinator` (`src/lib/agents/engine/telemetry/execution-coordinator.ts`) managing end-to-end task step execution, database state synchronization across `TaskRepository` and `AgentRunRepository`, and real-time MarkdownV2 Telegram telemetry alerts.
+    - Authored unit test suite `tests/unit/agents/engine/telemetry.test.ts` (7 tests green).
+  - Implemented Wave 2 (Plan 18.2):
+    - Created App Router runs endpoint `src/app/api/agents/runs/route.ts` handling `GET` and `POST` requests.
+    - Implemented `AgentRunsCard` component (`src/components/dashboard/agent-runs-card.tsx`) displaying live status pills, commit short SHAs `(main 🔒)`, test counts, and duration.
+    - Embedded `AgentRunsCard` in dashboard overview on `src/app/page.tsx`.
+    - Authored unit test suites `tests/unit/components/agent-runs-card.test.tsx` (4 tests green) and `tests/unit/api/agents-runs-route.test.ts` (3 tests green).
+  - **Empirical Verification:**
+    - `pnpm test`: 61/61 test files passed, 382/382 tests green (100%).
+    - `pnpm build`: 16/16 static and dynamic routes compiled with 0 errors and 0 warnings.
+  - **Milestone 5 Completion:** All 4 phases of Milestone 5 (v5.0 — Coding Execution Sandbox) completed and verified. Ready for Milestone 6 initiation.
+
+---
 
 ### 2026-11-16 — Work Session 16 (Phase 17 Execution: Ephemeral Sandbox Runner Environment)
 - **Trigger:** `/gsd-execute-phase 17` executed by owner.

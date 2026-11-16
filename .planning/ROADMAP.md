@@ -258,14 +258,14 @@ updated: 2026-11-15T23:45:00+05:30
 ---
 
 ### Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** Implement end-to-end execution pipeline capturing build/test logs, diff patches, test summaries, persisting durable state in `public.agent_runs`, and broadcasting real-time updates to Web Dashboard and Telegram (`REQ-EX-04`).  
 **Depends on:** Phase 17  
 **Requirements:** REQ-EX-04  
 
 **Plans:**
-- [ ] Plan 18.1: Execution telemetry and artifact storage service writing diffs and logs to Supabase Storage / database tables.
-- [ ] Plan 18.2: Integration with Agent Run State Machine, Task status transitions, and dual-channel progress notifications.
+- [x] Plan 18.1: Execution telemetry and artifact storage service writing diffs and logs to Supabase Storage / database tables.
+- [x] Plan 18.2: Integration with Agent Run State Machine, Task status transitions, and dual-channel progress notifications.
 
 ---
 
@@ -300,7 +300,7 @@ updated: 2026-11-15T23:45:00+05:30
 | 15 | Coding Agent Interface & Engine Contract | ✅ | 2/2 | 100% |
 | 16 | Headless Aider CLI Adapter | ✅ | 2/2 | 100% |
 | 17 | Ephemeral Sandbox Runner Environment | ✅ | 2/2 | 100% |
-| 18 | Execution Telemetry & Artifact Pipeline | ⏳ | 0/2 | — |
+| 18 | Execution Telemetry & Artifact Pipeline | ✅ | 2/2 | 100% |
 
 ---
 

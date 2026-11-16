@@ -180,6 +180,31 @@ export class AgentRunRepository extends BaseRepository {
     }
   }
 
+  public async recordArtifact(
+    runId: string,
+    data: CreateArtifactDTO
+  ): Promise<RunArtifact> {
+    return this.addArtifact(runId, data);
+  }
+
+  public async listRecentRuns(limit: number = 20): Promise<AgentRun[]> {
+    try {
+      const { data, error } = await this.client
+        .from("agent_runs")
+        .select()
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        this.handleError(error, "Failed to list recent agent runs");
+      }
+
+      return data ?? [];
+    } catch (err) {
+      this.handleError(err, "Failed to list recent agent runs");
+    }
+  }
+
   public async listArtifacts(runId: string): Promise<RunArtifact[]> {
     try {
       const { data, error } = await this.client

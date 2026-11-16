@@ -1,22 +1,19 @@
 # JARVIS — Current System State
 
 **Status Date:** 2026-11-16  
-**Current Milestone:** Milestone 5 (v5.0) — Coding Execution Sandbox (Active)  
-**Active Phase:** Phase 17 Complete — Ready for Phase 18 Planning (`/gsd-plan-phase 18`)  
+**Current Milestone:** Milestone 5 (v5.0) — Coding Execution Sandbox (Complete — 100%)  
+**Active Phase:** Phase 18 Complete — Ready for Milestone 6 Cycle Initiation (`/gsd-new-milestone`)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `27c8c5a` (`docs(phase-17): plan ephemeral sandbox runner environment`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phase 17 (Ephemeral Sandbox Runner Environment) fully implemented and empirically verified:
-  - `GitHubClient` extended with `dispatchWorkflow` and `getWorkflowRun` enforcing `ref === "main"` (`NFR-SEC-01`).
-  - `GitHubActionsSandboxRunner` triggering ephemeral container runners with zero master secret leakage (`NFR-SEC-02`).
-  - `LocalSandboxRunner` providing isolated scratchpad directory execution with automatic workspace teardown.
-  - `SandboxOrchestrator` managing automated runner routing between GitHub Actions and local fallback.
-  - Ephemeral GitHub Actions workflow template authored in `.github/workflows/coding-agent.yml`.
-  - App Router diagnostic route `/api/agents/sandbox` reporting runner health and supported modes.
-- Vitest Test Suite: 58/58 test files passed, 368/368 tests green (100%).
-- Next.js Production Build: 15 static and dynamic routes compiled with 0 errors and 0 warnings.
+- Phase 18 (Execution Telemetry, Artifact Capture & Run State Machine Integration) fully implemented and empirically verified:
+  - `ArtifactPipeline` with SHA-256 checksums, secret credential sanitization (`NFR-SEC-02`), and structured markdown summary generation.
+  - `ExecutionCoordinator` synchronizing `TaskRepository` and `AgentRunRepository` states across execution lifecycle with real-time Telegram MarkdownV2 alerts.
+  - `GET /api/agents/runs` and `POST /api/agents/runs` App Router routes.
+  - `AgentRunsCard` component displaying status pills, commit short SHAs `(main 🔒)`, test pass/fail counts, and duration on dashboard overview.
+- Vitest Test Suite: 61/61 test files passed, 382/382 tests green (100%).
+- Next.js Production Build: 16 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit, pre-push, and CLI validators.
 
 ---

@@ -18,7 +18,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 | **REQ-EX-01** | **Standard Coding Agent Interface:** Provider-agnostic TypeScript contract (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`) decoupling orchestration from coding CLI engines. | docs/CODING_AGENT_INTERFACE.md §2 | 15 | Complete |
 | **REQ-EX-02** | **Headless Aider CLI Adapter:** Automated execution engine wrapping Aider in batch, non-interactive mode with file modification boundaries, OpenRouter provider mapping, and 3-strike bounded repair. | docs/CODING_AGENT_INTERFACE.md §3, §5 | 16 | Complete |
 | **REQ-EX-03** | **Ephemeral Sandbox Runner:** Isolated execution environment (GitHub Actions workflow dispatcher & local Docker runner fallback) ensuring zero exposure of master credentials or persistent host state. | docs/CODING_AGENT_INTERFACE.md §4 | 17 | Complete |
-| **REQ-EX-04** | **Execution Telemetry & Artifact Pipeline:** Pipeline capturing diff patches, test summaries, and build logs, persisting state transitions in `public.agent_runs`, and updating Web Dashboard and Telegram. | docs/CODING_AGENT_INTERFACE.md §2, PRD §7.6 | 18 | Pending |
+| **REQ-EX-04** | **Execution Telemetry & Artifact Pipeline:** Pipeline capturing diff patches, test summaries, and build logs, persisting state transitions in `public.agent_runs`, and updating Web Dashboard and Telegram. | docs/CODING_AGENT_INTERFACE.md §2, PRD §7.6 | 18 | Complete |
 
 ---
 

@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { AICoreStatus } from "@/components/dashboard/ai-core-status";
 import { PendingApprovalsCard } from "@/components/dashboard/pending-approvals-card";
 import { GitSyncStatusCard } from "@/components/dashboard/git-sync-status";
+import { AgentRunsCard } from "@/components/dashboard/agent-runs-card";
 import { ActiveProjectsList } from "@/components/dashboard/active-projects-list";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -34,6 +35,11 @@ export default function Home() {
             />
             <GitSyncStatusCard />
             <PendingApprovalsCard approvals={[]} />
+          </div>
+
+          {/* Autonomous Execution Telemetry & Runs */}
+          <div className="grid grid-cols-1 gap-6">
+            <AgentRunsCard />
           </div>
 
           {/* Bottom Row: Active Projects & Activity Feed */}

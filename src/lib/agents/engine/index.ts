@@ -23,6 +23,9 @@ export * from "./sandbox/github-actions-runner";
 export * from "./sandbox/local-sandbox-runner";
 export * from "./sandbox/sandbox-orchestrator";
 
+// Telemetry, Artifact Pipeline & Execution Coordinator
+export * from "./telemetry";
+
 import { codingEngineRegistry } from "./registry";
 import { AiderCliAdapter } from "./aider/aider-adapter";
 

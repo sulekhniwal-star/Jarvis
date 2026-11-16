@@ -7,22 +7,25 @@ updated: 2026-11-15T23:05:00+05:30
 ## Current Position
 
 **Milestone:** v5.0 - Coding Execution Sandbox (Active)  
-**Phase:** 15 - Coding Agent Interface & Execution Engine Contract (Complete)  
-**Status:** Complete  
-**Plan:** Ready for Phase 16 Planning (`/gsd-plan-phase 16`)
+**Phase:** 16 - Headless Aider CLI Adapter & Configuration Synthesizer  
+**Status:** Planned  
+**Plan:** Ready for Phase 16 Execution (`/gsd-execute-phase 16`)
 
 ## Last Action
 
-Executed Phase 15 (Coding Agent Interface & Execution Engine Contract):
-- Plan 15.1: Implemented `ICodingAgentEngine`, Zod schemas for `CodingTaskContext` (strictly enforcing `targetBranch: 'main'`), `CodingTaskResult`, `ExecutionArtifact`, `CodingEngineRegistry`, and deterministic `MockCodingAgentEngine`.
-- Plan 15.2: Implemented `TaskContextSynthesizer` with path traversal sanitization, sensitive environment credential stripping (`NFR-SEC-02`), structured instructions compiler, App Router route `/api/agents/engine`, and unified barrel exports in `src/lib/agents/engine/index.ts`.
-- Empirical verification: 53/53 test files passed (335/335 tests green, 100%), Next.js production build succeeded with 0 errors and 0 warnings across 14 routes.
-- Authored `15-SUMMARY.md` and updated `ROADMAP.md` and `REQUIREMENTS.md` (`REQ-EX-01` Complete).
+Authored Phase 16 plans and research:
+- `16-RESEARCH.md`: Defined Aider batch flags (`--yes-always`, `--no-show-model-warnings`), OpenRouter provider mapping, `.aider.conf.yml` syntax, output parsing heuristics, and 3-strike bounded repair protocol.
+- `16-01-PLAN.md` (Wave 1): Aider types, configuration synthesizer, CLI arguments generator, and process output parser with unit tests.
+- `16-02-PLAN.md` (Wave 2): 3-strike bounded repair handler, `AiderCliAdapter` implementing `ICodingAgentEngine`, engine registry auto-registration, and comprehensive unit tests with DI mocks.
+- Successfully verified plan validity against all 8 plan-checker quality dimensions.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 16` to research and author plans for Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer (`REQ-EX-02`).
-2. Implement Aider non-interactive batch runner, YAML configuration generator, git commit and diff parser, and 3-strike bounded repair protocol.
+1. Execute Phase 16 (`/gsd-execute-phase 16`):
+   - Wave 1: Implement `types.ts`, `config-synthesizer.ts`, `output-parser.ts`, and unit tests.
+   - Wave 2: Implement `repair-handler.ts`, `aider-adapter.ts`, register in `index.ts`, and unit tests.
+2. Verify all test suites and Next.js production build pass cleanly.
+3. Advance to Phase 17 (Ephemeral Sandbox Runner Environment).
 
 ## Active Decisions
 

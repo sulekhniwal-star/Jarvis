@@ -7,22 +7,20 @@ updated: 2026-11-16T17:15:00+05:30
 ## Current Position
 
 **Milestone:** v7.0 - Projects, Agents & Memory UI (Active)  
-**Current Phase:** 24 - Agent Operations Console & Telemetry Viewer  
-**Status:** Complete  
-**Plan:** Ready to plan Phase 25 (`/gsd-plan-phase 25`)
+**Current Phase:** 25 - pgvector Semantic Memory Store & Context Retrieval  
+**Status:** Ready for Execution  
+**Plan:** Plans authored (25-01-PLAN.md, 25-02-PLAN.md). Ready to execute Phase 25 (`/gsd-execute-phase 25`).
 
 ## Last Action
 
-Executed and verified Phase 24 (Agent Operations Console & Telemetry Viewer):
-- Wave 1: Enhanced `GET /api/agents/runs` with pagination, status/engine/search filters, metadata enrichment, and aggregate metrics. Added "Agents" to navigation. Built `AgentsConsoleView` and `/agents` App Router page.
-- Wave 2: Built `GET /api/agents/runs/[id]` with diff AST parsing and quality scoring. Built `RunHeader`, `ExecutionStepTimeline` (4-stage stepper), `DiffViewer` (line-by-line syntax coloring + quality risk assessment), `LogViewer` (terminal stdout/stderr + search), `RunArtifactsList` (SHA-256 checksums + byte sizes), and master `RunTelemetryView` at `/agents/runs/[id]`.
-- Full Vitest test suite verified: 80/80 test files passed, 502/502 tests green (100%).
-- Next.js production build verified: 23 static and dynamic routes compiled with 0 errors and 0 warnings.
-- Authored `24-SUMMARY.md`.
+Planned Phase 25 (pgvector Semantic Memory Store & Context Retrieval):
+- Researched technical architecture, HNSW cosine index, OpenRouter text-embedding-3-small + deterministic 1536-dim unit-normalized fallback, and agent context injection (`25-RESEARCH.md`).
+- Authored Plan 25.1 (`25-01-PLAN.md`): `match_memories` RPC migration, `EmbeddingService`, `MemoryRepository`, and `SpecifierAgent`/`PlannerAgent` memory context injection.
+- Authored Plan 25.2 (`25-02-PLAN.md`): `/api/memories` and `/api/memories/[id]` routes, top-level sidebar navigation integration, `MemoryBrowserView`, and `/memory` App Router page.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 25` to research and plan Phase 25 (pgvector Semantic Memory Repository, Retrieval & Curation UI).
+1. Run `/gsd-execute-phase 25` to execute Wave 1 (Plan 25.1) and Wave 2 (Plan 25.2).
 
 ## Active Decisions
 

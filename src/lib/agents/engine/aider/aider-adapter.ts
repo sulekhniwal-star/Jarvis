@@ -18,6 +18,8 @@ export interface ProcessRunOptions {
   env?: Record<string, string>;
 }
 
+import { VerificationHarness } from "../verification/verification-harness";
+
 export type ProcessRunner = (
   command: string,
   args: string[],
@@ -40,6 +42,7 @@ export interface AiderCliAdapterOptions {
   openRouterBaseUrl?: string;
   processRunner?: ProcessRunner;
   verificationRunner?: VerificationRunner;
+  verificationHarness?: VerificationHarness;
   gitRollbackRunner?: GitRollbackRunner;
 }
 
@@ -54,6 +57,7 @@ export class AiderCliAdapter implements ICodingAgentEngine {
   private openRouterBaseUrl?: string;
   private processRunner: ProcessRunner;
   private verificationRunner: VerificationRunner;
+  private verificationHarness?: VerificationHarness;
   private gitRollbackRunner: GitRollbackRunner;
   private repairHandler: AiderRepairHandler;
 
@@ -62,6 +66,7 @@ export class AiderCliAdapter implements ICodingAgentEngine {
     this.openRouterApiKey = options.openRouterApiKey;
     this.openRouterBaseUrl = options.openRouterBaseUrl;
     this.repairHandler = new AiderRepairHandler();
+    this.verificationHarness = options.verificationHarness;
 
     // Default process runner using child_process (with lazy import to support non-node environments if needed)
     this.processRunner =
@@ -230,88 +235,129 @@ export class AiderCliAdapter implements ICodingAgentEngine {
       durationMs: processResult.durationMs,
     };
 
-    if (verificationCmd) {
-      let verification = await this.verificationRunner(verificationCmd);
+    let verificationFailed = false;
+    let verificationOutput = "";
 
-      if (verification.exitCode !== 0) {
-        // Verification failed — engage 3-strike bounded repair protocol
-        let repairState = this.repairHandler.createInitialState(
-          validated.maxRetries || 3
-        );
+    const runVerificationPass = async (): Promise<{
+      failed: boolean;
+      output: string;
+    }> => {
+      if (this.verificationHarness) {
+        const vResult = await this.verificationHarness.runAll({
+          customCommand: verificationCmd,
+        });
+        testSummary = vResult.summary;
+        allArtifacts.push(...vResult.artifacts);
+        if (vResult.status !== "passed") {
+          return {
+            failed: true,
+            output:
+              vResult.failureDetails ||
+              vResult.stages
+                .filter((s) => s.status === "failed")
+                .map((s) => `${s.stage}: ${s.errorSummary || s.stderr}`)
+                .join("\n"),
+          };
+        }
+        return { failed: false, output: "" };
+      }
 
-        while (!repairState.isTerminated) {
-          const { nextState, repairPrompt, shouldRollback } =
-            this.repairHandler.recordStrike(
-              repairState,
-              verification.output,
-              parsed.diffPatch
-            );
+      if (verificationCmd) {
+        const v = await this.verificationRunner(verificationCmd);
+        if (v.exitCode !== 0) {
+          return { failed: true, output: v.output };
+        }
+      }
 
-          repairState = nextState;
+      return { failed: false, output: "" };
+    };
 
-          if (shouldRollback) {
-            // Strike 3 reached: execute safe rollback
-            try {
-              await this.gitRollbackRunner(validated.allowedFilePatterns);
-            } catch (rollbackErr) {
-              // Note rollback error if any
-              allArtifacts.push({
-                name: "rollback-error.log",
-                artifactType: "test_log",
-                content: String(rollbackErr),
-                mimeType: "text/plain",
-              });
-            }
+    const initialVerification = await runVerificationPass();
+    if (initialVerification.failed) {
+      verificationFailed = true;
+      verificationOutput = initialVerification.output;
+    }
 
-            return {
-              runId: validated.runId,
-              status: "test_failure",
-              exitCode: 1,
-              commitHash: undefined,
-              diffPatch: undefined,
-              testSummary: {
-                passed: 0,
-                failed: 1,
-                skipped: 0,
-                durationMs: processResult.durationMs,
-              },
-              artifacts: allArtifacts,
-              errorDetails: `3-strike bounded repair exhausted (${repairState.currentStrike}/${repairState.maxStrikes} strikes). Changes rolled back to base commit.`,
-            };
+    if (verificationFailed) {
+      // Verification failed — engage 3-strike bounded repair protocol
+      let repairState = this.repairHandler.createInitialState(
+        validated.maxRetries || 3
+      );
+
+      while (!repairState.isTerminated) {
+        const { nextState, repairPrompt, shouldRollback } =
+          this.repairHandler.recordStrike(
+            repairState,
+            verificationOutput,
+            parsed.diffPatch
+          );
+
+        repairState = nextState;
+
+        if (shouldRollback) {
+          // Strike 3 reached: execute safe rollback
+          try {
+            await this.gitRollbackRunner(validated.allowedFilePatterns);
+          } catch (rollbackErr) {
+            // Note rollback error if any
+            allArtifacts.push({
+              name: "rollback-error.log",
+              artifactType: "test_log",
+              content: String(rollbackErr),
+              mimeType: "text/plain",
+            });
           }
 
-          // Execute repair pass with targeted prompt
-          const repairArgs = synthesizeAiderArgs(validated, {
-            modelConfig: {
-              model: this.defaultModel,
-              apiBase: this.openRouterBaseUrl,
-              apiKey: this.openRouterApiKey,
-            },
-            message: repairPrompt,
-          });
-
-          processResult = await this.processRunner("aider", repairArgs, {
-            env: validated.environmentVariables,
-          });
-
-          parsed = parseAiderOutput(
-            processResult,
-            validated.allowedFilePatterns
-          );
-          allArtifacts.push(...extractExecutionArtifacts(processResult, parsed));
-
-          // Re-run verification
-          verification = await this.verificationRunner(verificationCmd);
-          if (verification.exitCode === 0) {
-            // Repair succeeded!
-            testSummary = {
-              passed: 1,
-              failed: 0,
+          return {
+            runId: validated.runId,
+            status: "test_failure",
+            exitCode: 1,
+            commitHash: undefined,
+            diffPatch: undefined,
+            testSummary: {
+              passed: 0,
+              failed: 1,
               skipped: 0,
               durationMs: processResult.durationMs,
-            };
-            break;
-          }
+            },
+            artifacts: allArtifacts,
+            errorDetails: `3-strike bounded repair exhausted (${repairState.currentStrike}/${repairState.maxStrikes} strikes). Changes rolled back to base commit.`,
+          };
+        }
+
+        // Execute repair pass with targeted prompt
+        const repairArgs = synthesizeAiderArgs(validated, {
+          modelConfig: {
+            model: this.defaultModel,
+            apiBase: this.openRouterBaseUrl,
+            apiKey: this.openRouterApiKey,
+          },
+          message: repairPrompt,
+        });
+
+        processResult = await this.processRunner("aider", repairArgs, {
+          env: validated.environmentVariables,
+        });
+
+        parsed = parseAiderOutput(
+          processResult,
+          validated.allowedFilePatterns
+        );
+        allArtifacts.push(...extractExecutionArtifacts(processResult, parsed));
+
+        // Re-run verification
+        const repairVerification = await runVerificationPass();
+        if (!repairVerification.failed) {
+          // Repair succeeded!
+          testSummary = {
+            passed: 1,
+            failed: 0,
+            skipped: 0,
+            durationMs: processResult.durationMs,
+          };
+          break;
+        } else {
+          verificationOutput = repairVerification.output;
         }
       }
     }

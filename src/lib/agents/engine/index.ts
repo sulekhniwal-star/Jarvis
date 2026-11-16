@@ -26,6 +26,9 @@ export * from "./sandbox/sandbox-orchestrator";
 // Telemetry, Artifact Pipeline & Execution Coordinator
 export * from "./telemetry";
 
+// Verification Framework & Test Runner Harness
+export * from "./verification";
+
 import { codingEngineRegistry } from "./registry";
 import { AiderCliAdapter } from "./aider/aider-adapter";
 

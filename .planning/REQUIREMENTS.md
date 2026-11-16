@@ -15,7 +15,7 @@ Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-VR-01** | **Automated Verification Runner & Test Harness:** Multi-stage test executor running linting, typechecking (`tsc --noEmit`), test runner (`vitest`/`jest`), and production build with custom command overrides and structured JSON test summaries. | PRD §7.6, §7.7 | 19 | Pending |
+| **REQ-VR-01** | **Automated Verification Runner & Test Harness:** Multi-stage test executor running linting, typechecking (`tsc --noEmit`), test runner (`vitest`/`jest`), and production build with custom command overrides and structured JSON test summaries. | PRD §7.6, §7.7 | 19 | Complete |
 | **REQ-VR-02** | **Automated Diff Inspector & Quality Gate:** Semantic diff inspector verifying proposed modifications stay within declared file boundaries, checking for unintended file deletions or AST regressions, and calculating diff metrics. | PRD §7.7, §7.9 | 20 | Pending |
 | **REQ-VR-03** | **Pre-Commit Entropy & Secret Scanner:** High-entropy detector and credential pattern scanner preventing passwords, service-role keys, tokens, or credentials from being committed, backed by explicit owner approval override cards. | PRD §7.7, NFR-SEC-02 | 21 | Pending |
 | **REQ-VR-04** | **Autonomous Self-Review & Bounded Repair Protocol:** Diagnostic analysis on test/compiler errors generating targeted corrective instructions for coding engines, bounded by a strict 3-strike budget with automated safe rollback and Telegram alerts. | PRD §7.6, §7.9 | 22 | Pending |

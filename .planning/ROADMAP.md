@@ -1,14 +1,24 @@
 ---
-milestone: "v6.0 - Quality, Verification & Self-Review"
-version: "6.0.0"
-updated: 2026-11-16T15:52:00+05:30
+milestone: "v7.0 - Projects, Agents & Memory UI"
+version: "7.0.0"
+updated: 2026-11-16T16:32:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v6.0 - Quality, Verification & Self-Review (Complete & Archived)  
-> **Next Milestone:** v7.0 - Projects, Agents & Memory UI  
-> **Status:** Milestone 6 Complete; Ready for Milestone 7 (`/gsd-new-milestone`)
+> **Current Milestone:** v7.0 - Projects, Agents & Memory UI (Active)  
+> **Current Phase:** 23 - Project Workspace & Hierarchy UI  
+> **Status:** Ready for Planning (`/gsd-plan-phase 23`)
+
+---
+
+## Must-Haves (Milestone 7 Baseline)
+
+- [ ] Dedicated Project Workspace pages (`/projects`, `/projects/[id]`) with milestone hierarchy, completion velocity, and interactive Kanban board with status columns (`backlog`, `in_progress`, `blocked`, `completed`).
+- [ ] Dedicated Agent Operations Console (`/agents`, `/agents/runs/[id]`) with live execution timeline, tabbed stdout/stderr logs, git diff viewer with quality scores, and artifact inspection drawer.
+- [ ] pgvector Semantic Memory Store (`MemoryRepository`, `public.memories`) using OpenRouter 1536-dim embeddings with deterministic offline fallback and top-K similarity context injection for `SpecifierAgent` and `PlannerAgent`.
+- [ ] Memory Curation & Management Web Interface to browse, search semantically, create, edit, and delete memories with full provenance.
+- [ ] Real-time State Synchronization Engine subscribing to Supabase Realtime postgres changes for `tasks`, `agent_runs`, `projects`, and `approvals` with resilient fallback polling.
 
 ---
 
@@ -23,12 +33,53 @@ updated: 2026-11-16T15:52:00+05:30
 
 ---
 
-## Next Milestone: Milestone 7 — Projects, Agents & Memory UI (v7.0)
+## Phases for Milestone 7: Projects, Agents & Memory UI
 
-- [ ] Project Workspace UI: Interactive project detail dashboard with milestone and task hierarchy drill-downs, status management, and real-time updates.
-- [ ] Agent Operations Console: Visual inspector for durable agent runs, live step logs, artifact viewer, and execution timeline.
-- [ ] Semantic Memory Service (pgvector): Vector embeddings and similarity search storing project context, past mistakes, and architectural decisions.
-- [ ] Real-time Collaboration Engine: Supabase Realtime channel subscriptions reflecting state changes instantly in web UI.
+### Phase 23: Project Workspace & Hierarchy UI
+**Status:** ⏳ Pending  
+**Objective:** Construct dedicated `/projects` index and `/projects/[id]` detail workspace featuring project metadata, milestone hierarchy drill-down, progress metrics, and an interactive Kanban board with status toggle columns and task detail drawer (`REQ-UI-PROJ-01`, `REQ-UI-PROJ-02`).  
+**Depends on:** Phase 22 (Milestone 6)  
+**Requirements:** REQ-UI-PROJ-01, REQ-UI-PROJ-02  
+
+**Plans:**
+- [ ] Plan 23.1: Project workspace routes (`/projects`, `/projects/[id]`), breadcrumbs, milestone hierarchy tree, and project metadata header.
+- [ ] Plan 23.2: Interactive Kanban task board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer linking specs/plans/runs.
+
+---
+
+### Phase 24: Agent Operations Console & Telemetry Viewer
+**Status:** ⏳ Pending  
+**Objective:** Build dedicated `/agents` dashboard and `/agents/runs/[id]` drill-down console displaying durable agent execution history, step execution timeline, tabbed stdout/stderr logs, git diff viewer with quality score badges, and artifact drawer (`REQ-UI-AGENT-01`, `REQ-UI-AGENT-02`).  
+**Depends on:** Phase 23  
+**Requirements:** REQ-UI-AGENT-01, REQ-UI-AGENT-02  
+
+**Plans:**
+- [ ] Plan 24.1: Agent operations dashboard (`/agents`) with status filtering, duration/cost metrics, and recent runs table.
+- [ ] Plan 24.2: Run telemetry drill-down (`/agents/runs/[id]`) with execution timeline, tabbed log viewer, git diff viewer, and artifact drawer.
+
+---
+
+### Phase 25: pgvector Semantic Memory Store & Context Retrieval
+**Status:** ⏳ Pending  
+**Objective:** Implement typed `MemoryRepository` connected to `public.memories` using 1536-dimensional vector embeddings via OpenRouter (with deterministic local fallback), cosine similarity retrieval for agent context injection, and an interactive memory curation web interface (`REQ-MEM-01`, `REQ-MEM-02`, `REQ-MEM-03`, `NFR-PERF-01`).  
+**Depends on:** Phase 24  
+**Requirements:** REQ-MEM-01, REQ-MEM-02, REQ-MEM-03, NFR-PERF-01  
+
+**Plans:**
+- [ ] Plan 25.1: `MemoryRepository` data access layer, OpenRouter embedding generator with deterministic local fallback, and top-K similarity search service.
+- [ ] Plan 25.2: Memory context injection for `SpecifierAgent` and `PlannerAgent`, plus interactive memory curation web UI (`/memory`).
+
+---
+
+### Phase 26: Real-Time State Synchronization Engine
+**Status:** ⏳ Pending  
+**Objective:** Implement Supabase Realtime client hooks and channel subscriptions across `tasks`, `agent_runs`, `projects`, and `approvals`, providing instant optimistic UI updates and resilient fallback polling upon disconnection (`REQ-RT-01`, `NFR-REL-01`).  
+**Depends on:** Phase 25  
+**Requirements:** REQ-RT-01, NFR-REL-01  
+
+**Plans:**
+- [ ] Plan 26.1: Supabase Realtime connection manager, channel subscription hooks, and optimistic UI state synchronizers.
+- [ ] Plan 26.2: Reconnect resilience, fallback polling mechanisms, and end-to-end integration tests for real-time dashboard updates.
 
 ---
 
@@ -40,7 +91,7 @@ updated: 2026-11-16T15:52:00+05:30
 
 ---
 
-## Progress Summary (All 22 Phases Complete)
+## Progress Summary
 
 | Phase | Description | Status | Plans | Complete |
 |---|---|---|---|---|
@@ -66,3 +117,7 @@ updated: 2026-11-16T15:52:00+05:30
 | 20 | Automated Diff Inspector & Quality Gate | ✅ | 2/2 | 100% |
 | 21 | Pre-Commit Entropy & Secret Scanner | ✅ | 2/2 | 100% |
 | 22 | Autonomous Self-Review & Bounded Repair | ✅ | 2/2 | 100% |
+| 23 | Project Workspace & Hierarchy UI | ⏳ | 0/2 | 0% |
+| 24 | Agent Operations Console & Telemetry Viewer | ⏳ | 0/2 | 0% |
+| 25 | pgvector Semantic Memory Store & Context | ⏳ | 0/2 | 0% |
+| 26 | Real-Time State Synchronization Engine | ⏳ | 0/2 | 0% |

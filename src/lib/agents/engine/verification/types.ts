@@ -55,6 +55,9 @@ export const VerificationHarnessConfigSchema = z.object({
   defaultCommands: z
     .record(VerificationStageSchema, z.string())
     .optional(),
+  diffPatch: z.string().optional(),
+  allowedFilePatterns: z.array(z.string()).optional(),
+  allowDeletions: z.boolean().optional(),
 });
 export type VerificationHarnessConfig = z.infer<
   typeof VerificationHarnessConfigSchema
@@ -66,6 +69,7 @@ export interface VerificationResult {
   stages: VerificationStageResult[];
   summary: TestSummary;
   artifacts: ExecutionArtifact[];
+  diffReport?: import("./diff-inspector/types").DiffInspectionReport;
   failureStage?: VerificationStage;
   failureDetails?: string;
 }

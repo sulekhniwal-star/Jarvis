@@ -13,6 +13,7 @@ import {
   parseESLintOutput,
   parseNextBuildOutput,
 } from "./parsers";
+import { diffInspector } from "./diff-inspector";
 import { ExecutionArtifact, TestSummary } from "../types";
 
 export interface StageProcessOptions {
@@ -157,6 +158,9 @@ export class VerificationHarness {
       timeoutMs: config?.timeoutMs ?? 60000,
       cwd: config?.cwd,
       env: config?.env,
+      diffPatch: config?.diffPatch,
+      allowedFilePatterns: config?.allowedFilePatterns,
+      allowDeletions: config?.allowDeletions,
       defaultCommands: {
         ...defaultCommands,
         ...(config?.defaultCommands || {}),
@@ -300,6 +304,28 @@ export class VerificationHarness {
     let combinedTestLog = "";
     let combinedBuildLog = "";
 
+    // Run Diff Quality Gate if diffPatch is provided in config
+    let diffReport: import("./diff-inspector/types").DiffInspectionReport | undefined;
+    if (activeConfig.diffPatch) {
+      diffReport = diffInspector.inspect(activeConfig.diffPatch, {
+        allowedFilePatterns: activeConfig.allowedFilePatterns,
+        allowDeletions: activeConfig.allowDeletions,
+      });
+
+      if (!diffReport.passed) {
+        hasFailed = true;
+        if (!failureStage) {
+          failureStage = "custom";
+          const blockers = diffReport.violations.filter(
+            (v) => v.severity === "blocker"
+          );
+          failureDetails = `Diff inspection quality gate failed: ${blockers
+            .map((b) => b.message)
+            .join("; ")}`;
+        }
+      }
+    }
+
     const stagesToRun = [...activeConfig.stages];
     if (activeConfig.customCommand && !stagesToRun.includes("custom")) {
       stagesToRun.push("custom");
@@ -392,12 +418,23 @@ export class VerificationHarness {
       });
     }
 
+    if (diffReport) {
+      artifacts.push({
+        name: "diff-quality.md",
+        artifactType: "diff",
+        content: diffReport.markdownSummary,
+        mimeType: "text/markdown",
+        path: "verification/diff-quality.md",
+      });
+    }
+
     return {
       status: hasFailed ? "failed" : "passed",
       overallDurationMs,
       stages: stageResults,
       summary,
       artifacts,
+      diffReport,
       failureStage,
       failureDetails,
     };

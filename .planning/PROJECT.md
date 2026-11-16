@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-16T12:26:00+05:30
-milestone: "v6.0 - Quality, Verification & Self-Review"
+updated: 2026-11-16T15:52:00+05:30
+milestone: "v7.0 - Projects, Agents & Memory UI"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -84,12 +84,13 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 | **Git / Repo Policy** | GitHub App, Main-only branch policy | Scoped permissions, status inspection, strict prevention of non-main branches or force pushes. |
 | **Execution Environment** | Ephemeral Docker containers / GitHub Actions runners | Isolated execution for coding agents (Aider candidate), ephemeral filesystem, network-bounded. |
 | **Auxiliary Channel** | Telegram Bot API | Secure remote status notifications, approval responses, and task submission. |
+| **Verification & Self-Review** | VerificationHarness, DiffInspector, SecretScanner, BoundedRepairRunner | 4-stage automated gate enforcing lint, tsc, tests, builds, zero secrets, and 3-strike safe rollback. |
 
 ---
 
 ## Completed Milestones
 
-### Milestone 0 / v1.0 — Core Platform Foundation & Architecture (✅ Complete 2026-11-15)
+### Milestone 1 / v1.0 — Core Platform Foundation & Architecture (✅ Complete 2026-11-15)
 - **Phase 1: Environment & Project Foundation:** Next.js 15+ App Router, Tailwind CSS tokens, Vitest test harness, and Git safety guard.
 - **Phase 2: Database & Authentication Infrastructure:** Supabase 14 core tables, 100% RLS policies, SSR client factories, and Auth route handlers.
 - **Phase 3: Core Domain Models & Repositories:** Typed repositories for Projects, Milestones, Tasks, Conversations, Approvals, Runs, and domain state machines.
@@ -101,21 +102,15 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 - **Phase 7: Execution Planning Engine:** Planner Agent decomposing specifications into atomic steps, dependency DAGs, risk scoring, and required approval calculation.
 - **Phase 8: Plan Review UI & Approval Gate:** Visual plan review interface, DAG viewer, risk banner, double-submission protected decision controls, and approval lifecycle API.
 
----
-
 ### Milestone 3 / v3.0 — Telegram Gateway (✅ Complete 2026-11-15)
 - **Phase 9: Telegram Core Client & Security Guard:** Type-safe Telegram Bot API client wrapper, MarkdownV2 escaping utilities, single-owner security guard (`OWNER_TELEGRAM_ID`), webhook secret verification, App Router route handler (`/api/telegram/webhook`), dev polling runner, and base command router (`/start`, `/status`, `/budget`, `/projects`).
 - **Phase 10: Telegram Remote Task Intake & Status Reporting:** Free-text task intake forwarding into Specification Engine (`SpecifierAgent`), conversational Socratic clarification loop, `/cancel` command, and real-time status reporting.
 - **Phase 11: Telegram Interactive Approval Cards & Decision Webhook:** Rich interactive cards with inline callback buttons (`[ ✅ Approve ]`, `[ ❌ Reject ]`), callback query handler updating durable `public.approvals` and task state machine, in-place message editing, and CLI fallback commands (`/approve`, `/reject`).
 
----
-
 ### Milestone 4 / v4.0 — GitHub Integration & Branchless Discipline (✅ Complete 2026-11-15)
 - **Phase 12: GitHub API Client, Authentication & Webhook Receiver:** Strongly-typed GitHub API client (`GitHubClient`), authentication via Personal Access Token / GitHub App, and App Router webhook route (`/api/github/webhook`) with timing-safe HMAC SHA-256 signature verification (`X-Hub-Signature-256`) and branchless enforcement.
 - **Phase 13: Remote Git Push Approval Gate & Branchless Safety Guard:** Pre-push validation engine (`validatePrePush`) enforcing clean tree and zero secrets in outgoing diffs, `PushGateService` requiring human approval in `ApprovalRepository`, `/api/git/push` route, and real-time Telegram inline card push execution.
 - **Phase 14: Repository Synchronization Monitor & Dual-Channel Status:** `RepoSyncMonitor` computing ahead/behind divergence between local `main` HEAD and remote `origin/main`, `/api/git/sync` route, Web Dashboard sync card (`GitSyncStatusCard`), and Telegram `/status` & `/projects` sync reporting.
-
----
 
 ### Milestone 5 / v5.0 — Coding Execution Sandbox (✅ Complete 2026-11-16)
 - **Phase 15: Coding Agent Interface & Execution Engine Contract:** TypeScript interfaces (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`), engine registry, mock engine, and context synthesis with path traversal defense (`NFR-SEC-01`, `NFR-SEC-02`).
@@ -123,15 +118,21 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 - **Phase 17: Ephemeral Sandbox Runner Environment:** GitHub Actions workflow dispatcher (`workflow_dispatch`), ephemeral credential scoping, isolated local scratchpad fallback, and unified `SandboxOrchestrator`.
 - **Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration:** Telemetry coordinator, SHA-256 artifact hashing and credential sanitization, database state synchronization, Next.js App Router API, and Web Dashboard `AgentRunsCard`.
 
+### Milestone 6 / v6.0 — Quality, Verification & Self-Review (✅ Complete 2026-11-16)
+- **Phase 19: Automated Verification Framework & Test Runner Harness:** Standardized multi-stage verification pipeline running Vitest, ESLint, TypeScript compiler (`tsc --noEmit`), and Next.js production builds with pluggable custom test command support and structured test artifact generation (`REQ-VR-01`).
+- **Phase 20: Automated Diff Inspector & Quality Gate:** Semantic diff inspection analyzing file modifications, detecting unapproved file boundary escapes, AST-based regression analysis, and code churn/quality scoring (`REQ-VR-02`).
+- **Phase 21: Pre-Commit Entropy & Secret Scanner:** Deep Shannon entropy analysis and regex pattern matching blocking master credentials, private keys, and tokens in proposed changes, with explicit human approval bypass workflows and pre-push gating (`REQ-VR-03`).
+- **Phase 22: Autonomous Self-Review & Bounded Repair Loop:** Automated diagnostic reasoning on failure outputs, targeted repair prompt synthesis, 3-strike bounded retry execution, and automated rollback with Telegram alerts upon exhaustion (`REQ-VR-04`).
+
 ---
 
-## Active Milestone: Milestone 6 — Quality, Verification & Self-Review (v6.0)
+## Active Milestone: Milestone 7 — Projects, Agents & Memory UI (v7.0)
 
-This milestone establishes the automated quality inspection, verification, and autonomous repair layer ensuring every code change is rigorously validated prior to landing on `main` (`PRD §7.6, §7.7, §7.9, §12`):
-- **Phase 19: Automated Verification Framework & Test Runner Harness:** Standardized multi-stage verification pipeline running Vitest, ESLint, TypeScript compiler (`tsc --noEmit`), and Next.js production builds with pluggable custom test command support and structured test artifact generation (`REQ-VR-01`).
-- **Phase 20: Automated Diff Inspector & Quality Gate:** Semantic diff inspection analyzing file modifications, detecting unapproved file boundary escapes, AST-based regression analysis, and code quality threshold enforcement (`REQ-VR-02`).
-- **Phase 21: Pre-Commit Entropy & Secret Scanner:** Deep entropy analysis and regex pattern matching blocking master credentials, private keys, and tokens in proposed changes, with explicit human approval bypass workflows (`REQ-VR-03`).
-- **Phase 22: Autonomous Self-Review & Bounded Repair Loop:** Automated diagnostic reasoning on failure outputs, targeted repair prompt synthesis, 3-strike bounded retry execution, and automated rollback with Telegram alerts upon exhaustion (`REQ-VR-04`).
+This milestone expands the web dashboard into a rich, interactive mission control for projects, durable agents, and semantic memory retrieval (`PRD §7.2, §7.3, §7.12, §12`):
+- **Phase 23: Project Workspace & Hierarchy UI:** Interactive project workspace with milestone, task, and specification exploration.
+- **Phase 24: Agent Runs Console & Telemetry Viewer:** Real-time agent run inspector with step execution logs, diff viewer, and artifact drawer.
+- **Phase 25: pgvector Semantic Memory Store & Context Retrieval:** Embeddings and similarity search storing project architectural decisions and past errors.
+- **Phase 26: Real-Time State Synchronization:** Supabase Realtime subscriptions keeping web client components synced with background agent operations.
 
 ## Success Criteria
 
@@ -149,7 +150,10 @@ This milestone establishes the automated quality inspection, verification, and a
 - [x] Headless Aider adapter executes task prompts within strict file-modification boundaries in batch mode.
 - [x] Ephemeral sandbox runner isolates execution with zero exposure of master credentials or persistent host state.
 - [x] Execution telemetry pipeline records complete build/test logs, diff patches, and transitions `agent_runs` state.
-- [ ] Automated verification runner executes lint, typecheck, unit tests, and production build with structured JSON reports.
-- [ ] Diff inspector enforces strict file boundary modification rules and catches unintended regressions.
-- [ ] Secret scanner blocks commits containing high-entropy tokens or credentials unless explicitly approved by owner.
-- [ ] Bounded repair engine automatically fixes failing tests within 3 iterations or triggers safe rollback with Telegram alert.
+- [x] Automated verification runner executes lint, typecheck, unit tests, and production build with structured JSON reports.
+- [x] Diff inspector enforces strict file boundary modification rules and catches unintended regressions.
+- [x] Secret scanner blocks commits containing high-entropy tokens or credentials unless explicitly approved by owner.
+- [x] Bounded repair engine automatically fixes failing tests within 3 iterations or triggers safe rollback with Telegram alert.
+- [ ] Project Workspace UI displays real-time milestone progress, task DAGs, and specification details.
+- [ ] Agent Console provides live inspection of active runs, streaming step outputs, and diff artifacts.
+- [ ] Semantic memory returns relevant architectural context and past fixes for incoming user requests.

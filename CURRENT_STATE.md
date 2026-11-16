@@ -2,20 +2,21 @@
 
 **Status Date:** 2026-11-16  
 **Current Milestone:** Milestone 5 (v5.0) — Coding Execution Sandbox (Active)  
-**Active Phase:** Phase 15 Complete — Ready for Phase 16 Planning (`/gsd-plan-phase 16`)  
+**Active Phase:** Phase 16 Complete — Ready for Phase 17 Planning (`/gsd-plan-phase 17`)  
 **Active Working Branch:** `main`  
-**Latest Local Commit:** `9fe7fc7` (`docs(phase-15): plan coding agent interface and execution engine contract`)  
+**Latest Local Commit:** `eb08bce` (`docs(phase-16): plan headless aider cli adapter and configuration synthesizer`)  
 **Remote Tracking:** `origin/main` (Local is ahead of origin; remote push requires explicit approval)  
 **Remote Push Status:** Push pending approval  
 **Repository Working Tree Status:**  
-- Phase 15 (Coding Agent Interface & Execution Engine Contract) fully implemented and empirically verified:
-  - `ICodingAgentEngine` TypeScript interface and Zod validation schemas (`CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`, `TestSummary`).
-  - Strict `targetBranch: 'main'` enforcement (`NFR-SEC-01`).
-  - `CodingEngineRegistry` supporting dynamic registration, named/default lookup, and parallel validation.
-  - `MockCodingAgentEngine` deterministic test double.
-  - `TaskContextSynthesizer` with path traversal sanitization, sensitive environment credential stripping (`NFR-SEC-02`), and structured prompt compilation.
-  - App Router route `/api/agents/engine` returning engine status and validation health checks.
-- Vitest Test Suite: 53/53 test files passed, 335/335 tests green (100%).
+- Phase 16 (Headless Aider CLI Adapter & Configuration Synthesizer) fully implemented and empirically verified:
+  - `AiderCliAdapter` implementing `ICodingAgentEngine` in batch non-interactive mode (`--yes-always`, `--no-show-model-warnings`).
+  - Strict file boundaries isolating edits strictly to `allowedFilePatterns`.
+  - OpenRouter provider mapping with default model `openrouter/qwen/qwen-2.5-coder-32b-instruct`.
+  - `AiderConfigSynthesizer` generating command-line arguments and `.aider.conf.yml` YAML.
+  - `AiderOutputParser` extracting commit SHAs, unified diff patches, and execution artifacts.
+  - `AiderRepairHandler` orchestrating 3-strike bounded repair loops with automatic termination and git rollback.
+  - Auto-registered in `codingEngineRegistry`.
+- Vitest Test Suite: 55/55 test files passed, 354/354 tests green (100%).
 - Next.js Production Build: 14 static and dynamic routes compiled with 0 errors and 0 warnings.
 - Strict `main`-only Git policy enforced via automated pre-commit, pre-push, and CLI validators.
 

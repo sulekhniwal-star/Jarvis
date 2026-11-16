@@ -234,14 +234,14 @@ updated: 2026-11-15T23:45:00+05:30
 ---
 
 ### Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** Author headless Aider CLI adapter executing non-interactive batch tasks with strict file-modification boundaries, OpenRouter provider mapping, commit extraction, and bounded repair loop (`REQ-EX-02`).  
 **Depends on:** Phase 15  
 **Requirements:** REQ-EX-02  
 
 **Plans:**
-- [ ] Plan 16.1: Aider configuration synthesizer (`.aider.conf.yml` / CLI arguments generator) and batch command runner.
-- [ ] Plan 16.2: Output parser extracting commit hashes, git diff patches, exit codes, and 3-strike bounded repair handler.
+- [x] Plan 16.1: Aider configuration synthesizer (`.aider.conf.yml` / CLI arguments generator) and batch command runner.
+- [x] Plan 16.2: Output parser extracting commit hashes, git diff patches, exit codes, and 3-strike bounded repair handler.
 
 ---
 
@@ -298,7 +298,7 @@ updated: 2026-11-15T23:45:00+05:30
 | 13 | Remote Push Approval Gate & Branchless Guard | ✅ | 2/2 | 100% |
 | 14 | Repository Sync Monitor & Dual-Channel Status | ✅ | 2/2 | 100% |
 | 15 | Coding Agent Interface & Engine Contract | ✅ | 2/2 | 100% |
-| 16 | Headless Aider CLI Adapter | ⏳ | 0/2 | — |
+| 16 | Headless Aider CLI Adapter | ✅ | 2/2 | 100% |
 | 17 | Ephemeral Sandbox Runner Environment | ⏳ | 0/2 | — |
 | 18 | Execution Telemetry & Artifact Pipeline | ⏳ | 0/2 | — |
 

@@ -30,7 +30,7 @@
 | **Milestone 4 / Phase 13** | Remote Push Approval Gate & Branchless Guard | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | **Complete** | 2026-11-15 |
 | **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Complete** | 2026-11-16 |
-| **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | Pending | 2026-11-16 |
+| **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | Pending | 2026-11-16 |
 | **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | Pending | 2026-11-16 |
 | **Milestone 6** | Quality & Self-Review | Pending | Milestone 5 Verification |
@@ -42,6 +42,24 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-16 — Work Session 15 (Phase 16 Execution: Headless Aider CLI Adapter & Configuration Synthesizer)
+- **Trigger:** `/gsd-execute-phase 16` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 16.1):
+    - Authored Aider domain types in `src/lib/agents/engine/aider/types.ts`.
+    - Implemented `AiderConfigSynthesizer` (`src/lib/agents/engine/aider/config-synthesizer.ts`) synthesizing CLI flags (`--yes-always`, `--no-show-model-warnings`, `--no-analytics`, `--model`, `--openai-api-key`, `--read`) and YAML `.aider.conf.yml` strings.
+    - Implemented `AiderOutputParser` (`src/lib/agents/engine/aider/output-parser.ts`) parsing commit hashes, unified diff patches, error signatures, and formatting `ExecutionArtifact` objects.
+    - Authored unit test suite `tests/unit/agents/engine/aider-config.test.ts` (10 tests green).
+  - Implemented Wave 2 (Plan 16.2):
+    - Implemented `AiderRepairHandler` (`src/lib/agents/engine/aider/repair-handler.ts`) providing 3-strike bounded repair state tracking, targeted prompts, and rollback signaling.
+    - Implemented `AiderCliAdapter` (`src/lib/agents/engine/aider/aider-adapter.ts`) implementing `ICodingAgentEngine` with dependency injection for `processRunner`, `verificationRunner`, and `gitRollbackRunner`.
+    - Auto-registered `AiderCliAdapter` in `codingEngineRegistry` via `src/lib/agents/engine/index.ts`.
+    - Authored unit test suite `tests/unit/agents/engine/aider-adapter.test.ts` (9 tests green).
+  - **Empirical Verification:**
+    - `pnpm test`: 55/55 test files passed, 354/354 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors and 0 warnings across 14 routes.
+  - **Artifacts:** Created `16-SUMMARY.md`. Updated `ROADMAP.md`, `REQUIREMENTS.md` (`REQ-EX-02` complete), `STATE.md`, `CURRENT_STATE.md`, and `PROGRESS.md`.
 
 ### 2026-11-16 — Work Session 14 (Phase 15 Execution: Coding Agent Interface & Execution Engine Contract)
 - **Trigger:** `/gsd-execute-phase 15` executed by owner.

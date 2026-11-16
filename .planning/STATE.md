@@ -7,22 +7,25 @@ updated: 2026-11-15T23:05:00+05:30
 ## Current Position
 
 **Milestone:** v5.0 - Coding Execution Sandbox (Active)  
-**Phase:** 16 - Headless Aider CLI Adapter & Configuration Synthesizer (Complete)  
-**Status:** Complete  
-**Plan:** Ready for Phase 17 Planning (`/gsd-plan-phase 17`)
+**Phase:** 17 - Ephemeral Sandbox Runner Environment  
+**Status:** Planned  
+**Plan:** Ready for Phase 17 Execution (`/gsd-execute-phase 17`)
 
 ## Last Action
 
-Executed Phase 16 (Headless Aider CLI Adapter & Configuration Synthesizer):
-- Plan 16.1: Implemented `AiderConfigSynthesizer` (`synthesizeAiderArgs`, `generateAiderYamlConfig`) with model mapping and batch mode (`--yes-always`), and `AiderOutputParser` extracting commit SHAs, unified diffs, and formatting execution artifacts.
-- Plan 16.2: Implemented 3-strike bounded repair handler (`AiderRepairHandler`) and `AiderCliAdapter` implementing `ICodingAgentEngine` with process runner and git rollback DI, registered in `codingEngineRegistry`.
-- Empirical verification: 55/55 test files passed (354/354 tests green, 100%), Next.js production build succeeded with 0 errors and 0 warnings across 14 routes.
-- Authored `16-SUMMARY.md` and updated `ROADMAP.md` and `REQUIREMENTS.md` (`REQ-EX-02` Complete).
+Authored Phase 17 plans and research:
+- `17-RESEARCH.md`: Defined GitHub Actions `workflow_dispatch` runner architecture, ephemeral token scoping, zero master secret leakage guarantees (`NFR-SEC-02`), local process/scratchpad fallback runner, and diagnostic API route.
+- `17-01-PLAN.md` (Wave 1): Extended `GitHubClient` with `dispatchWorkflow` and `getWorkflowRun`, defined sandbox domain models (`SandboxMode`, `ISandboxRunner`), and implemented `GitHubActionsSandboxRunner` with unit tests.
+- `17-02-PLAN.md` (Wave 2): Implemented `LocalSandboxRunner` with isolated workspace teardown, `SandboxOrchestrator` with automated fallback routing, workflow template `.github/workflows/coding-agent.yml`, diagnostic route `/api/agents/sandbox`, and unit test suites.
+- Successfully verified plan validity against all 8 plan-checker quality dimensions.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 17` to research and author plans for Phase 17: Ephemeral Sandbox Runner Environment (`REQ-EX-03`).
-2. Build GitHub Actions workflow dispatch service (`workflow_dispatch`), ephemeral token scoping, and local Docker/process fallback runner.
+1. Execute Phase 17 (`/gsd-execute-phase 17`):
+   - Wave 1: Implement `GitHubClient` workflow dispatch methods, `sandbox/types.ts`, `github-actions-runner.ts`, and unit tests.
+   - Wave 2: Implement `local-sandbox-runner.ts`, `sandbox-orchestrator.ts`, workflow template, diagnostic route, and unit tests.
+2. Verify all test suites and Next.js production build pass cleanly.
+3. Advance to Phase 18 (Execution Telemetry, Artifact Capture & Run State Machine Integration).
 
 ## Active Decisions
 

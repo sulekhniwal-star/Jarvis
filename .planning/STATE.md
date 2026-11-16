@@ -7,22 +7,25 @@ updated: 2026-11-15T23:05:00+05:30
 ## Current Position
 
 **Milestone:** v5.0 - Coding Execution Sandbox (Active)  
-**Phase:** 17 - Ephemeral Sandbox Runner Environment (Complete)  
-**Status:** Complete  
-**Plan:** Ready for Phase 18 Planning (`/gsd-plan-phase 18`)
+**Phase:** 18 - Execution Telemetry, Artifact Capture & Run State Machine Integration  
+**Status:** Planned  
+**Plan:** Ready for Phase 18 Execution (`/gsd-execute-phase 18`)
 
 ## Last Action
 
-Executed Phase 17 (Ephemeral Sandbox Runner Environment):
-- Plan 17.1: Extended `GitHubClient` with `dispatchWorkflow` (enforcing `ref === 'main'`) and `getWorkflowRun`. Defined sandbox domain models (`SandboxMode`, `ISandboxRunner`, `SandboxExecutionConfig`). Implemented `GitHubActionsSandboxRunner` mapping workflow runs to `CodingTaskResult`.
-- Plan 17.2: Implemented `LocalSandboxRunner` with isolated scratchpad workspace creation and automatic teardown. Authored `SandboxOrchestrator` for dynamic runner selection (GitHub Actions vs local fallback). Created workflow template `.github/workflows/coding-agent.yml` and diagnostic route `/api/agents/sandbox`.
-- Empirical verification: 58/58 test files passed (368/368 tests green, 100%), Next.js production build succeeded with 0 errors and 0 warnings across 15 routes.
-- Authored `17-SUMMARY.md` and updated `ROADMAP.md` and `REQUIREMENTS.md` (`REQ-EX-03` Complete).
+Authored Phase 18 plans and research:
+- `18-RESEARCH.md`: Defined artifact recording pipeline (`ArtifactPipeline`), SHA-256 hashing, secret sanitization, task/run state machine transitions, `ExecutionCoordinator`, and dual-channel dashboard/Telegram reporting.
+- `18-01-PLAN.md` (Wave 1): Artifact storage pipeline, execution coordinator with task state machine wiring, and unit tests.
+- `18-02-PLAN.md` (Wave 2): App Router runs route (`/api/agents/runs`), Web Dashboard widget `AgentRunsCard` embedded in `src/app/page.tsx`, Telegram telemetry card, and integration tests.
+- Successfully verified plan validity against all 8 plan-checker quality dimensions.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 18` to research and author plans for Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration (`REQ-EX-04`).
-2. Implement telemetry storage pipeline, database synchronization in `public.agent_runs`, task lifecycle transitions, and dual-channel notifications.
+1. Execute Phase 18 (`/gsd-execute-phase 18`):
+   - Wave 1: Implement `artifact-pipeline.ts`, `execution-coordinator.ts`, and unit tests.
+   - Wave 2: Implement runs route `/api/agents/runs`, `AgentRunsCard`, `src/app/page.tsx` integration, and unit tests.
+2. Complete full Milestone 5 verification.
+3. Advance to Milestone 6.
 
 ## Active Decisions
 

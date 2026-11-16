@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   FolderKanban,
   ListTodo,
+  Bot,
   ShieldCheck,
   Settings,
   GitBranch,
@@ -24,6 +25,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: FolderKanban },
+  { label: "Agents", href: "/agents", icon: Bot },
   { label: "Tasks", href: "/tasks", icon: ListTodo },
   { label: "Approvals", href: "/approvals", icon: ShieldCheck },
   { label: "Settings", href: "/settings", icon: Settings },

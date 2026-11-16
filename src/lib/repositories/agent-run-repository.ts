@@ -1,5 +1,5 @@
 import { BaseRepository } from "./base";
-import { AgentRun, RunArtifact, ArtifactType } from "@/types/database";
+import { AgentRun, RunArtifact, ArtifactType, AgentRunStatus } from "@/types/database";
 import { AgentRunStateMachine } from "../state-machines/run-state-machine";
 
 export interface CompleteRunDTO {
@@ -220,6 +220,48 @@ export class AgentRunRepository extends BaseRepository {
       return data ?? [];
     } catch (err) {
       this.handleError(err, `Failed to list artifacts for run '${runId}'`);
+    }
+  }
+
+  public async listRuns(filters: {
+    status?: AgentRunStatus | string;
+    agentEngine?: string;
+    taskId?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{ data: AgentRun[]; total: number }> {
+    const limit = filters.limit ?? 50;
+    const offset = filters.offset ?? 0;
+
+    try {
+      let query = this.client
+        .from("agent_runs")
+        .select("*", { count: "exact" });
+
+      if (filters.status) {
+        query = query.eq("status", filters.status as AgentRunStatus);
+      }
+      if (filters.agentEngine) {
+        query = query.eq("agent_engine", filters.agentEngine);
+      }
+      if (filters.taskId) {
+        query = query.eq("task_id", filters.taskId);
+      }
+
+      const { data, error, count } = await query
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) {
+        this.handleError(error, "Failed to list filtered agent runs");
+      }
+
+      return {
+        data: data ?? [],
+        total: count ?? 0,
+      };
+    } catch (err) {
+      this.handleError(err, "Failed to list filtered agent runs");
     }
   }
 

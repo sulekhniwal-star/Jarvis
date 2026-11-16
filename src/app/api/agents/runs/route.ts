@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
+import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { ExecutionCoordinator } from "@/lib/agents/engine/telemetry/execution-coordinator";
 import { TelegramClient } from "@/lib/telegram/client";
 
@@ -51,24 +52,154 @@ const ExecuteTaskStepInputSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const taskId = searchParams.get("taskId");
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const taskId = searchParams.get("taskId") || undefined;
+    const status = searchParams.get("status") || undefined;
+    const agentEngine = searchParams.get("agentEngine") || undefined;
+    const search = searchParams.get("search")?.toLowerCase() || undefined;
 
     try {
       const adminClient = createAdminClient();
       const agentRunRepo = new AgentRunRepository(adminClient);
+      const taskRepo = new TaskRepository(adminClient);
+      const projectRepo = new ProjectRepository(adminClient);
 
-      let runs;
-      if (taskId) {
-        runs = await agentRunRepo.listRunsByTask(taskId);
-      } else {
-        runs = await agentRunRepo.listRecentRuns(limit);
+      const result = await agentRunRepo.listRuns({
+        status,
+        agentEngine,
+        taskId,
+        limit,
+        offset,
+      });
+
+      const rawRuns = result.data;
+
+      // Enrich runs with task and project metadata
+      let enrichedRuns = await Promise.all(
+        rawRuns.map(async (run) => {
+          let taskTitle: string | undefined;
+          let taskPriority: string | undefined;
+          let projectName: string | undefined;
+          let projectSlug: string | undefined;
+
+          if (run.task_id) {
+            try {
+              const task = await taskRepo.getById(run.task_id);
+              if (task) {
+                taskTitle = task.title;
+                taskPriority = task.priority;
+
+                if (task.project_id) {
+                  try {
+                    const project = await projectRepo.getById(
+                      task.project_id,
+                      "00000000-0000-0000-0000-000000000001"
+                    );
+                    if (project) {
+                      projectName = project.name;
+                      projectSlug = project.slug;
+                    }
+                  } catch {
+                    // Ignore project fetch failure
+                  }
+                }
+              }
+            } catch {
+              // Ignore task fetch failure
+            }
+          }
+
+          let durationMs: number | null = null;
+          if (run.started_at && run.completed_at) {
+            durationMs =
+              new Date(run.completed_at).getTime() - new Date(run.started_at).getTime();
+          }
+
+          return {
+            ...run,
+            taskTitle: taskTitle || "Unknown Task",
+            taskPriority: taskPriority || "medium",
+            projectName: projectName || "Default Project",
+            projectSlug: projectSlug || "default-project",
+            durationMs,
+          };
+        })
+      );
+
+      // In-memory search filtering if search term provided
+      if (search) {
+        enrichedRuns = enrichedRuns.filter(
+          (r) =>
+            r.id.toLowerCase().includes(search) ||
+            r.taskTitle.toLowerCase().includes(search) ||
+            r.projectName.toLowerCase().includes(search) ||
+            (r.git_commit_hash && r.git_commit_hash.toLowerCase().includes(search)) ||
+            (r.error_summary && r.error_summary.toLowerCase().includes(search))
+        );
       }
 
-      return NextResponse.json({ runs }, { status: 200 });
+      // Compute aggregate metrics
+      const totalRuns = result.total;
+      const activeRuns = enrichedRuns.filter(
+        (r) => r.status === "queued" || r.status === "running"
+      ).length;
+      const completedRuns = enrichedRuns.filter((r) => r.status === "completed").length;
+      const failedRuns = enrichedRuns.filter((r) => r.status === "failed").length;
+      const successRate =
+        completedRuns + failedRuns > 0
+          ? Math.round((completedRuns / (completedRuns + failedRuns)) * 100)
+          : 100;
+
+      const runsWithDuration = enrichedRuns.filter(
+        (r) => typeof r.durationMs === "number" && r.durationMs >= 0
+      );
+      const avgDurationMs =
+        runsWithDuration.length > 0
+          ? Math.round(
+              runsWithDuration.reduce((acc, r) => acc + (r.durationMs || 0), 0) /
+                runsWithDuration.length
+            )
+          : 0;
+
+      const metrics = {
+        totalRuns,
+        activeRuns,
+        completedRuns,
+        failedRuns,
+        successRate,
+        avgDurationMs,
+      };
+
+      return NextResponse.json(
+        {
+          runs: enrichedRuns,
+          total: result.total,
+          limit,
+          offset,
+          metrics,
+        },
+        { status: 200 }
+      );
     } catch {
       // Return empty runs array gracefully in environments without DB credentials
-      return NextResponse.json({ runs: [] }, { status: 200 });
+      return NextResponse.json(
+        {
+          runs: [],
+          total: 0,
+          limit,
+          offset,
+          metrics: {
+            totalRuns: 0,
+            activeRuns: 0,
+            completedRuns: 0,
+            failedRuns: 0,
+            successRate: 100,
+            avgDurationMs: 0,
+          },
+        },
+        { status: 200 }
+      );
     }
   } catch (error) {
     const message = (error as Error).message || "Internal server error";

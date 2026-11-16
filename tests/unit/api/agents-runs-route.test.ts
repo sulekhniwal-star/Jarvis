@@ -36,7 +36,8 @@ describe("/api/agents/runs Route Handler", () => {
 
       expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data).toEqual({ runs: [] });
+      expect(data.runs).toEqual([]);
+      expect(data.metrics).toBeDefined();
     });
   });
 

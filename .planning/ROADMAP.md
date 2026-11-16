@@ -48,14 +48,14 @@ updated: 2026-11-16T16:32:00+05:30
 ---
 
 ### Phase 24: Agent Operations Console & Telemetry Viewer
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** Build dedicated `/agents` dashboard and `/agents/runs/[id]` drill-down console displaying durable agent execution history, step execution timeline, tabbed stdout/stderr logs, git diff viewer with quality score badges, and artifact drawer (`REQ-UI-AGENT-01`, `REQ-UI-AGENT-02`).  
 **Depends on:** Phase 23  
 **Requirements:** REQ-UI-AGENT-01, REQ-UI-AGENT-02  
 
 **Plans:**
-- [ ] Plan 24.1: Agent operations dashboard (`/agents`) with status filtering, duration/cost metrics, and recent runs table.
-- [ ] Plan 24.2: Run telemetry drill-down (`/agents/runs/[id]`) with execution timeline, tabbed log viewer, git diff viewer, and artifact drawer.
+- [x] Plan 24.1: Agent operations dashboard (`/agents`) with status filtering, duration/cost metrics, and recent runs table.
+- [x] Plan 24.2: Run telemetry drill-down (`/agents/runs/[id]`) with execution timeline, tabbed log viewer, git diff viewer, and artifact drawer.
 
 ---
 

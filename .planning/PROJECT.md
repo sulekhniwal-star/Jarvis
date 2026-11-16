@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-15T23:45:00+05:30
-milestone: "v5.0 - Coding Execution Sandbox"
+updated: 2026-11-16T12:26:00+05:30
+milestone: "v6.0 - Quality, Verification & Self-Review"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -117,13 +117,21 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 5 — Coding Execution Sandbox (v5.0)
+### Milestone 5 / v5.0 — Coding Execution Sandbox (✅ Complete 2026-11-16)
+- **Phase 15: Coding Agent Interface & Execution Engine Contract:** TypeScript interfaces (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`), engine registry, mock engine, and context synthesis with path traversal defense (`NFR-SEC-01`, `NFR-SEC-02`).
+- **Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer:** Batch mode execution wrapper, file modification boundaries, OpenRouter model mapping, commit and diff extraction, and 3-strike bounded repair protocol.
+- **Phase 17: Ephemeral Sandbox Runner Environment:** GitHub Actions workflow dispatcher (`workflow_dispatch`), ephemeral credential scoping, isolated local scratchpad fallback, and unified `SandboxOrchestrator`.
+- **Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration:** Telemetry coordinator, SHA-256 artifact hashing and credential sanitization, database state synchronization, Next.js App Router API, and Web Dashboard `AgentRunsCard`.
 
-This milestone builds the isolated, ephemeral execution harness where approved coding tasks are generated, modified, and tested using headless coding agents under strict security and file-boundary constraints (`docs/CODING_AGENT_INTERFACE.md`):
-- **Phase 15: Coding Agent Interface & Execution Engine Contract:** TypeScript interfaces (`ICodingAgentEngine`, `CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`), engine registry, and context synthesis from approved execution plans.
-- **Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer:** Batch mode execution wrapper, file boundary constraints, OpenRouter model mapping, commit and diff extraction, and bounded repair loop (3-strike rule).
-- **Phase 17: Ephemeral Sandbox Runner Environment:** GitHub Actions workflow dispatcher (`workflow_dispatch`), ephemeral credential scoping, and local development runner fallback.
-- **Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration:** Captures stdout/stderr logs, git diffs, test summaries, updates database `agent_runs` and `tasks` state machines, and broadcasts real-time execution status to Web Dashboard and Telegram.
+---
+
+## Active Milestone: Milestone 6 — Quality, Verification & Self-Review (v6.0)
+
+This milestone establishes the automated quality inspection, verification, and autonomous repair layer ensuring every code change is rigorously validated prior to landing on `main` (`PRD §7.6, §7.7, §7.9, §12`):
+- **Phase 19: Automated Verification Framework & Test Runner Harness:** Standardized multi-stage verification pipeline running Vitest, ESLint, TypeScript compiler (`tsc --noEmit`), and Next.js production builds with pluggable custom test command support and structured test artifact generation (`REQ-VR-01`).
+- **Phase 20: Automated Diff Inspector & Quality Gate:** Semantic diff inspection analyzing file modifications, detecting unapproved file boundary escapes, AST-based regression analysis, and code quality threshold enforcement (`REQ-VR-02`).
+- **Phase 21: Pre-Commit Entropy & Secret Scanner:** Deep entropy analysis and regex pattern matching blocking master credentials, private keys, and tokens in proposed changes, with explicit human approval bypass workflows (`REQ-VR-03`).
+- **Phase 22: Autonomous Self-Review & Bounded Repair Loop:** Automated diagnostic reasoning on failure outputs, targeted repair prompt synthesis, 3-strike bounded retry execution, and automated rollback with Telegram alerts upon exhaustion (`REQ-VR-04`).
 
 ## Success Criteria
 
@@ -137,7 +145,11 @@ This milestone builds the isolated, ephemeral execution harness where approved c
 - [x] GitHub webhook endpoint verifies HMAC signatures and logs events with zero security breaches.
 - [x] Remote push approval gate strictly blocks pushing to `origin/main` until human owner authorizes.
 - [x] Repository synchronization monitor accurately tracks commit divergence between local and remote `main`.
-- [ ] Coding agent interface abstracts execution engines with uniform input context and output artifacts.
-- [ ] Headless Aider adapter executes task prompts within strict file-modification boundaries in batch mode.
-- [ ] Ephemeral sandbox runner isolates execution with zero exposure of master credentials or persistent host state.
-- [ ] Execution telemetry pipeline records complete build/test logs, diff patches, and transitions `agent_runs` state.
+- [x] Coding agent interface abstracts execution engines with uniform input context and output artifacts.
+- [x] Headless Aider adapter executes task prompts within strict file-modification boundaries in batch mode.
+- [x] Ephemeral sandbox runner isolates execution with zero exposure of master credentials or persistent host state.
+- [x] Execution telemetry pipeline records complete build/test logs, diff patches, and transitions `agent_runs` state.
+- [ ] Automated verification runner executes lint, typecheck, unit tests, and production build with structured JSON reports.
+- [ ] Diff inspector enforces strict file boundary modification rules and catches unintended regressions.
+- [ ] Secret scanner blocks commits containing high-entropy tokens or credentials unless explicitly approved by owner.
+- [ ] Bounded repair engine automatically fixes failing tests within 3 iterations or triggers safe rollback with Telegram alert.

@@ -269,9 +269,58 @@ updated: 2026-11-15T23:45:00+05:30
 
 ---
 
+## Milestone 6: Quality, Verification & Self-Review
+
+### Phase 19: Automated Verification Framework & Test Runner Harness
+**Status:** ⏳ Pending  
+**Objective:** Standardized multi-stage verification pipeline running Vitest/Jest, ESLint, TypeScript compiler checks (`tsc --noEmit`), and production build with custom command overrides and structured JSON test artifact generation (`REQ-VR-01`).  
+**Depends on:** Phase 18  
+**Requirements:** REQ-VR-01  
+
+**Plans:**
+- [ ] Plan 19.1: Universal test verification engine running lint, typecheck, unit tests, and production build checks with structured `TestSummary` outputs.
+- [ ] Plan 19.2: Pluggable project-level test command configuration, custom acceptance-criteria verification scripts, and diagnostic API routes.
+
+---
+
+### Phase 20: Automated Diff Inspector & Quality Gate
+**Status:** ⏳ Pending  
+**Objective:** Semantic diff inspection engine enforcing declared file modification boundaries, catching accidental deletions or out-of-scope alterations, and computing code churn/quality metrics (`REQ-VR-02`).  
+**Depends on:** Phase 19  
+**Requirements:** REQ-VR-02  
+
+**Plans:**
+- [ ] Plan 20.1: Git diff parser, file boundary validator, and unauthorized file mutation detector.
+- [ ] Plan 20.2: Quality scoring heuristics, automated formatting checks, and Web Dashboard / Telegram diff presentation.
+
+---
+
+### Phase 21: Pre-Commit Entropy & Secret Scanner
+**Status:** ⏳ Pending  
+**Objective:** High-entropy string detector and sensitive credential pattern scanner blocking private keys, tokens, and database passwords from being committed, backed by explicit owner approval override workflows (`REQ-VR-03`).  
+**Depends on:** Phase 20  
+**Requirements:** REQ-VR-03, NFR-SEC-02  
+
+**Plans:**
+- [ ] Plan 21.1: Multi-pattern secret scanner and Shannon entropy detector for diffs and execution artifacts.
+- [ ] Plan 21.2: Human-in-the-loop secret override approval flow via `ApprovalRepository` and Telegram interactive approval cards.
+
+---
+
+### Phase 22: Autonomous Self-Review & Bounded Repair Protocol
+**Status:** ⏳ Pending  
+**Objective:** Diagnostic analysis of verification failure logs, prompt synthesis for targeted fixes, 3-strike bounded retry execution, and automated safe rollback to pre-run git HEAD with Telegram alerts upon exhaustion (`REQ-VR-04`).  
+**Depends on:** Phase 21  
+**Requirements:** REQ-VR-04  
+
+**Plans:**
+- [ ] Plan 22.1: Failure log diagnostic analyzer and targeted repair prompt synthesizer for coding agents.
+- [ ] Plan 22.2: 3-strike bounded retry runner, automated git rollback on exhaustion, and Telegram alert with one-click recovery options.
+
+---
+
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 6:** Quality, Verification & Self-Review (Automated tests, diff review, secret scanning, bounded repair).
 - **Milestone 7:** Projects, Agents & Memory UI (pgvector semantic memory retrieval).
 - **Milestone 8:** Approvals, Security & Cost Controls (Kill switch, backup/recovery drills).
 - **Milestone 9:** Deployment & Continuous Maintenance.
@@ -301,6 +350,10 @@ updated: 2026-11-15T23:45:00+05:30
 | 16 | Headless Aider CLI Adapter | ✅ | 2/2 | 100% |
 | 17 | Ephemeral Sandbox Runner Environment | ✅ | 2/2 | 100% |
 | 18 | Execution Telemetry & Artifact Pipeline | ✅ | 2/2 | 100% |
+| 19 | Automated Verification Framework | ⏳ | 0/2 | — |
+| 20 | Automated Diff Inspector & Quality Gate | ⏳ | 0/2 | — |
+| 21 | Pre-Commit Entropy & Secret Scanner | ⏳ | 0/2 | — |
+| 22 | Autonomous Self-Review & Bounded Repair | ⏳ | 0/2 | — |
 
 ---
 

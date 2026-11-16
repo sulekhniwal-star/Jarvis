@@ -1,17 +1,28 @@
 ---
-milestone: "v5.0 - Coding Execution Sandbox"
-updated: 2026-11-15T23:45:00+05:30
+milestone: "v6.0 - Quality, Verification & Self-Review"
+updated: 2026-11-16T12:26:00+05:30
 ---
 
 # REQUIREMENTS.md — Jarvis Requirements Specification
 
 ## Overview
 
-Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs/CODING_AGENT_INTERFACE.md`, `docs/TELEGRAM_INTEGRATION.md`, and `docs/ROADMAP.md` covering Milestone 1 (Foundation, Complete), Milestone 2 (Specification & Planning Workflow, Complete), Milestone 3 (Telegram Gateway, Complete), Milestone 4 (GitHub Integration & Branchless Discipline, Complete), and Milestone 5 (Coding Execution Sandbox, Active).
+Requirements derived from `PRD.md`, `ANTIGRAVITY_FRESH_PROJECT_PROMPT.md`, `docs/CODING_AGENT_INTERFACE.md`, `docs/TELEGRAM_INTEGRATION.md`, and `docs/ROADMAP.md` covering Milestone 1 (Foundation, Complete), Milestone 2 (Specification & Planning Workflow, Complete), Milestone 3 (Telegram Gateway, Complete), Milestone 4 (GitHub Integration & Branchless Discipline, Complete), Milestone 5 (Coding Execution Sandbox, Complete), and Milestone 6 (Quality, Verification & Self-Review, Active).
 
 ---
 
-## Milestone 5 Functional Requirements (Coding Execution Sandbox — Active)
+## Milestone 6 Functional Requirements (Quality, Verification & Self-Review — Active)
+
+| ID | Requirement | Source | Phase | Status |
+|---|---|---|---|---|
+| **REQ-VR-01** | **Automated Verification Runner & Test Harness:** Multi-stage test executor running linting, typechecking (`tsc --noEmit`), test runner (`vitest`/`jest`), and production build with custom command overrides and structured JSON test summaries. | PRD §7.6, §7.7 | 19 | Pending |
+| **REQ-VR-02** | **Automated Diff Inspector & Quality Gate:** Semantic diff inspector verifying proposed modifications stay within declared file boundaries, checking for unintended file deletions or AST regressions, and calculating diff metrics. | PRD §7.7, §7.9 | 20 | Pending |
+| **REQ-VR-03** | **Pre-Commit Entropy & Secret Scanner:** High-entropy detector and credential pattern scanner preventing passwords, service-role keys, tokens, or credentials from being committed, backed by explicit owner approval override cards. | PRD §7.7, NFR-SEC-02 | 21 | Pending |
+| **REQ-VR-04** | **Autonomous Self-Review & Bounded Repair Protocol:** Diagnostic analysis on test/compiler errors generating targeted corrective instructions for coding engines, bounded by a strict 3-strike budget with automated safe rollback and Telegram alerts. | PRD §7.6, §7.9 | 22 | Pending |
+
+---
+
+## Milestone 5 Functional Requirements (Coding Execution Sandbox — Complete)
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|

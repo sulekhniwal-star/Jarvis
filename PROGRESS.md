@@ -1,10 +1,10 @@
 # JARVIS — Project Progress Log
 
-**Active Milestone:** Milestone 5 (v5.0) — Coding Execution Sandbox  
+**Active Milestone:** Milestone 6 (v6.0) — Quality, Verification & Self-Review  
 **Owner:** sulekhniwal-star  
 **Branch Policy:** `main`-only strict mode  
 **Current Branch:** `main`  
-**Current Local Commit:** `65fe808`  
+**Current Local Commit:** `413c452`  
 **Last Sync Status:** Ahead of `origin/main` (Remote push pending explicit owner authorization)  
 **AI Budget Status:** INR 0.00 spent of INR 750 monthly ceiling (INR 25 daily limit)
 
@@ -33,7 +33,10 @@
 | **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | **Complete** | 2026-11-16 |
-| **Milestone 6** | Quality & Self-Review | Pending | Milestone 5 Verification |
+| **Milestone 6 / Phase 19** | Automated Verification Framework | **Active** | 2026-11-16 |
+| **Milestone 6 / Phase 20** | Automated Diff Inspector & Quality Gate | Pending | 2026-11-16 |
+| **Milestone 6 / Phase 21** | Pre-Commit Entropy & Secret Scanner | Pending | 2026-11-16 |
+| **Milestone 6 / Phase 22** | Autonomous Self-Review & Bounded Repair | Pending | 2026-11-16 |
 | **Milestone 7** | Projects, Agents & Memory UI | Pending | Milestone 6 Verification |
 | **Milestone 8** | Approvals, Security & Cost Control | Pending | Milestone 7 Verification |
 | **Milestone 9** | Deployment & Maintenance | Pending | Milestone 8 Verification |
@@ -42,6 +45,20 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-16 — Work Session 18 (Milestone 6 Initialization: Quality, Verification & Self-Review)
+- **Trigger:** `/gsd-new-milestone` executed by owner.
+- **Actions:**
+  - Completed Milestone 5 (v5.0 — Coding Execution Sandbox).
+  - Gathered architectural choices via `ask_question`:
+    - Native TypeScript/Next.js multi-stage verification (Vitest, ESLint, `tsc --noEmit`, Next.js build).
+    - 3-strike repair exhaustion policy: automated safe rollback to pre-run git HEAD with immediate Telegram alert.
+    - Pre-commit secret scanning: strict automated block with human-in-the-loop override approval card.
+  - Initialized Milestone 6 (v6.0) across `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, and `CURRENT_STATE.md`.
+  - Added functional requirements `REQ-VR-01` through `REQ-VR-04` covering Phases 19–22.
+  - Prepared repository for Phase 19 planning (`/gsd-plan-phase 19`).
+
+---
 
 ### 2026-11-16 — Work Session 17 (Phase 18 Execution: Execution Telemetry, Artifact Capture & Run State Machine Integration)
 - **Trigger:** `/gsd-execute-phase 18` executed by owner.

@@ -15,8 +15,8 @@ Requirements derived from `PRD.md` (§7.2, §7.3, §7.11, §7.12, §8.4), `UI_DE
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-UI-PROJ-01** | **Project Workspace & Hierarchy Navigation:** Dedicated `/projects` index and `/projects/[id]` detail workspace displaying project metadata, milestone hierarchy, completion velocity, and active task counters. | PRD §7.2, §7.4 | 23 | Pending |
-| **REQ-UI-PROJ-02** | **Interactive Kanban Board & Task Controls:** Interactive Kanban board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer displaying linked specifications, plans, and execution runs. | PRD §7.2, §7.4 | 23 | Pending |
+| **REQ-UI-PROJ-01** | **Project Workspace & Hierarchy Navigation:** Dedicated `/projects` index and `/projects/[id]` detail workspace displaying project metadata, milestone hierarchy, completion velocity, and active task counters. | PRD §7.2, §7.4 | 23 | Complete |
+| **REQ-UI-PROJ-02** | **Interactive Kanban Board & Task Controls:** Interactive Kanban board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer displaying linked specifications, plans, and execution runs. | PRD §7.2, §7.4 | 23 | Complete |
 | **REQ-UI-AGENT-01** | **Agent Operations Console:** Dedicated `/agents` dashboard listing durable agent runs across all projects with status filtering (`pending`, `running`, `completed`, `failed`, `rolled_back`), model tags, and duration/cost metrics. | PRD §7.2, §7.6, §7.12 | 24 | Pending |
 | **REQ-UI-AGENT-02** | **Run Telemetry & Artifact Inspector:** Drill-down view (`/agents/runs/[id]`) with step-by-step execution timeline, tabbed stdout/stderr log viewer, git diff viewer with quality score badges, and artifact inspection drawer. | PRD §7.6, §7.12 | 24 | Pending |
 | **REQ-MEM-01** | **pgvector Semantic Memory Repository:** Typed `MemoryRepository` integrating with `public.memories` using 1536-dim vector embeddings via OpenRouter (with deterministic local fallback) across 4 categories: `user_preference`, `project_decision`, `architecture_pattern`, `historical_error`. | PRD §7.11, §8.4 | 25 | Pending |
@@ -43,7 +43,7 @@ Requirements derived from `PRD.md` (§7.2, §7.3, §7.11, §7.12, §8.4), `UI_DE
 
 | Requirement | Phase | Target Plans | Verification Test | Status |
 |---|---|---|---|---|
-| REQ-UI-PROJ-01, REQ-UI-PROJ-02 | Phase 23 | Plan 23.1, Plan 23.2 | Component rendering tests, Kanban status transition tests, project workspace integration tests | Pending |
+| REQ-UI-PROJ-01, REQ-UI-PROJ-02 | Phase 23 | Plan 23.1, Plan 23.2 | Component rendering tests, Kanban status transition tests, project workspace integration tests | Complete |
 | REQ-UI-AGENT-01, REQ-UI-AGENT-02 | Phase 24 | Plan 24.1, Plan 24.2 | Agent console rendering tests, step timeline tests, diff viewer tests, log streaming tests | Pending |
 | REQ-MEM-01, REQ-MEM-02, REQ-MEM-03 | Phase 25 | Plan 25.1, Plan 25.2 | Vector embedding tests, cosine similarity retrieval tests, agent prompt injection tests, memory UI tests | Pending |
 | REQ-RT-01, NFR-REL-01 | Phase 26 | Plan 26.1, Plan 26.2 | Supabase Realtime subscription mock tests, hook re-render tests, disconnect fallback tests | Pending |

@@ -7,8 +7,8 @@ updated: 2026-11-16T16:32:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v7.0 - Projects, Agents & Memory UI (Active)  
-> **Current Phase:** 23 - Project Workspace & Hierarchy UI  
-> **Status:** Ready for Planning (`/gsd-plan-phase 23`)
+> **Current Phase:** 24 - Agent Operations Console & Telemetry Viewer  
+> **Status:** Phase 23 Complete; Ready for Planning Phase 24 (`/gsd-plan-phase 24`)
 
 ---
 
@@ -36,14 +36,14 @@ updated: 2026-11-16T16:32:00+05:30
 ## Phases for Milestone 7: Projects, Agents & Memory UI
 
 ### Phase 23: Project Workspace & Hierarchy UI
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** Construct dedicated `/projects` index and `/projects/[id]` detail workspace featuring project metadata, milestone hierarchy drill-down, progress metrics, and an interactive Kanban board with status toggle columns and task detail drawer (`REQ-UI-PROJ-01`, `REQ-UI-PROJ-02`).  
 **Depends on:** Phase 22 (Milestone 6)  
 **Requirements:** REQ-UI-PROJ-01, REQ-UI-PROJ-02  
 
 **Plans:**
-- [ ] Plan 23.1: Project workspace routes (`/projects`, `/projects/[id]`), breadcrumbs, milestone hierarchy tree, and project metadata header.
-- [ ] Plan 23.2: Interactive Kanban task board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer linking specs/plans/runs.
+- [x] Plan 23.1: Project workspace routes (`/projects`, `/projects/[id]`), breadcrumbs, milestone hierarchy tree, and project metadata header.
+- [x] Plan 23.2: Interactive Kanban task board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer linking specs/plans/runs.
 
 ---
 
@@ -117,7 +117,7 @@ updated: 2026-11-16T16:32:00+05:30
 | 20 | Automated Diff Inspector & Quality Gate | ✅ | 2/2 | 100% |
 | 21 | Pre-Commit Entropy & Secret Scanner | ✅ | 2/2 | 100% |
 | 22 | Autonomous Self-Review & Bounded Repair | ✅ | 2/2 | 100% |
-| 23 | Project Workspace & Hierarchy UI | ⏳ | 0/2 | 0% |
+| 23 | Project Workspace & Hierarchy UI | ✅ | 2/2 | 100% |
 | 24 | Agent Operations Console & Telemetry Viewer | ⏳ | 0/2 | 0% |
 | 25 | pgvector Semantic Memory Store & Context | ⏳ | 0/2 | 0% |
 | 26 | Real-Time State Synchronization Engine | ⏳ | 0/2 | 0% |

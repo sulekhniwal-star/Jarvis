@@ -296,14 +296,14 @@ updated: 2026-11-15T23:45:00+05:30
 ---
 
 ### Phase 21: Pre-Commit Entropy & Secret Scanner
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** High-entropy string detector and sensitive credential pattern scanner blocking private keys, tokens, and database passwords from being committed, backed by explicit owner approval override workflows (`REQ-VR-03`).  
 **Depends on:** Phase 20  
 **Requirements:** REQ-VR-03, NFR-SEC-02  
 
 **Plans:**
-- [ ] Plan 21.1: Multi-pattern secret scanner and Shannon entropy detector for diffs and execution artifacts.
-- [ ] Plan 21.2: Human-in-the-loop secret override approval flow via `ApprovalRepository` and Telegram interactive approval cards.
+- [x] Plan 21.1: Multi-pattern secret scanner and Shannon entropy detector for diffs and execution artifacts.
+- [x] Plan 21.2: Human-in-the-loop secret override approval flow via `ApprovalRepository` and Telegram interactive approval cards.
 
 ---
 
@@ -352,7 +352,7 @@ updated: 2026-11-15T23:45:00+05:30
 | 18 | Execution Telemetry & Artifact Pipeline | ✅ | 2/2 | 100% |
 | 19 | Automated Verification Framework | ✅ | 2/2 | 100% |
 | 20 | Automated Diff Inspector & Quality Gate | ✅ | 2/2 | 100% |
-| 21 | Pre-Commit Entropy & Secret Scanner | ⏳ | 0/2 | — |
+| 21 | Pre-Commit Entropy & Secret Scanner | ✅ | 2/2 | 100% |
 | 22 | Autonomous Self-Review & Bounded Repair | ⏳ | 0/2 | — |
 
 ---

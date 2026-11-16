@@ -50,6 +50,7 @@ export interface PrePushValidationOptions {
   cwd?: string;
   remoteRef?: string;
   skipSecretScan?: boolean;
+  allowedSecretFingerprints?: string[];
   gitExec?: (args: string[]) => string;
 }
 
@@ -66,6 +67,7 @@ export interface PrePushValidationResult {
   filesChanged: string[];
   hasSecrets: boolean;
   detectedSecretPatterns: string[];
+  detectedSecretFindings?: import("../agents/engine/verification/secret-scanner/types").SecretFinding[];
   errors: string[];
 }
 

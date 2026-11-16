@@ -1,5 +1,5 @@
 import { execFileSync } from "child_process";
-import { SECRET_PATTERNS } from "./diff";
+import { secretScanner, SecretFinding } from "../agents/engine/verification/secret-scanner";
 import {
   PrePushCommitSummary,
   PrePushValidationOptions,
@@ -114,6 +114,7 @@ export function validatePrePush(
   const commits: PrePushCommitSummary[] = [];
   const filesChanged: string[] = [];
   const detectedSecretPatterns: string[] = [];
+  let detectedSecretFindings: SecretFinding[] | undefined;
   let hasSecrets = false;
 
   if (aheadCount > 0) {
@@ -157,37 +158,22 @@ export function validatePrePush(
       errors.push(`Failed to retrieve changed files in diff: ${(err as Error).message}`);
     }
 
-    // 6. Secret Detection in Outgoing Diff
+    // 6. Secret Detection in Outgoing Diff (REQ-VR-03, NFR-SEC-02)
     if (!options.skipSecretScan) {
       try {
         const rawDiff = gitExec(["diff", `${remoteRef}..HEAD`]);
-        const lines = rawDiff.split("\n");
-        const detectedSet = new Set<string>();
+        const scanReport = secretScanner.scanDiff(rawDiff, {
+          allowedFingerprints: options.allowedSecretFingerprints,
+        });
 
-        for (const line of lines) {
-          if (line.startsWith("+") && !line.startsWith("+++")) {
-            const addedContent = line.substring(1);
+        detectedSecretFindings = scanReport.findings;
 
-            // Skip typical placeholders
-            if (
-              addedContent.includes("placeholder-") ||
-              addedContent.includes("sk-xxx") ||
-              addedContent.includes("example")
-            ) {
-              continue;
-            }
-
-            for (const pattern of SECRET_PATTERNS) {
-              if (pattern.regex.test(addedContent)) {
-                detectedSet.add(pattern.name);
-              }
-            }
-          }
-        }
-
-        if (detectedSet.size > 0) {
+        if (!scanReport.passed) {
           hasSecrets = true;
-          detectedSecretPatterns.push(...Array.from(detectedSet));
+          const blockers = scanReport.findings.filter((f) => f.severity === "blocker");
+          for (const b of blockers) {
+            detectedSecretPatterns.push(b.name || b.description || b.secretType);
+          }
           errors.push(
             `Detected sensitive patterns in outgoing commits: ${detectedSecretPatterns.join(", ")}`
           );
@@ -219,6 +205,7 @@ export function validatePrePush(
     filesChanged,
     hasSecrets,
     detectedSecretPatterns,
+    detectedSecretFindings,
     errors,
   };
 }

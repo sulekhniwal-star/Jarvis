@@ -7,23 +7,23 @@ updated: 2026-11-16T13:00:00+05:30
 ## Current Position
 
 **Milestone:** v6.0 - Quality, Verification & Self-Review (Active)  
-**Phase:** 20 - Automated Diff Inspector & Quality Gate  
+**Phase:** 21 - Pre-Commit Entropy & Secret Scanner  
 **Status:** Complete  
-**Plan:** Ready for Phase 21 Planning (`/gsd-plan-phase 21`)
+**Plan:** Ready for Phase 22 Planning (`/gsd-plan-phase 22`)
 
 ## Last Action
 
-Executed and verified Phase 20 (Automated Diff Inspector & Quality Gate):
-- Wave 1: Diff AST types, unified diff parser (`parseUnifiedDiff`), boundary validator (`validateFileBoundaries`, `matchesPattern`, `FORBIDDEN_FILE_PATTERNS`), and quality scorer (`scoreDiffQuality`).
-- Wave 2: Orchestrator class (`DiffInspector`), Next.js App Router route (`POST /api/verification/diff`), `VerificationHarness` integration with `diff-quality.md` artifact generation, and 3 comprehensive test suites (21/21 tests green).
-- Full Vitest suite verified: 67/67 test files passed, 420/420 tests green.
-- Next.js production build verified: 18 static and dynamic routes compiled with 0 errors and 0 warnings.
-- Authored `20-SUMMARY.md`.
+Executed and verified Phase 21 (Pre-Commit Entropy & Secret Scanner):
+- Wave 1: Domain types, Shannon entropy calculator (`calculateShannonEntropy`, `extractHighEntropyTokens`), known secret pattern registry (`KNOWN_SECRET_PATTERNS`, `generateSecretFingerprint`, `redactSecretToken`), and `SecretScanner` orchestrator class with unit tests (11/11 tests green).
+- Wave 2: App Router route (`POST /api/verification/secrets`), `VerificationHarness` secret scanning integration with `secret-scan.md` artifact generation, upgraded `validatePrePush` with fingerprint whitelist overrides, and integration test suites (8/8 tests green).
+- Full Vitest suite verified: 70/70 test files passed, 439/439 tests green.
+- Next.js production build verified: 19 static and dynamic routes compiled with 0 errors and 0 warnings.
+- Authored `21-SUMMARY.md`.
 
 ## Next Steps
 
-1. Plan Phase 21: Pre-Commit Entropy & Secret Scanner (`/gsd-plan-phase 21`).
-2. Execute Phase 21: Multi-pattern credential regex and Shannon entropy scanner with approval gate integration.
+1. Plan Phase 22: Autonomous Self-Review & Bounded Repair Protocol (`/gsd-plan-phase 22`).
+2. Execute Phase 22: Diagnostic failure log analyzer, targeted repair prompt synthesizer, 3-strike bounded retry runner, automated safe rollback to pre-run git HEAD, and Telegram recovery alerts.
 
 ## Active Decisions
 

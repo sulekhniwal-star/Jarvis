@@ -58,6 +58,8 @@ export const VerificationHarnessConfigSchema = z.object({
   diffPatch: z.string().optional(),
   allowedFilePatterns: z.array(z.string()).optional(),
   allowDeletions: z.boolean().optional(),
+  allowedSecretFingerprints: z.array(z.string()).optional(),
+  skipSecretScan: z.boolean().optional(),
 });
 export type VerificationHarnessConfig = z.infer<
   typeof VerificationHarnessConfigSchema
@@ -70,6 +72,7 @@ export interface VerificationResult {
   summary: TestSummary;
   artifacts: ExecutionArtifact[];
   diffReport?: import("./diff-inspector/types").DiffInspectionReport;
+  secretReport?: import("./secret-scanner/types").SecretScanReport;
   failureStage?: VerificationStage;
   failureDetails?: string;
 }

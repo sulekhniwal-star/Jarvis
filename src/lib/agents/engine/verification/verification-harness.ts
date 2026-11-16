@@ -14,6 +14,7 @@ import {
   parseNextBuildOutput,
 } from "./parsers";
 import { diffInspector } from "./diff-inspector";
+import { secretScanner } from "./secret-scanner";
 import { ExecutionArtifact, TestSummary } from "../types";
 
 export interface StageProcessOptions {
@@ -161,6 +162,8 @@ export class VerificationHarness {
       diffPatch: config?.diffPatch,
       allowedFilePatterns: config?.allowedFilePatterns,
       allowDeletions: config?.allowDeletions,
+      allowedSecretFingerprints: config?.allowedSecretFingerprints,
+      skipSecretScan: config?.skipSecretScan,
       defaultCommands: {
         ...defaultCommands,
         ...(config?.defaultCommands || {}),
@@ -326,6 +329,30 @@ export class VerificationHarness {
       }
     }
 
+    // Run Pre-Commit Secret & Entropy Scan if diffPatch is provided and not skipped
+    let secretReport: import("./secret-scanner/types").SecretScanReport | undefined;
+    if (activeConfig.diffPatch && !activeConfig.skipSecretScan) {
+      secretReport = secretScanner.scanDiff(activeConfig.diffPatch, {
+        allowedFingerprints: activeConfig.allowedSecretFingerprints,
+      });
+
+      if (!secretReport.passed) {
+        hasFailed = true;
+        if (!failureStage) {
+          failureStage = "custom";
+          const blockers = secretReport.findings.filter(
+            (f) => f.severity === "blocker"
+          );
+          failureDetails = `Secret scan security gate failed: ${blockers
+            .map(
+              (b) =>
+                `${b.secretType} in ${b.file ?? "diff"}:${b.line} (${b.redactedSnippet})`
+            )
+            .join("; ")}`;
+        }
+      }
+    }
+
     const stagesToRun = [...activeConfig.stages];
     if (activeConfig.customCommand && !stagesToRun.includes("custom")) {
       stagesToRun.push("custom");
@@ -428,6 +455,16 @@ export class VerificationHarness {
       });
     }
 
+    if (secretReport && secretReport.findings.length > 0) {
+      artifacts.push({
+        name: "secret-scan.md",
+        artifactType: "diff",
+        content: secretReport.markdownSummary,
+        mimeType: "text/markdown",
+        path: "verification/secret-scan.md",
+      });
+    }
+
     return {
       status: hasFailed ? "failed" : "passed",
       overallDurationMs,
@@ -435,6 +472,7 @@ export class VerificationHarness {
       summary,
       artifacts,
       diffReport,
+      secretReport,
       failureStage,
       failureDetails,
     };

@@ -7,25 +7,22 @@ updated: 2026-11-15T23:05:00+05:30
 ## Current Position
 
 **Milestone:** v5.0 - Coding Execution Sandbox (Active)  
-**Phase:** 15 - Coding Agent Interface & Execution Engine Contract  
-**Status:** Planned  
-**Plan:** Ready for Phase 15 Execution (`/gsd-execute-phase 15`)
+**Phase:** 15 - Coding Agent Interface & Execution Engine Contract (Complete)  
+**Status:** Complete  
+**Plan:** Ready for Phase 16 Planning (`/gsd-plan-phase 16`)
 
 ## Last Action
 
-Authored Phase 15 plans and research:
-- `15-RESEARCH.md`: Defined `ICodingAgentEngine` contract, `CodingTaskContext` invariants (`targetBranch === 'main'`), `ExecutionArtifact` models, engine registry architecture, and mock engine design.
-- `15-01-PLAN.md` (Wave 1): Coding agent types, Zod schemas, `CodingEngineRegistry`, and `MockCodingAgentEngine` with unit tests.
-- `15-02-PLAN.md` (Wave 2): `TaskContextSynthesizer`, path traversal defense, environment variable sanitization, App Router diagnostic route (`/api/agents/engine`), and integration tests.
-- Successfully verified plan validity against all 8 plan-checker quality dimensions.
+Executed Phase 15 (Coding Agent Interface & Execution Engine Contract):
+- Plan 15.1: Implemented `ICodingAgentEngine`, Zod schemas for `CodingTaskContext` (strictly enforcing `targetBranch: 'main'`), `CodingTaskResult`, `ExecutionArtifact`, `CodingEngineRegistry`, and deterministic `MockCodingAgentEngine`.
+- Plan 15.2: Implemented `TaskContextSynthesizer` with path traversal sanitization, sensitive environment credential stripping (`NFR-SEC-02`), structured instructions compiler, App Router route `/api/agents/engine`, and unified barrel exports in `src/lib/agents/engine/index.ts`.
+- Empirical verification: 53/53 test files passed (335/335 tests green, 100%), Next.js production build succeeded with 0 errors and 0 warnings across 14 routes.
+- Authored `15-SUMMARY.md` and updated `ROADMAP.md` and `REQUIREMENTS.md` (`REQ-EX-01` Complete).
 
 ## Next Steps
 
-1. Execute Phase 15 (`/gsd-execute-phase 15`):
-   - Wave 1: Implement `types.ts`, `registry.ts`, `mock-engine.ts`, and unit tests.
-   - Wave 2: Implement `context-synthesizer.ts`, `route.ts`, index exports, and unit tests.
-2. Verify all test suites and Next.js production build pass cleanly.
-3. Advance to Phase 16 (Headless Aider CLI Adapter & Configuration Synthesizer).
+1. Run `/gsd-plan-phase 16` to research and author plans for Phase 16: Headless Aider CLI Adapter & Configuration Synthesizer (`REQ-EX-02`).
+2. Implement Aider non-interactive batch runner, YAML configuration generator, git commit and diff parser, and 3-strike bounded repair protocol.
 
 ## Active Decisions
 

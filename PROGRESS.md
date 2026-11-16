@@ -29,7 +29,7 @@
 | **Milestone 4 / Phase 12** | GitHub Client, Auth & Webhooks | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 13** | Remote Push Approval Gate & Branchless Guard | **Complete** | 2026-11-15 |
 | **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | **Complete** | 2026-11-15 |
-| **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Active** (Pending Plan) | 2026-11-16 |
+| **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | Pending | 2026-11-16 |
 | **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | Pending | 2026-11-16 |
 | **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | Pending | 2026-11-16 |
@@ -42,6 +42,25 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-16 — Work Session 14 (Phase 15 Execution: Coding Agent Interface & Execution Engine Contract)
+- **Trigger:** `/gsd-execute-phase 15` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 15.1):
+    - Authored `ICodingAgentEngine` TypeScript interface and Zod schemas (`CodingTaskContext`, `CodingTaskResult`, `ExecutionArtifact`, `TestSummary`, `EngineValidationResult`) in `src/lib/agents/engine/types.ts`.
+    - Enforced `targetBranch: z.literal("main")` at schema level (`NFR-SEC-01`).
+    - Implemented `CodingEngineRegistry` (`src/lib/agents/engine/registry.ts`) for dynamic registration, default resolution, and parallel engine health checking.
+    - Implemented `MockCodingAgentEngine` (`src/lib/agents/engine/mock-engine.ts`) for deterministic execution testing, dry runs, and error simulations.
+    - Authored unit test suite `tests/unit/agents/engine/registry.test.ts` (17 tests green).
+  - Implemented Wave 2 (Plan 15.2):
+    - Implemented `TaskContextSynthesizer` (`src/lib/agents/engine/context-synthesizer.ts`) with path traversal sanitization, sensitive environment credential stripping (`NFR-SEC-02`), and structured prompt compilation.
+    - Exported unified engine module entrypoint in `src/lib/agents/engine/index.ts`.
+    - Implemented App Router diagnostic route `src/app/api/agents/engine/route.ts` handling `GET` to report engine registry state and validation health.
+    - Authored unit test suites `tests/unit/agents/engine/context-synthesizer.test.ts` (10 tests green) and `tests/unit/api/agents-engine-route.test.ts` (3 tests green).
+  - **Empirical Verification:**
+    - `pnpm test`: 53/53 test files passed, 335/335 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors and 0 warnings across 14 routes.
+  - **Artifacts:** Created `15-SUMMARY.md`. Updated `ROADMAP.md`, `REQUIREMENTS.md` (`REQ-EX-01` complete), `STATE.md`, `CURRENT_STATE.md`, and `PROGRESS.md`.
 
 ### 2026-11-15 — Work Session 13 (Phase 14 Execution: Repository Synchronization Monitor & Dual-Channel Status)
 - **Trigger:** `/gsd-execute-phase 14` executed by owner.

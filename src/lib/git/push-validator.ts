@@ -1,19 +1,13 @@
 import { execFileSync } from "child_process";
 import { secretScanner, SecretFinding } from "../agents/engine/verification/secret-scanner";
-import {
-  PrePushCommitSummary,
-  PrePushValidationOptions,
-  PrePushValidationResult,
-} from "./types";
+import { PrePushCommitSummary, PrePushValidationOptions, PrePushValidationResult } from "./types";
 
 /**
  * Validates repository invariants before requesting or executing a remote git push.
  * Strictly verifies main-only branch policy, working tree cleanliness, ahead commit count,
  * and zero secrets in outgoing diffs (REQ-GH-03, NFR-SEC-01).
  */
-export function validatePrePush(
-  options: PrePushValidationOptions = {}
-): PrePushValidationResult {
+export function validatePrePush(options: PrePushValidationOptions = {}): PrePushValidationResult {
   const cwd = options.cwd ?? process.cwd();
   const remoteRef = options.remoteRef ?? "origin/main";
   const errors: string[] = [];
@@ -59,9 +53,7 @@ export function validatePrePush(
 
     isClean = lines.length === 0;
     if (!isClean) {
-      errors.push(
-        `Working tree has uncommitted changes: ${dirtyFiles.join(", ")}`
-      );
+      errors.push(`Working tree has uncommitted changes: ${dirtyFiles.join(", ")}`);
     }
   } catch (err) {
     errors.push(`Failed to inspect working tree status: ${(err as Error).message}`);
@@ -92,7 +84,9 @@ export function validatePrePush(
       errors.push("No local commits ahead of remote to push.");
     }
   } catch (err) {
-    errors.push(`Failed to calculate ahead commits against '${remoteRef}': ${(err as Error).message}`);
+    errors.push(
+      `Failed to calculate ahead commits against '${remoteRef}': ${(err as Error).message}`
+    );
   }
 
   try {
@@ -106,7 +100,9 @@ export function validatePrePush(
     }
   } catch (err) {
     if (!errors.some((e) => e.includes(remoteRef))) {
-      errors.push(`Failed to calculate behind commits against '${remoteRef}': ${(err as Error).message}`);
+      errors.push(
+        `Failed to calculate behind commits against '${remoteRef}': ${(err as Error).message}`
+      );
     }
   }
 

@@ -72,6 +72,18 @@ export function formatSpecificationForPlanner(input: PlannerInput): string {
     parts.push(`### Project Context:\n${input.projectContext.trim()}\n`);
   }
 
+  if (input.relevantMemories && input.relevantMemories.length > 0) {
+    parts.push(`### Historical Errors to Avoid & Architectural Patterns:`);
+    input.relevantMemories.forEach((mem, idx) => {
+      const simTag =
+        mem.similarity !== undefined
+          ? ` [relevance: ${Math.round(mem.similarity * 100)}%]`
+          : "";
+      parts.push(`${idx + 1}. [${mem.category}]${simTag} ${mem.content.trim()}`);
+    });
+    parts.push("");
+  }
+
   parts.push(`### Task ID: ${input.taskId}`);
   parts.push(`\n### Approved Specification Scope:\n${spec.scope.trim()}`);
   parts.push(`\n### Exclusions (Out of Scope):\n${spec.exclusions.trim()}`);

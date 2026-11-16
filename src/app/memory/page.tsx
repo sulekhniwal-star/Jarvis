@@ -1,0 +1,88 @@
+import * as React from "react";
+import { AppShell } from "@/components/layout/app-shell";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import {
+  MemoryBrowserView,
+  MemoryMetrics,
+} from "@/components/memory/memory-browser-view";
+import { MemoryItem } from "@/components/memory/memory-card";
+import { ProjectOption } from "@/components/memory/create-memory-modal";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { MemoryRepository } from "@/lib/repositories/memory-repository";
+import { ProjectRepository } from "@/lib/repositories/project-repository";
+
+export const dynamic = "force-dynamic";
+
+export default async function MemoryPage() {
+  let supabase;
+  let userId = "00000000-0000-0000-0000-000000000001";
+
+  try {
+    supabase = await createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      userId = session.user.id;
+    }
+  } catch {
+    supabase = createAdminClient();
+  }
+
+  let memories: MemoryItem[] = [];
+  let projects: ProjectOption[] = [];
+  let metrics: MemoryMetrics = {
+    total: 0,
+    userPreferences: 0,
+    projectDecisions: 0,
+    architecturePatterns: 0,
+    historicalErrors: 0,
+  };
+
+  try {
+    const memoryRepo = new MemoryRepository(supabase);
+    const projectRepo = new ProjectRepository(supabase);
+
+    const [memoriesResult, projectsResult] = await Promise.all([
+      memoryRepo.listMemories({ userId, limit: 100 }),
+      projectRepo.list(userId, { limit: 100 }),
+    ]);
+
+    projects = projectsResult.data.map((p) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+    }));
+
+    const projectMap = new Map(projects.map((p) => [p.id, p.name]));
+
+    memories = memoriesResult.data.map((m) => ({
+      ...m,
+      projectName: m.project_id ? projectMap.get(m.project_id) : undefined,
+    }));
+
+    metrics = {
+      total: memories.length,
+      userPreferences: memories.filter((m) => m.category === "user_preference").length,
+      projectDecisions: memories.filter((m) => m.category === "project_decision").length,
+      architecturePatterns: memories.filter((m) => m.category === "architecture_pattern").length,
+      historicalErrors: memories.filter((m) => m.category === "historical_error").length,
+    };
+  } catch {
+    // In build or environments without DB credentials, graceful fallback
+  }
+
+  return (
+    <AppShell title="Semantic Memory Store">
+      <ErrorBoundary>
+        <MemoryBrowserView
+          initialMemories={memories}
+          initialMetrics={metrics}
+          projects={projects}
+        />
+      </ErrorBoundary>
+    </AppShell>
+  );
+}
+

@@ -1,5 +1,6 @@
 import { AIGateway } from "@/lib/ai/gateway";
 import { AIMessage } from "@/lib/ai/types";
+import { MemoryRepository } from "@/lib/repositories/memory-repository";
 import {
   ClarificationAnswer,
   SpecifierAgentResponse,
@@ -21,7 +22,10 @@ export class SpecifierValidationError extends Error {
 }
 
 export class SpecifierAgent {
-  constructor(private readonly aiGateway: AIGateway) {}
+  constructor(
+    private readonly aiGateway: AIGateway,
+    private readonly memoryRepo?: MemoryRepository
+  ) {}
 
   /**
    * Sanitizes markdown fences, backticks, or trailing characters from raw LLM output.
@@ -50,7 +54,50 @@ export class SpecifierAgent {
   public async specify(
     input: SpecifierInput
   ): Promise<SpecifierAgentResponse> {
-    const formattedUserPrompt = formatUserPromptWithContext(input);
+    let enrichedInput = input;
+
+    // Automatically retrieve and inject relevant memories if not already supplied
+    if (!input.relevantMemories && this.memoryRepo) {
+      try {
+        const [preferences, decisions] = await Promise.all([
+          this.memoryRepo.searchSimilarMemories({
+            query: input.rawPrompt,
+            userId: input.userId,
+            projectId: input.projectId,
+            category: "user_preference",
+            matchThreshold: 0.7,
+            matchCount: 3,
+          }),
+          this.memoryRepo.searchSimilarMemories({
+            query: input.rawPrompt,
+            userId: input.userId,
+            projectId: input.projectId,
+            category: "project_decision",
+            matchThreshold: 0.7,
+            matchCount: 3,
+          }),
+        ]);
+
+        const combined = [...preferences, ...decisions]
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, 5);
+
+        if (combined.length > 0) {
+          enrichedInput = {
+            ...input,
+            relevantMemories: combined.map((m) => ({
+              category: m.category,
+              content: m.content,
+              similarity: m.similarity,
+            })),
+          };
+        }
+      } catch {
+        // Fallback gracefully without memories
+      }
+    }
+
+    const formattedUserPrompt = formatUserPromptWithContext(enrichedInput);
 
     const messages: AIMessage[] = [
       {

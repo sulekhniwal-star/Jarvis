@@ -1,5 +1,6 @@
 import { AIGateway } from "@/lib/ai/gateway";
 import { AIMessage } from "@/lib/ai/types";
+import { MemoryRepository } from "@/lib/repositories/memory-repository";
 import {
   PlanPayload,
   PlanPayloadSchema,
@@ -30,7 +31,10 @@ export class PlannerDAGError extends Error {
 }
 
 export class PlannerAgent {
-  constructor(private readonly aiGateway: AIGateway) {}
+  constructor(
+    private readonly aiGateway: AIGateway,
+    private readonly memoryRepo?: MemoryRepository
+  ) {}
 
   public cleanJsonResponse(content: string): string {
     let cleaned = content.trim();
@@ -50,7 +54,51 @@ export class PlannerAgent {
   }
 
   public async plan(input: PlannerInput): Promise<PlanPayload> {
-    const formattedPrompt = formatSpecificationForPlanner(input);
+    let enrichedInput = input;
+
+    // Automatically retrieve and inject relevant patterns and error memories if not already supplied
+    if (!input.relevantMemories && this.memoryRepo) {
+      try {
+        const queryText = `${input.specification.scope} ${input.specification.exclusions}`;
+        const [patterns, errors] = await Promise.all([
+          this.memoryRepo.searchSimilarMemories({
+            query: queryText,
+            userId: input.userId,
+            projectId: input.projectId,
+            category: "architecture_pattern",
+            matchThreshold: 0.7,
+            matchCount: 3,
+          }),
+          this.memoryRepo.searchSimilarMemories({
+            query: queryText,
+            userId: input.userId,
+            projectId: input.projectId,
+            category: "historical_error",
+            matchThreshold: 0.7,
+            matchCount: 3,
+          }),
+        ]);
+
+        const combined = [...patterns, ...errors]
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, 5);
+
+        if (combined.length > 0) {
+          enrichedInput = {
+            ...input,
+            relevantMemories: combined.map((m) => ({
+              category: m.category,
+              content: m.content,
+              similarity: m.similarity,
+            })),
+          };
+        }
+      } catch {
+        // Fallback gracefully without memories
+      }
+    }
+
+    const formattedPrompt = formatSpecificationForPlanner(enrichedInput);
 
     const messages: AIMessage[] = [
       {

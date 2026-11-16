@@ -89,6 +89,18 @@ export function formatUserPromptWithContext(input: SpecifierInput): string {
     parts.push(`### Project Context:\n${input.projectContext.trim()}\n`);
   }
 
+  if (input.relevantMemories && input.relevantMemories.length > 0) {
+    parts.push(`### Relevant Project Decisions & Preferences:`);
+    input.relevantMemories.forEach((mem, index) => {
+      const simTag =
+        mem.similarity !== undefined
+          ? ` [relevance: ${Math.round(mem.similarity * 100)}%]`
+          : "";
+      parts.push(`${index + 1}. [${mem.category}]${simTag} ${mem.content.trim()}`);
+    });
+    parts.push("");
+  }
+
   parts.push(`### User Task Prompt:\n${input.rawPrompt.trim()}\n`);
 
   if (input.clarifications && input.clarifications.length > 0) {

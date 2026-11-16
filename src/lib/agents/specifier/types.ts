@@ -91,4 +91,9 @@ export interface SpecifierInput {
   userId?: string;
   runId?: string;
   clarifications?: ClarificationAnswer[];
+  relevantMemories?: Array<{
+    category: string;
+    content: string;
+    similarity?: number;
+  }>;
 }

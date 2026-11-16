@@ -61,6 +61,12 @@ export interface PlannerInput {
   projectContext?: string;
   userId?: string;
   runId?: string;
+  projectId?: string;
+  relevantMemories?: Array<{
+    category: string;
+    content: string;
+    similarity?: number;
+  }>;
 }
 
 export type PlannerAgentResponse = PlanPayload;

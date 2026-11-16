@@ -60,14 +60,14 @@ updated: 2026-11-16T16:32:00+05:30
 ---
 
 ### Phase 25: pgvector Semantic Memory Store & Context Retrieval
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-17)  
 **Objective:** Implement typed `MemoryRepository` connected to `public.memories` using 1536-dimensional vector embeddings via OpenRouter (with deterministic local fallback), cosine similarity retrieval for agent context injection, and an interactive memory curation web interface (`REQ-MEM-01`, `REQ-MEM-02`, `REQ-MEM-03`, `NFR-PERF-01`).  
 **Depends on:** Phase 24  
 **Requirements:** REQ-MEM-01, REQ-MEM-02, REQ-MEM-03, NFR-PERF-01  
 
 **Plans:**
-- [ ] Plan 25.1: `MemoryRepository` data access layer, OpenRouter embedding generator with deterministic local fallback, and top-K similarity search service.
-- [ ] Plan 25.2: Memory context injection for `SpecifierAgent` and `PlannerAgent`, plus interactive memory curation web UI (`/memory`).
+- [x] Plan 25.1: `MemoryRepository` data access layer, OpenRouter embedding generator with deterministic local fallback, and top-K similarity search service.
+- [x] Plan 25.2: Memory context injection for `SpecifierAgent` and `PlannerAgent`, plus interactive memory curation web UI (`/memory`).
 
 ---
 
@@ -118,6 +118,6 @@ updated: 2026-11-16T16:32:00+05:30
 | 21 | Pre-Commit Entropy & Secret Scanner | ✅ | 2/2 | 100% |
 | 22 | Autonomous Self-Review & Bounded Repair | ✅ | 2/2 | 100% |
 | 23 | Project Workspace & Hierarchy UI | ✅ | 2/2 | 100% |
-| 24 | Agent Operations Console & Telemetry Viewer | ⏳ | 0/2 | 0% |
-| 25 | pgvector Semantic Memory Store & Context | ⏳ | 0/2 | 0% |
+| 24 | Agent Operations Console & Telemetry Viewer | ✅ | 2/2 | 100% |
+| 25 | pgvector Semantic Memory Store & Context | ✅ | 2/2 | 100% |
 | 26 | Real-Time State Synchronization Engine | ⏳ | 0/2 | 0% |

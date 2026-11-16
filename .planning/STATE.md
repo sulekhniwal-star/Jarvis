@@ -7,25 +7,22 @@ updated: 2026-11-15T23:05:00+05:30
 ## Current Position
 
 **Milestone:** v5.0 - Coding Execution Sandbox (Active)  
-**Phase:** 17 - Ephemeral Sandbox Runner Environment  
-**Status:** Planned  
-**Plan:** Ready for Phase 17 Execution (`/gsd-execute-phase 17`)
+**Phase:** 17 - Ephemeral Sandbox Runner Environment (Complete)  
+**Status:** Complete  
+**Plan:** Ready for Phase 18 Planning (`/gsd-plan-phase 18`)
 
 ## Last Action
 
-Authored Phase 17 plans and research:
-- `17-RESEARCH.md`: Defined GitHub Actions `workflow_dispatch` runner architecture, ephemeral token scoping, zero master secret leakage guarantees (`NFR-SEC-02`), local process/scratchpad fallback runner, and diagnostic API route.
-- `17-01-PLAN.md` (Wave 1): Extended `GitHubClient` with `dispatchWorkflow` and `getWorkflowRun`, defined sandbox domain models (`SandboxMode`, `ISandboxRunner`), and implemented `GitHubActionsSandboxRunner` with unit tests.
-- `17-02-PLAN.md` (Wave 2): Implemented `LocalSandboxRunner` with isolated workspace teardown, `SandboxOrchestrator` with automated fallback routing, workflow template `.github/workflows/coding-agent.yml`, diagnostic route `/api/agents/sandbox`, and unit test suites.
-- Successfully verified plan validity against all 8 plan-checker quality dimensions.
+Executed Phase 17 (Ephemeral Sandbox Runner Environment):
+- Plan 17.1: Extended `GitHubClient` with `dispatchWorkflow` (enforcing `ref === 'main'`) and `getWorkflowRun`. Defined sandbox domain models (`SandboxMode`, `ISandboxRunner`, `SandboxExecutionConfig`). Implemented `GitHubActionsSandboxRunner` mapping workflow runs to `CodingTaskResult`.
+- Plan 17.2: Implemented `LocalSandboxRunner` with isolated scratchpad workspace creation and automatic teardown. Authored `SandboxOrchestrator` for dynamic runner selection (GitHub Actions vs local fallback). Created workflow template `.github/workflows/coding-agent.yml` and diagnostic route `/api/agents/sandbox`.
+- Empirical verification: 58/58 test files passed (368/368 tests green, 100%), Next.js production build succeeded with 0 errors and 0 warnings across 15 routes.
+- Authored `17-SUMMARY.md` and updated `ROADMAP.md` and `REQUIREMENTS.md` (`REQ-EX-03` Complete).
 
 ## Next Steps
 
-1. Execute Phase 17 (`/gsd-execute-phase 17`):
-   - Wave 1: Implement `GitHubClient` workflow dispatch methods, `sandbox/types.ts`, `github-actions-runner.ts`, and unit tests.
-   - Wave 2: Implement `local-sandbox-runner.ts`, `sandbox-orchestrator.ts`, workflow template, diagnostic route, and unit tests.
-2. Verify all test suites and Next.js production build pass cleanly.
-3. Advance to Phase 18 (Execution Telemetry, Artifact Capture & Run State Machine Integration).
+1. Run `/gsd-plan-phase 18` to research and author plans for Phase 18: Execution Telemetry, Artifact Capture & Run State Machine Integration (`REQ-EX-04`).
+2. Implement telemetry storage pipeline, database synchronization in `public.agent_runs`, task lifecycle transitions, and dual-channel notifications.
 
 ## Active Decisions
 

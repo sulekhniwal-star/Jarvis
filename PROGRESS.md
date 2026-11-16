@@ -31,7 +31,7 @@
 | **Milestone 4 / Phase 14** | Repository Sync Monitor & Dual-Channel Status | **Complete** | 2026-11-15 |
 | **Milestone 5 / Phase 15** | Coding Agent Interface & Engine Contract | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 16** | Headless Aider CLI Adapter | **Complete** | 2026-11-16 |
-| **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | Pending | 2026-11-16 |
+| **Milestone 5 / Phase 17** | Ephemeral Sandbox Runner Environment | **Complete** | 2026-11-16 |
 | **Milestone 5 / Phase 18** | Execution Telemetry & Artifact Pipeline | Pending | 2026-11-16 |
 | **Milestone 6** | Quality & Self-Review | Pending | Milestone 5 Verification |
 | **Milestone 7** | Projects, Agents & Memory UI | Pending | Milestone 6 Verification |
@@ -42,6 +42,24 @@
 ---
 
 ## 2. Activity & Work Session Log
+
+### 2026-11-16 — Work Session 16 (Phase 17 Execution: Ephemeral Sandbox Runner Environment)
+- **Trigger:** `/gsd-execute-phase 17` executed by owner.
+- **Actions:**
+  - Implemented Wave 1 (Plan 17.1):
+    - Extended `GitHubClient` (`src/lib/github/client.ts`) with `dispatchWorkflow` (enforcing `ref === 'main'`) and `getWorkflowRun`.
+    - Defined sandbox models and `ISandboxRunner` in `src/lib/agents/engine/sandbox/types.ts`.
+    - Implemented `GitHubActionsSandboxRunner` (`src/lib/agents/engine/sandbox/github-actions-runner.ts`) dishing out ephemeral runs and polling conclusion.
+    - Authored unit test suite `tests/unit/agents/engine/github-actions-runner.test.ts` (5 tests green).
+  - Implemented Wave 2 (Plan 17.2):
+    - Implemented `LocalSandboxRunner` (`src/lib/agents/engine/sandbox/local-sandbox-runner.ts`) with isolated scratchpad workspace creation and automatic teardown.
+    - Implemented `SandboxOrchestrator` (`src/lib/agents/engine/sandbox/sandbox-orchestrator.ts`) managing automated runner routing between GitHub Actions and local fallback.
+    - Created workflow template `.github/workflows/coding-agent.yml` and diagnostic route `/api/agents/sandbox`.
+    - Authored unit test suites `tests/unit/agents/engine/sandbox-orchestrator.test.ts` (7 tests green) and `tests/unit/api/agents-sandbox-route.test.ts` (2 tests green).
+  - **Empirical Verification:**
+    - `pnpm test`: 58/58 test files passed, 368/368 tests green (100%).
+    - `pnpm build`: Next.js production build succeeded with 0 errors and 0 warnings across 15 routes.
+  - **Artifacts:** Created `17-SUMMARY.md`. Updated `ROADMAP.md`, `REQUIREMENTS.md` (`REQ-EX-03` complete), `STATE.md`, `CURRENT_STATE.md`, and `PROGRESS.md`.
 
 ### 2026-11-16 — Work Session 15 (Phase 16 Execution: Headless Aider CLI Adapter & Configuration Synthesizer)
 - **Trigger:** `/gsd-execute-phase 16` executed by owner.

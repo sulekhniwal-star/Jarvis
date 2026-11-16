@@ -246,14 +246,14 @@ updated: 2026-11-15T23:45:00+05:30
 ---
 
 ### Phase 17: Ephemeral Sandbox Runner Environment (GitHub Actions & Local Fallback)
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-16)  
 **Objective:** Build ephemeral sandbox runner environment supporting GitHub Actions workflow dispatch (`workflow_dispatch`), ephemeral credential scoping, and local development runner fallback (`REQ-EX-03`).  
 **Depends on:** Phase 16  
 **Requirements:** REQ-EX-03  
 
 **Plans:**
-- [ ] Plan 17.1: GitHub Actions runner workflow dispatch service with scoped repository credentials and workflow run polling.
-- [ ] Plan 17.2: Local process / Docker fallback runner for isolated offline development.
+- [x] Plan 17.1: GitHub Actions runner workflow dispatch service with scoped repository credentials and workflow run polling.
+- [x] Plan 17.2: Local process / Docker fallback runner for isolated offline development.
 
 ---
 
@@ -299,7 +299,7 @@ updated: 2026-11-15T23:45:00+05:30
 | 14 | Repository Sync Monitor & Dual-Channel Status | ✅ | 2/2 | 100% |
 | 15 | Coding Agent Interface & Engine Contract | ✅ | 2/2 | 100% |
 | 16 | Headless Aider CLI Adapter | ✅ | 2/2 | 100% |
-| 17 | Ephemeral Sandbox Runner Environment | ⏳ | 0/2 | — |
+| 17 | Ephemeral Sandbox Runner Environment | ✅ | 2/2 | 100% |
 | 18 | Execution Telemetry & Artifact Pipeline | ⏳ | 0/2 | — |
 
 ---

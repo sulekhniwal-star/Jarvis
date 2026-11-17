@@ -7,6 +7,7 @@ import { AgentRunsCard } from "@/components/dashboard/agent-runs-card";
 import { ActiveProjectsList } from "@/components/dashboard/active-projects-list";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
 import { SystemHealthCard } from "@/components/ops/system-health-card";
+import { RecommendationsCard } from "@/components/advisory/recommendations-card";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export default function Home() {
@@ -40,6 +41,9 @@ export default function Home() {
 
           {/* System Health & Liveness Diagnostics */}
           <SystemHealthCard />
+
+          {/* Proactive Maintenance Recommendations & Autonomous Advisory */}
+          <RecommendationsCard />
 
           {/* Autonomous Execution Telemetry & Runs */}
           <div className="grid grid-cols-1 gap-6">

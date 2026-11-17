@@ -69,6 +69,9 @@ export interface CommandDependencies {
       userId?: string;
     }) => Promise<any>;
   };
+  advisoryEngine?: {
+    generateAdvisoryReport: (userId?: string) => Promise<any>;
+  };
   userId?: string;
 }
 
@@ -101,6 +104,7 @@ export async function handleTelegramCommand(
         "• /deploy [prod] — Multi-environment deployments & promotion",
         "• /health — Real-time system diagnostics & latency",
         "• /prune — Storage retention pruning & approval expiry",
+        "• /advisory — Proactive maintenance recommendations & health advisory",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
@@ -572,6 +576,60 @@ export async function handleTelegramCommand(
       } catch (err: unknown) {
         const e = err as Error;
         return `❌ ${bold("Maintenance Execution Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
+      }
+    }
+
+    case "/advisory": {
+      let engine = deps?.advisoryEngine;
+      if (!engine) {
+        const { ProactiveAdvisoryEngine } = await import("../advisory/recommendation-engine");
+        engine = new ProactiveAdvisoryEngine();
+      }
+
+      try {
+        const report = await engine.generateAdvisoryReport(deps?.userId);
+
+        if (!report || report.totalRecommendations === 0) {
+          return [
+            `✅ ${bold("All Systems Nominal")}`,
+            "",
+            "Zero maintenance warnings or anomalies detected\\.",
+            "• Daily & monthly budget within safe limits",
+            "• AI gateway & models operating normally",
+            "• Git branch hygiene strictly locked to main",
+          ].join("\n");
+        }
+
+        const lines: string[] = [
+          `💡 ${bold("PROACTIVE MAINTENANCE ADVISORY")}`,
+          "",
+          `📢 ${bold("Active Recommendations:")} ${escapeMarkdownV2(String(report.totalRecommendations))} \\(${escapeMarkdownV2(String(report.criticalCount))} critical, ${escapeMarkdownV2(String(report.warningCount))} warning\\)`,
+          "",
+        ];
+
+        for (const rec of (report.recommendations || []).slice(0, 5)) {
+          const icon =
+            rec.severity === "critical"
+              ? "🔴"
+              : rec.severity === "warning"
+              ? "🟡"
+              : "🔵";
+
+          lines.push(`${icon} ${bold(rec.title)}`);
+          lines.push(`  ${escapeMarkdownV2(rec.description)}`);
+
+          if (rec.remediation) {
+            lines.push(`  ⚡ ${italic("Suggested Action:")} ${code(rec.remediation.label)}`);
+          }
+          lines.push("");
+        }
+
+        lines.push(italic("Visit Web Dashboard to trigger 1\\-click remediation actions\\."));
+
+        return lines.join("\n");
+      } catch (err: unknown) {
+        const e = err as Error;
+        return `❌ ${bold("Advisory Engine Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
       }
     }
 

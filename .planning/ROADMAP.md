@@ -6,9 +6,8 @@ updated: 2026-11-17T13:07:00+05:30
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-> **Current Phase:** 30 - Tamper-Evident Audit Ledger & Backup Recovery Verification  
-> **Status:** Phase 29 Complete; Ready for Planning Phase 30 (`/gsd-plan-phase 30`)
+> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Complete)  
+> **Status:** All Phases (27–30) Complete; Ready for Milestone Completion (`/gsd-complete-milestone`)
 
 ---
 
@@ -19,8 +18,8 @@ updated: 2026-11-17T13:07:00+05:30
 - [x] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
 - [x] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
 - [x] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
-- [ ] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
-- [ ] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
+- [x] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
+- [x] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
 
 ---
 
@@ -75,14 +74,14 @@ updated: 2026-11-17T13:07:00+05:30
 ---
 
 ### Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification
-**Status:** ⏳ Pending  
+**Status:** Complete (2026-11-17)  
 **Objective:** Build append-only cryptographic hash-chained audit logger in `audit_events`, dedicated audit ledger explorer UI, automated pg_dump database snapshot script, and automated disaster recovery drill test suite (`REQ-AUD-01`, `REQ-OPS-01`).  
 **Depends on:** Phase 29  
 **Requirements:** REQ-AUD-01, REQ-OPS-01  
 
 **Plans:**
-- [ ] Plan 30.1: Cryptographic hash-chained audit logger, verification API route, and `/audit` activity viewer.
-- [ ] Plan 30.2: Automated backup snapshot script with checksum verification and end-to-end disaster recovery drill test.
+- [x] Plan 30.1: Cryptographic hash-chained audit logger, verification API route, and `/audit` activity viewer.
+- [x] Plan 30.2: Automated backup snapshot script with checksum verification and end-to-end disaster recovery drill test.
 
 ---
 
@@ -126,4 +125,4 @@ updated: 2026-11-17T13:07:00+05:30
 | 27 | Unified Approval Centre & Decision Engine | ✅ | 2/2 | 100% |
 | 28 | Cost Ledger & Inference Circuit Breakers | ✅ | 2/2 | 100% |
 | 29 | Emergency Kill Switch & Cancellation | ✅ | 2/2 | 100% |
-| 30 | Tamper-Evident Audit Ledger & Backup Recovery | ⏳ | 0/2 | 0% |
+| 30 | Tamper-Evident Audit Ledger & Backup Recovery | ✅ | 2/2 | 100% |

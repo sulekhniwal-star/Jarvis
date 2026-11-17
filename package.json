@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "git:guard": "tsx scripts/git-guard.ts",
-    "telegram:dev": "tsx scripts/telegram-polling.ts"
+    "telegram:dev": "tsx scripts/telegram-polling.ts",
+    "backup:snapshot": "tsx scripts/backup-runner.ts",
+    "backup:drill": "tsx scripts/recovery-drill.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

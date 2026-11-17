@@ -10,6 +10,7 @@ import {
   Bot,
   Brain,
   ShieldCheck,
+  History,
   Settings,
   GitBranch,
   Terminal,
@@ -30,6 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Memory", href: "/memory", icon: Brain },
   { label: "Tasks", href: "/tasks", icon: ListTodo },
   { label: "Approvals", href: "/approvals", icon: ShieldCheck },
+  { label: "Audit Ledger", href: "/audit", icon: History },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

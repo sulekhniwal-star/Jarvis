@@ -6,12 +6,12 @@ updated: 2026-11-17T13:07:00+05:30
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Complete)  
-> **Status:** All Phases (27–30) Complete; Ready for Milestone Completion (`/gsd-complete-milestone`)
+> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Archived)  
+> **Status:** Milestone 8 Complete; Ready for Milestone 9 Initialization (`/gsd-new-milestone`)
 
 ---
 
-## Must-Haves (Milestone 8 Baseline)
+## Must-Haves (Milestone 8 Baseline — All Completed)
 
 - [x] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
 - [x] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
@@ -25,6 +25,7 @@ updated: 2026-11-17T13:07:00+05:30
 
 ## Completed Milestones
 
+- [x] **[Milestone 8: v8.0 — Approvals, Security & Cost Controls](file:///f:/Javis/.planning/milestones/v8.0-ROADMAP.md)** (Phases 27–30, Complete 2026-11-17) — Unified Approval Centre with HMAC-SHA256 decision engine, metered INR cost ledger with AI inference circuit breakers and emergency reserve authorization, sub-second cross-platform emergency kill switch and subprocess cancellation, and tamper-evident SHA-256 hash-chained audit ledger with automated encrypted backup snapshot runner and zero-loss disaster recovery drill harness.
 - [x] **[Milestone 7: v7.0 — Projects, Agents & Memory UI](file:///f:/Javis/.planning/milestones/v7.0-ROADMAP.md)** (Phases 23–26, Complete 2026-11-17) — Project workspace & hierarchy Kanban UI, Agent Operations Console with 4-stage telemetry drill-down, pgvector semantic memory store & agent context retrieval, and Supabase Realtime synchronization engine with resilient 12s fallback polling.
 - [x] **[Milestone 6: v6.0 — Quality, Verification & Self-Review](file:///f:/Javis/.planning/milestones/v6.0-ROADMAP.md)** (Phases 19–22, Complete 2026-11-16) — Multi-stage verification harness, semantic diff inspector & quality gate, entropy & secret scanner, and 3-strike bounded self-repair protocol with automated git rollback.
 - [x] **Milestone 5: v5.0 — Coding Execution Sandbox** (Phases 15–18, Complete 2026-11-16) — Standard coding agent interface, headless Aider CLI adapter, ephemeral GitHub Actions runner environment, and execution telemetry pipeline.

@@ -134,13 +134,17 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 8 — Approvals, Security & Cost Controls (v8.0)
+### Milestone 8 / v8.0 — Approvals, Security & Cost Controls (✅ Complete 2026-11-17)
+- **Phase 27: Unified Approval Centre & Cryptographic Decision Engine:** Dedicated `/approvals` portal displaying pending, approved, rejected, and expired requests with risk tier badges, countdown timers, and diff inspection links, backed by server-side HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-01`, `REQ-APP-02`).
+- **Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps:** Typed `CostRepository` tracking prompt/completion tokens and INR spend, pre-inference circuit breaker middleware enforcing daily (₹25) and monthly (₹750) caps with emergency reserve authorization (₹250), hard stop ceiling (₹1,000), and failsafe blocking during database degradation (`REQ-COST-01`, `REQ-COST-02`, `NFR-REL-02`).
+- **Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol:** Global emergency stop operable via Web Topbar button and Telegram `/kill` command, terminating entire process trees via asynchronous cross-platform signal dispatching (`taskkill /T /F` on Windows, `SIGKILL` on POSIX) and cascading DB updates in sub-second time (< 1000ms) (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
+- **Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification:** Append-only cryptographic SHA-256 hash chaining in `audit_events` with on-demand mathematical chain verification, `/audit` portal with live `AuditChainBadge`, and automated encrypted (AES-256-GCM) backup snapshot runner with zero-loss disaster recovery drill test suite (`REQ-AUD-01`, `REQ-OPS-01`).
 
-This milestone hardens the control plane, operational security, and budget circuit breakers across Javis (`PRD §7.8, §7.10, §8.5, §12`):
-- Emergency stop/kill switch halting all running agent subprocesses and sandbox instances immediately via web and Telegram.
-- Cost threshold circuit breakers and real-time inference spend limit enforcement.
-- Cryptographic approval token verification and tamper-evident audit log ledger.
-- Automated backup verification and disaster recovery drill.
+---
+
+## Active Milestone: Milestone 9 — Deployment & Continuous Maintenance (v9.0)
+
+This milestone establishes production deployment gating, continuous health monitoring, performance telemetry, and automated operational maintenance.
 
 ## Success Criteria
 
@@ -165,3 +169,8 @@ This milestone hardens the control plane, operational security, and budget circu
 - [x] Project Workspace UI displays real-time milestone progress, task DAGs, and specification details.
 - [x] Agent Console provides live inspection of active runs, streaming step outputs, and diff artifacts.
 - [x] Semantic memory returns relevant architectural context and past fixes for incoming user requests.
+- [x] Real-time state synchronization engine propagates database mutations across UI and Telegram.
+- [x] Unified Approval Centre provides cryptographic HMAC decision validation and dual-channel parity.
+- [x] Cost ledger and circuit breakers enforce strict daily and monthly budget ceilings in INR.
+- [x] Emergency kill switch terminates all active subprocess trees and cascades cancellations in sub-second time.
+- [x] Append-only audit ledger provides cryptographic hash-chain tamper detection and automated zero-loss backup recovery.

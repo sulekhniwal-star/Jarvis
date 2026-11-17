@@ -89,6 +89,20 @@ export class ApprovalRepository extends BaseRepository {
     }
   }
 
+  public async getApproval(id: string, userId?: string): Promise<Approval | null> {
+    try {
+      let query = this.client.from("approvals").select().eq("id", id);
+      if (userId) {
+        query = query.eq("user_id", userId);
+      }
+      const { data, error } = await query.single();
+      if (error || !data) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  }
+
   public async recordDecision(
     id: string,
     userId: string,

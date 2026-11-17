@@ -49,6 +49,16 @@ export interface CommandDependencies {
       subSecondPerformanceAchieved: boolean;
     }>;
   };
+  deploymentManager?: {
+    getRepository: () => {
+      getActiveProductionDeployment: () => Promise<any>;
+      getLatestPreviewDeployment: () => Promise<any>;
+    };
+    requestProductionPromotion: (
+      userId: string,
+      params: { commitSha: string; commitMessage?: string; notes?: string }
+    ) => Promise<{ deployment: any; approval: any }>;
+  };
   userId?: string;
 }
 
@@ -78,6 +88,7 @@ export async function handleTelegramCommand(
         "• /reject <id> — Reject pending plan or action",
         "• /cancel — Cancel active task clarification session",
         "• /kill — Emergency Stop: halt all agent workers & cancel tasks",
+        "• /deploy [prod] — Multi-environment deployments & promotion",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
@@ -339,6 +350,107 @@ export async function handleTelegramCommand(
           `Unable to retrieve projects: ${escapeMarkdownV2((err as Error).message)}`,
         ].join("\n");
       }
+    }
+
+    case "/deploy": {
+      const parts = trimmed.split(/\s+/);
+      const subCommand = parts[1]?.toLowerCase();
+      const userId = deps?.userId ?? "00000000-0000-0000-0000-000000000000";
+
+      let manager = deps?.deploymentManager;
+      if (!manager) {
+        try {
+          const { DeploymentManager } = await import("../deployment/deployment-manager");
+          manager = new DeploymentManager();
+        } catch {
+          // fallback
+        }
+      }
+
+      if (!manager) {
+        return `❌ ${bold("Deployment service is unavailable")}`;
+      }
+
+      if (subCommand === "prod" || subCommand === "promote") {
+        const commitSha = parts[2];
+        let targetSha = commitSha;
+        if (!targetSha) {
+          const latestPrev = await manager.getRepository().getLatestPreviewDeployment();
+          targetSha = latestPrev?.commit_sha;
+        }
+
+        if (!targetSha) {
+          return [
+            `❌ ${bold("Missing Commit SHA")}`,
+            "",
+            "Please provide a commit SHA to promote to production:",
+            `${code("/deploy prod <commit_sha>")}`,
+          ].join("\n");
+        }
+
+        try {
+          const { approval } = await manager.requestProductionPromotion(
+            userId,
+            {
+              commitSha: targetSha,
+              commitMessage: `Telegram promotion via /deploy prod`,
+              notes: "Dispatched from Telegram gateway",
+            }
+          );
+
+          return [
+            `🚀 ${bold("PRODUCTION PROMOTION DISPATCHED")}`,
+            "",
+            `🔗 ${bold("Commit:")} ${code(targetSha.substring(0, 7))}`,
+            `🛡️ ${bold("Approval ID:")} ${code(approval.id)}`,
+            `📊 ${bold("Status:")} ${bold("Pending Owner Approval")}`,
+            "",
+            "An interactive authorization card has been dispatched to this chat\\.",
+            `To approve: ${code(`/approve ${approval.id}`)}`,
+          ].join("\n");
+        } catch (err: unknown) {
+          const e = err as Error;
+          return `❌ ${bold("Promotion Request Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
+        }
+      }
+
+      // Default: /deploy shows status of production & preview
+      const [activeProd, latestPrev] = await Promise.all([
+        manager.getRepository().getActiveProductionDeployment(),
+        manager.getRepository().getLatestPreviewDeployment(),
+      ]);
+
+      const lines: string[] = [
+        `🚀 ${bold("Jarvis Deployment Status")}`,
+        "",
+        `🌐 ${bold("Production Environment:")}`,
+      ];
+
+      if (activeProd) {
+        lines.push(`• ${bold("Status:")} 🟢 Deployed`);
+        lines.push(`• ${bold("URL:")} ${escapeMarkdownV2(activeProd.production_url || "https://jarvis.app")}`);
+        lines.push(`• ${bold("Commit:")} ${code(activeProd.commit_sha.substring(0, 7))}`);
+        if (activeProd.deployed_at) {
+          lines.push(`• ${bold("Deployed:")} ${escapeMarkdownV2(new Date(activeProd.deployed_at).toUTCString())}`);
+        }
+      } else {
+        lines.push("• Status: Not deployed");
+      }
+
+      lines.push("");
+      lines.push(`🔬 ${bold("Latest Preview Environment:")}`);
+      if (latestPrev) {
+        lines.push(`• ${bold("Status:")} ${latestPrev.status === "deployed" ? "🟢 Deployed" : escapeMarkdownV2(latestPrev.status)}`);
+        lines.push(`• ${bold("URL:")} ${escapeMarkdownV2(latestPrev.preview_url || "N/A")}`);
+        lines.push(`• ${bold("Commit:")} ${code(latestPrev.commit_sha.substring(0, 7))}`);
+      } else {
+        lines.push("• Status: No previews recorded");
+      }
+
+      lines.push("");
+      lines.push(italic("Use /deploy prod to initiate a production promotion approval request\\."));
+
+      return lines.join("\n");
     }
 
     default: {

@@ -7,15 +7,15 @@ updated: 2026-11-17T14:22:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v9.0 - Deployment & Continuous Maintenance (Active)  
-> **Current Phase:** 31 - Production Deployment Gate & Multi-Environment Pipeline  
-> **Status:** Milestone 9 Initialized; Ready for Planning Phase 31 (`/gsd-plan-phase 31`)
+> **Current Phase:** 32 - System Health Diagnostics & Liveness Telemetry  
+> **Status:** Phase 31 Complete; Ready for Planning Phase 32 (`/gsd-plan-phase 32`)
 
 ---
 
 ## Must-Haves (Milestone 9 Baseline)
 
-- [ ] Production deployment approval gate strictly blocking live promotions until explicit HMAC-authorized approval is granted via Web or Telegram (`REQ-DEP-01`).
-- [ ] Multi-environment deployment runner managing preview deployments, tracking deployment state, preview URL binding, and instant rollback capability (`REQ-DEP-02`).
+- [x] Production deployment approval gate strictly blocking live promotions until explicit HMAC-authorized approval is granted via Web or Telegram (`REQ-DEP-01`).
+- [x] Multi-environment deployment runner managing preview deployments, tracking deployment state, preview URL binding, and instant rollback capability (`REQ-DEP-02`).
 - [ ] Diagnostic system health probe endpoint `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency) (`REQ-OPS-02`, `NFR-REL-03`).
 - [ ] Live System Health widget and operational telemetry dashboard in Web UI and Telegram `/health` command (`REQ-OPS-02`).
 - [ ] Automated storage pruning and retention worker rotating ephemeral build logs older than 30 days, expiring stale pending approvals, and compacting caches (`REQ-OPS-03`).
@@ -41,14 +41,14 @@ updated: 2026-11-17T14:22:00+05:30
 ## Phases for Milestone 9: Deployment & Continuous Maintenance
 
 ### Phase 31: Production Deployment Gate & Multi-Environment Pipeline
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-17)  
 **Objective:** Construct `DeploymentManager` supporting preview and production environments, enforcing explicit human owner approval for production deployments across Web UI and Telegram, preview URL tracking, and rollback state management (`REQ-DEP-01`, `REQ-DEP-02`).  
 **Depends on:** Phase 30 (Milestone 8)  
 **Requirements:** REQ-DEP-01, REQ-DEP-02  
 
 **Plans:**
-- [ ] Plan 31.1: `DeploymentManager` core service, deployment repository, preview URL tracking, and production promotion gate.
-- [ ] Plan 31.2: Web UI Deployment management view, Telegram deployment notification & approval cards, and rollback triggers.
+- [x] Plan 31.1: `DeploymentManager` core service, deployment repository, preview URL tracking, and production promotion gate.
+- [x] Plan 31.2: Web UI Deployment management view, Telegram deployment notification & approval cards, and rollback triggers.
 
 ---
 

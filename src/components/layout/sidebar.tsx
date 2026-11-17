@@ -14,6 +14,7 @@ import {
   Settings,
   GitBranch,
   Terminal,
+  Rocket,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 
@@ -31,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Memory", href: "/memory", icon: Brain },
   { label: "Tasks", href: "/tasks", icon: ListTodo },
   { label: "Approvals", href: "/approvals", icon: ShieldCheck },
+  { label: "Deployments", href: "/deployments", icon: Rocket },
   { label: "Audit Ledger", href: "/audit", icon: History },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

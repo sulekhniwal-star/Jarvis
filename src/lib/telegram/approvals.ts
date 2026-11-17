@@ -108,6 +108,16 @@ export function formatActionApprovalCard(data: ActionApprovalCardData): {
     if (scope.headCommitSha) {
       lines.push(`🔗 ${bold("HEAD Commit:")} ${code(String(scope.headCommitSha).substring(0, 7))}`);
     }
+  } else if (approval.action_type === "production_deploy") {
+    if (scope.commitSha) {
+      lines.push(`🔗 ${bold("Commit SHA:")} ${code(String(scope.commitSha).substring(0, 7))}`);
+    }
+    if (scope.commitMessage) {
+      lines.push(`💬 ${bold("Message:")} ${escapeMarkdownV2(String(scope.commitMessage))}`);
+    }
+    if (scope.verificationSummary) {
+      lines.push(`🛡️ ${bold("Verification:")} ${escapeMarkdownV2(String(scope.verificationSummary))}`);
+    }
   }
 
   lines.push(`⏳ ${bold("Expires:")} ${escapeMarkdownV2(expiresAt)}`);

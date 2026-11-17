@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import Link from "next/link";
 import { ShieldCheck, Check, X } from "lucide-react";
@@ -5,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { EmptyState } from "../ui/empty-state";
+import { useRealtimeApprovals } from "@/hooks/use-realtime-approvals";
 
 export interface PendingApprovalItem {
   id: string;
@@ -21,10 +24,11 @@ export interface PendingApprovalsCardProps {
 }
 
 export function PendingApprovalsCard({
-  approvals = [],
+  approvals: initialApprovals = [],
   onApprove,
   onReject,
 }: PendingApprovalsCardProps) {
+  const { approvals } = useRealtimeApprovals({ initialApprovals });
   const count = approvals.length;
 
   return (

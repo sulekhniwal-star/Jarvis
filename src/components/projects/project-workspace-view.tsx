@@ -14,6 +14,7 @@ import { KanbanTask } from "./kanban-task-card";
 import { TaskDetailDrawer } from "./task-detail-drawer";
 import { CreateTaskModal } from "./create-task-modal";
 import { TaskStatus } from "@/types/database";
+import { useRealtimeTasks } from "@/hooks/use-realtime-tasks";
 
 export interface ProjectWorkspaceViewProps {
   project: {
@@ -34,7 +35,14 @@ export function ProjectWorkspaceView({
   initialMilestones = [],
   initialTasks = [],
 }: ProjectWorkspaceViewProps) {
-  const [tasks, setTasks] = React.useState<KanbanTask[]>(initialTasks);
+  const {
+    tasks,
+    setTasks,
+    transitionTaskStatus: handleStatusTransition,
+  } = useRealtimeTasks({
+    projectId: project.id,
+    initialTasks,
+  });
   const [milestones] = React.useState<HierarchyMilestone[]>(initialMilestones);
   const [viewMode, setViewMode] = React.useState<"kanban" | "hierarchy">("kanban");
   const [selectedTask, setSelectedTask] = React.useState<KanbanTask | null>(null);
@@ -92,37 +100,6 @@ export function ProjectWorkspaceView({
     );
     if (selectedTask?.id === updatedTask.id) {
       setSelectedTask(updatedTask);
-    }
-  };
-
-  const handleStatusTransition = async (taskId: string, targetStatus: TaskStatus) => {
-    const previous = tasks.find((t) => t.id === taskId);
-    if (!previous) return;
-
-    // Optimistic update
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t))
-    );
-
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: targetStatus }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to update status");
-      }
-
-      const { task } = await res.json();
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? task : t)));
-    } catch {
-      // Rollback on failure
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? previous : t))
-      );
     }
   };
 

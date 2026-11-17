@@ -16,7 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MemoryCategoryBadge } from "./memory-category-badge";
-import { MemoryCategory } from "@/types/database";
+import { MemoryCategory, Json } from "@/types/database";
 
 export interface MemoryItem {
   id: string;
@@ -24,7 +24,7 @@ export interface MemoryItem {
   project_id: string | null;
   category: MemoryCategory;
   content: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Json;
   created_at: string;
   similarity?: number;
   projectName?: string;

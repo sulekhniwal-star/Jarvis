@@ -13,6 +13,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 
 export interface AgentRunItem {
   id: string;
@@ -68,6 +69,31 @@ export function AgentRunsCard({
       void fetchRuns();
     }
   }, [initialRuns, fetchRuns]);
+
+  useRealtimeSubscription<AgentRunItem>({
+    config: { table: "agent_runs" },
+    onEvent: (payload) => {
+      const record = payload.new;
+      const oldRecord = payload.old;
+      setRuns((prev) => {
+        if (payload.eventType === "INSERT") {
+          if (prev.some((r) => r.id === record.id)) {
+            return prev.map((r) => (r.id === record.id ? { ...r, ...record } : r));
+          }
+          return [record, ...prev];
+        }
+        if (payload.eventType === "UPDATE") {
+          return prev.map((r) => (r.id === record.id ? { ...r, ...record } : r));
+        }
+        if (payload.eventType === "DELETE") {
+          const targetId = oldRecord?.id || (record as any)?.id;
+          return prev.filter((r) => r.id !== targetId);
+        }
+        return prev;
+      });
+    },
+    onPoll: fetchRuns,
+  });
 
   const getStatusBadge = (status: AgentRunItem["status"]) => {
     switch (status) {

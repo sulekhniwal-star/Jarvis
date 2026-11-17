@@ -1,5 +1,5 @@
 import { BaseRepository } from "./base";
-import { Memory, MemoryCategory, Json } from "@/types/database";
+import { Memory, MemoryCategory, Json, TablesUpdate } from "@/types/database";
 import { EmbeddingService } from "@/lib/ai/embedding-service";
 
 export interface CreateMemoryDTO {
@@ -254,13 +254,13 @@ export class MemoryRepository extends BaseRepository {
     data: UpdateMemoryDTO
   ): Promise<Memory> {
     try {
-      const updates: Record<string, unknown> = {
+      const updates: TablesUpdate<"memories"> = {
         updated_at: new Date().toISOString(),
       };
 
       if (data.category !== undefined) updates.category = data.category;
       if (data.projectId !== undefined) updates.project_id = data.projectId;
-      if (data.metadata !== undefined) updates.metadata = data.metadata;
+      if (data.metadata !== undefined) updates.metadata = data.metadata as Json;
 
       if (data.content !== undefined) {
         updates.content = data.content;

@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Menu, ShieldAlert, User } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { RealtimeStatusBadge } from "./realtime-status-badge";
 
 export interface TopbarProps {
   title?: string;
@@ -53,9 +54,7 @@ export function Topbar({
         )}
 
         <div className="flex items-center gap-2 pl-3 border-l border-surface-3">
-          <Badge variant="cyan" pulse className="hidden sm:inline-flex">
-            Online
-          </Badge>
+          <RealtimeStatusBadge className="hidden sm:inline-flex" />
           <div
             className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 border border-surface-3 text-text-secondary"
             title="Authenticated Owner"

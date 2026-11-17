@@ -20,34 +20,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AgentRunStatus, Json } from "@/types/database";
+import { EnrichedAgentRun, AgentMetrics } from "@/types/agent-runs";
+import { useRealtimeRuns } from "@/hooks/use-realtime-runs";
 
-export interface EnrichedAgentRun {
-  id: string;
-  task_id: string;
-  agent_engine: string;
-  status: AgentRunStatus;
-  git_commit_hash?: string | null;
-  exit_code?: number | null;
-  started_at?: string | null;
-  completed_at?: string | null;
-  created_at: string;
-  taskTitle?: string;
-  taskPriority?: string;
-  projectName?: string;
-  projectSlug?: string;
-  durationMs?: number | null;
-  error_summary?: string | null;
-  test_results?: Json;
-}
-
-export interface AgentMetrics {
-  totalRuns: number;
-  activeRuns: number;
-  completedRuns: number;
-  failedRuns: number;
-  successRate: number;
-  avgDurationMs: number;
-}
+export type { EnrichedAgentRun, AgentMetrics };
 
 export interface AgentsConsoleViewProps {
   initialRuns?: EnrichedAgentRun[];
@@ -69,66 +45,33 @@ export function AgentsConsoleView({
   initialMetrics,
   refreshUrl = "/api/agents/runs",
 }: AgentsConsoleViewProps) {
-  const [runs, setRuns] = React.useState<EnrichedAgentRun[]>(initialRuns);
+  const {
+    runs,
+    setRuns,
+    metrics,
+    refresh: fetchRuns,
+    error: realtimeError,
+  } = useRealtimeRuns({
+    initialRuns,
+    initialMetrics,
+    refreshUrl,
+  });
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
-  const fetchRuns = React.useCallback(async () => {
+  const handleRefresh = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(refreshUrl);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch agent runs (HTTP ${res.status})`);
-      }
-      const data = await res.json();
-      setRuns(data.runs || []);
+      await fetchRuns();
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
-  }, [refreshUrl]);
-
-  // Compute live metrics from runs if not supplied initially
-  const metrics: AgentMetrics = React.useMemo(() => {
-    if (initialMetrics && runs === initialRuns) {
-      return initialMetrics;
-    }
-    const totalRuns = runs.length;
-    const activeRuns = runs.filter(
-      (r) => r.status === "queued" || r.status === "running" || r.status === "verifying"
-    ).length;
-    const completedRuns = runs.filter((r) => r.status === "completed").length;
-    const failedRuns = runs.filter(
-      (r) => r.status === "failed" || r.status === "timed_out"
-    ).length;
-    const successRate =
-      completedRuns + failedRuns > 0
-        ? Math.round((completedRuns / (completedRuns + failedRuns)) * 100)
-        : 100;
-    const runsWithDuration = runs.filter(
-      (r) => typeof r.durationMs === "number" && r.durationMs >= 0
-    );
-    const avgDurationMs =
-      runsWithDuration.length > 0
-        ? Math.round(
-            runsWithDuration.reduce((acc, r) => acc + (r.durationMs || 0), 0) /
-              runsWithDuration.length
-          )
-        : 0;
-
-    return {
-      totalRuns,
-      activeRuns,
-      completedRuns,
-      failedRuns,
-      successRate,
-      avgDurationMs,
-    };
-  }, [runs, initialMetrics, initialRuns]);
+  };
 
   // Filtered runs
   const filteredRuns = React.useMemo(() => {

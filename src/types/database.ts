@@ -602,7 +602,26 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      match_memories: {
+        Args: {
+          query_embedding: string;
+          match_threshold: number;
+          match_count: number;
+          filter_user_id?: string | null;
+          filter_project_id?: string | null;
+          filter_category?: string | null;
+        };
+        Returns: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          category: MemoryCategory;
+          content: string;
+          similarity: number;
+          metadata: Json;
+          created_at: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

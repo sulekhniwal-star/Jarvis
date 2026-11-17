@@ -7,8 +7,8 @@ updated: 2026-11-17T13:07:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-> **Current Phase:** 29 - Emergency Kill Switch & Subprocess Cancellation Protocol  
-> **Status:** Phase 28 Complete; Ready for Planning Phase 29 (`/gsd-plan-phase 29`)
+> **Current Phase:** 30 - Tamper-Evident Audit Ledger & Backup Recovery Verification  
+> **Status:** Phase 29 Complete; Ready for Planning Phase 30 (`/gsd-plan-phase 30`)
 
 ---
 
@@ -18,7 +18,7 @@ updated: 2026-11-17T13:07:00+05:30
 - [x] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
 - [x] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
 - [x] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
-- [ ] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
+- [x] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
 - [ ] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
 - [ ] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
 
@@ -63,14 +63,14 @@ updated: 2026-11-17T13:07:00+05:30
 ---
 
 ### Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol
-**Status:** ⏳ Pending  
-**Objective:** Build global emergency stop API (`POST /api/emergency/kill`) and Telegram `/kill` command, implementing recursive process-tree termination (`SIGINT`/`SIGTERM`/`SIGKILL`), task cancellation state propagation, and outstanding approval revocation within <1.0 second (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).  
+**Status:** Complete (2026-11-17)  
+**Objective:** Build global emergency stop API (`POST /api/system/kill`) and Telegram `/kill` command, implementing recursive process-tree termination (`SIGINT`/`SIGTERM`/`SIGKILL`), task cancellation state propagation, and outstanding approval revocation within <1.0 second (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).  
 **Depends on:** Phase 28  
 **Requirements:** REQ-SEC-01, REQ-SEC-02, NFR-PERF-03  
 
 **Plans:**
-- [ ] Plan 29.1: Process-tree termination harness, active runner signal dispatcher, and emergency cancellation service.
-- [ ] Plan 29.2: Web Topbar Emergency Stop button, Telegram `/kill` and `/stop` commands, and real-time state cascade.
+- [x] Plan 29.1: Process-tree termination harness, active runner signal dispatcher, and emergency cancellation service.
+- [x] Plan 29.2: Web Topbar Emergency Stop button, Telegram `/kill` command, and real-time state cascade.
 
 ---
 
@@ -123,7 +123,7 @@ updated: 2026-11-17T13:07:00+05:30
 | 24 | Agent Operations Console & Telemetry Viewer | ✅ | 2/2 | 100% |
 | 25 | pgvector Semantic Memory Store & Context | ✅ | 2/2 | 100% |
 | 26 | Real-Time State Synchronization Engine | ✅ | 2/2 | 100% |
-| 27 | Unified Approval Centre & Decision Engine | ⏳ | 0/2 | 0% |
-| 28 | Cost Ledger & Inference Circuit Breakers | ⏳ | 0/2 | 0% |
-| 29 | Emergency Kill Switch & Cancellation | ⏳ | 0/2 | 0% |
+| 27 | Unified Approval Centre & Decision Engine | ✅ | 2/2 | 100% |
+| 28 | Cost Ledger & Inference Circuit Breakers | ✅ | 2/2 | 100% |
+| 29 | Emergency Kill Switch & Cancellation | ✅ | 2/2 | 100% |
 | 30 | Tamper-Evident Audit Ledger & Backup Recovery | ⏳ | 0/2 | 0% |

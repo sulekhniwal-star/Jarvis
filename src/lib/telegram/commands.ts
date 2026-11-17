@@ -36,6 +36,19 @@ export interface CommandDependencies {
       reason?: string
     ) => Promise<string>;
   };
+  killService?: {
+    executeEmergencyStop: (
+      userId: string,
+      source?: "web" | "telegram" | "api"
+    ) => Promise<{
+      terminatedProcessesCount: number;
+      cancelledRunsCount: number;
+      cancelledTasksCount: number;
+      revokedApprovalsCount: number;
+      durationMs: number;
+      subSecondPerformanceAchieved: boolean;
+    }>;
+  };
   userId?: string;
 }
 
@@ -64,8 +77,43 @@ export async function handleTelegramCommand(
         "• /approve <id> — Approve pending plan or action",
         "• /reject <id> — Reject pending plan or action",
         "• /cancel — Cancel active task clarification session",
+        "• /kill — Emergency Stop: halt all agent workers & cancel tasks",
         "",
         italic("Send any text message to submit a new software task\\."),
+      ].join("\n");
+    }
+
+    case "/kill": {
+      const userId = deps?.userId ?? "00000000-0000-0000-0000-000000000000";
+      let result;
+      if (deps?.killService) {
+        result = await deps.killService.executeEmergencyStop(userId, "telegram");
+      } else {
+        const { EmergencyKillSwitchService } = await import("../system/kill-switch");
+        const { createAdminClient } = await import("../supabase/admin");
+        let adminClient;
+        try {
+          adminClient = createAdminClient();
+        } catch {
+          // Standalone mode
+        }
+        const killService = new EmergencyKillSwitchService({ supabase: adminClient });
+        result = await killService.executeEmergencyStop(userId, "telegram");
+      }
+
+      const perfEmoji = result.subSecondPerformanceAchieved ? "⚡" : "⚠️";
+      return [
+        `🛑 ${bold("EMERGENCY KILL SWITCH ACTIVATED")}`,
+        "",
+        "All active automation and background workers have been halted\\.",
+        "",
+        `${bold("Execution Summary:")}`,
+        `• Processes Terminated: ${code(String(result.terminatedProcessesCount))}`,
+        `• Agent Runs Cancelled: ${code(String(result.cancelledRunsCount))}`,
+        `• Tasks Cancelled: ${code(String(result.cancelledTasksCount))}`,
+        `• Approvals Revoked: ${code(String(result.revokedApprovalsCount))}`,
+        "",
+        `${perfEmoji} ${italic(`Halted in ${result.durationMs} ms (< 1000ms target)`)}`,
       ].join("\n");
     }
 

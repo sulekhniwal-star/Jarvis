@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, ShieldAlert, User } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { RealtimeStatusBadge } from "./realtime-status-badge";
+import { EmergencyStopButton } from "../system/emergency-stop-button";
 
 export interface TopbarProps {
   title?: string;
@@ -39,6 +40,7 @@ export function Topbar({
 
       {/* Right: Approvals Alert & User Profile Status */}
       <div className="flex items-center gap-3">
+        <EmergencyStopButton />
         {pendingApprovalsCount > 0 && (
           <Link
             href="/approvals"

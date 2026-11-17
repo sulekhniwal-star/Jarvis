@@ -19,6 +19,7 @@ export interface ProcessRunOptions {
 }
 
 import { VerificationHarness } from "../verification/verification-harness";
+import { processRegistry } from "@/lib/system/process-registry";
 
 export type ProcessRunner = (
   command: string,
@@ -84,6 +85,9 @@ export class AiderCliAdapter implements ICodingAgentEngine {
             env: { ...process.env, ...(opts?.env || {}) },
             shell: true,
           });
+
+          // Register process in cancellation registry (REQ-SEC-02)
+          processRegistry.register("aider-cli", proc, { command, args });
 
           proc.stdout?.on("data", (chunk) => {
             stdout += chunk.toString();

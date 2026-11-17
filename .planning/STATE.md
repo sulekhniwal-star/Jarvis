@@ -8,23 +8,19 @@ updated: 2026-11-17T13:07:00+05:30
 
 **Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
 **Current Phase:** 27 - Unified Approval Centre & Cryptographic Decision Engine  
-**Status:** Ready for Planning  
-**Plan:** Milestone 8 initialized. Ready to plan Phase 27 (`/gsd-plan-phase 27`).
+**Status:** Ready for Execution  
+**Plan:** Plans authored (27-01-PLAN.md, 27-02-PLAN.md). Ready to execute Phase 27 (`/gsd-execute-phase 27`).
 
 ## Last Action
 
-Initialized Milestone 8 (v8.0 — Approvals, Security & Cost Controls):
-- Scoped requirements in `REQUIREMENTS.md` (`REQ-APP-01`, `REQ-APP-02`, `REQ-COST-01`, `REQ-COST-02`, `REQ-SEC-01`, `REQ-SEC-02`, `REQ-AUD-01`, `REQ-OPS-01`).
-- Structured 4 sequential phases in `ROADMAP.md`:
-  - Phase 27: Unified Approval Centre & Cryptographic Decision Engine
-  - Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps
-  - Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol
-  - Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification
-- Updated `PROJECT.md` tracking active milestone goals and security governance.
+Planned Phase 27 (Unified Approval Centre & Cryptographic Decision Engine):
+- Researched cryptographic approval token design (HMAC-SHA256 canonical string), timing-safe verification, dual-channel parity, and portal UX (`27-RESEARCH.md`).
+- Authored Plan 27.1 (`27-01-PLAN.md`): `approval-token.ts`, `ApprovalRepository` multi-status filters/metrics, and REST API endpoints (`GET/POST /api/approvals`, `POST /api/approvals/[id]/decision`).
+- Authored Plan 27.2 (`27-02-PLAN.md`): `ApprovalActionBadge`, `ApprovalRequestCard`, `DecisionModal`, `ApprovalsPortalView`, and `/approvals` App Router page.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 27` to research and plan Phase 27 (Unified Approval Centre & Cryptographic Decision Engine).
+1. Run `/gsd-execute-phase 27` to execute Wave 1 (Plan 27.1) and Wave 2 (Plan 27.2).
 
 ## Active Decisions
 

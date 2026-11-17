@@ -11,6 +11,22 @@ export interface CreateApprovalDTO {
   taskId?: string | null;
 }
 
+export interface ApprovalFilters {
+  status?: "all" | "pending" | "approved" | "rejected" | "expired";
+  actionType?: ApprovalActionType;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ApprovalMetrics {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  expired: number;
+}
+
 export class ApprovalRepository extends BaseRepository {
   public async createApproval(
     userId: string,
@@ -125,6 +141,105 @@ export class ApprovalRepository extends BaseRepository {
       return data ?? [];
     } catch (err) {
       this.handleError(err, "Failed to list pending approvals");
+    }
+  }
+
+  public async listApprovals(
+    userId: string,
+    filters: ApprovalFilters = {}
+  ): Promise<{ data: Approval[]; total: number }> {
+    try {
+      const nowIso = new Date().toISOString();
+      const limit = filters.limit ?? 50;
+      const offset = filters.offset ?? 0;
+
+      let query = this.client
+        .from("approvals")
+        .select("*", { count: "exact" })
+        .eq("user_id", userId);
+
+      if (filters.actionType) {
+        query = query.eq("action_type", filters.actionType);
+      }
+
+      if (filters.status && filters.status !== "all") {
+        if (filters.status === "pending") {
+          query = query.eq("status", "pending").gt("expires_at", nowIso);
+        } else if (filters.status === "expired") {
+          query = query.or(`status.eq.expired,and(status.eq.pending,expires_at.lte.${nowIso})`);
+        } else {
+          query = query.eq("status", filters.status);
+        }
+      }
+
+      if (filters.search) {
+        query = query.or(
+          `target_resource.ilike.%${filters.search}%,action_type.ilike.%${filters.search}%`
+        );
+      }
+
+      query = query
+        .order("requested_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      const { data, count, error } = await query;
+
+      if (error) {
+        this.handleError(error, "Failed to list approvals");
+      }
+
+      return {
+        data: data ?? [],
+        total: count ?? 0,
+      };
+    } catch (err) {
+      this.handleError(err, "Failed to list approvals");
+    }
+  }
+
+  public async getApprovalMetrics(userId: string): Promise<ApprovalMetrics> {
+    try {
+      const { data, error } = await this.client
+        .from("approvals")
+        .select("status, expires_at")
+        .eq("user_id", userId);
+
+      if (error) {
+        this.handleError(error, "Failed to fetch approval metrics");
+      }
+
+      const now = Date.now();
+      const approvals = data ?? [];
+
+      const total = approvals.length;
+      let pending = 0;
+      let approved = 0;
+      let rejected = 0;
+      let expired = 0;
+
+      for (const item of approvals) {
+        const isExpired = new Date(item.expires_at).getTime() <= now;
+
+        if (item.status === "approved") {
+          approved++;
+        } else if (item.status === "rejected") {
+          rejected++;
+        } else if (item.status === "expired" || (item.status === "pending" && isExpired)) {
+          expired++;
+        } else if (item.status === "pending" && !isExpired) {
+          pending++;
+        }
+      }
+
+      return {
+        total,
+        pending,
+        approved,
+        rejected,
+        expired,
+      };
+    } catch (err) {
+      this.handleError(err, "Failed to fetch approval metrics");
     }
   }
 

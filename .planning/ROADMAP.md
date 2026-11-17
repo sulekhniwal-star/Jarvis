@@ -7,15 +7,15 @@ updated: 2026-11-17T13:07:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-> **Current Phase:** 27 - Unified Approval Centre & Cryptographic Decision Engine  
-> **Status:** Milestone 8 Initialized; Ready for Planning Phase 27 (`/gsd-plan-phase 27`)
+> **Current Phase:** 28 - Cost Ledger, Inference Circuit Breakers & Budget Caps  
+> **Status:** Phase 27 Complete; Ready for Planning Phase 28 (`/gsd-plan-phase 28`)
 
 ---
 
 ## Must-Haves (Milestone 8 Baseline)
 
-- [ ] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
-- [ ] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
+- [x] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
+- [x] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
 - [ ] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
 - [ ] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
 - [ ] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
@@ -39,14 +39,14 @@ updated: 2026-11-17T13:07:00+05:30
 ## Phases for Milestone 8: Approvals, Security & Cost Controls
 
 ### Phase 27: Unified Approval Centre & Cryptographic Decision Engine
-**Status:** ⏳ Pending  
+**Status:** Complete (2026-11-17)  
 **Objective:** Construct dedicated `/approvals` management portal, server-side HMAC-SHA256 signature verification for approval decisions, and dual-channel parity between Web UI and Telegram inline buttons (`REQ-APP-01`, `REQ-APP-02`).  
 **Depends on:** Phase 26 (Milestone 7)  
 **Requirements:** REQ-APP-01, REQ-APP-02  
 
 **Plans:**
-- [ ] Plan 27.1: Cryptographic approval token generator, HMAC signature validation service, and decision API routes (`POST /api/approvals/[id]/decision`).
-- [ ] Plan 27.2: Dedicated `/approvals` web portal with status filtering, countdown timers, risk badges, and contextual inspection links.
+- [x] Plan 27.1: Cryptographic approval token generator, HMAC signature validation service, and decision API routes (`POST /api/approvals/[id]/decision`).
+- [x] Plan 27.2: Dedicated `/approvals` web portal with status filtering, countdown timers, risk badges, and contextual inspection links.
 
 ---
 

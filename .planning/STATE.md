@@ -7,20 +7,22 @@ updated: 2026-11-17T13:07:00+05:30
 ## Current Position
 
 **Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-**Current Phase:** 27 - Unified Approval Centre & Cryptographic Decision Engine  
-**Status:** Ready for Execution  
-**Plan:** Plans authored (27-01-PLAN.md, 27-02-PLAN.md). Ready to execute Phase 27 (`/gsd-execute-phase 27`).
+**Current Phase:** 28 - Cost Ledger, Inference Circuit Breakers & Budget Caps  
+**Status:** Ready for Planning  
+**Plan:** Phase 27 completed and verified (93 test files, 580 tests passed, 38 routes compiled). Ready to plan Phase 28 (`/gsd-plan-phase 28`).
 
 ## Last Action
 
-Planned Phase 27 (Unified Approval Centre & Cryptographic Decision Engine):
-- Researched cryptographic approval token design (HMAC-SHA256 canonical string), timing-safe verification, dual-channel parity, and portal UX (`27-RESEARCH.md`).
-- Authored Plan 27.1 (`27-01-PLAN.md`): `approval-token.ts`, `ApprovalRepository` multi-status filters/metrics, and REST API endpoints (`GET/POST /api/approvals`, `POST /api/approvals/[id]/decision`).
-- Authored Plan 27.2 (`27-02-PLAN.md`): `ApprovalActionBadge`, `ApprovalRequestCard`, `DecisionModal`, `ApprovalsPortalView`, and `/approvals` App Router page.
+Executed and verified Phase 27 (Unified Approval Centre & Cryptographic Decision Engine):
+- Implemented cryptographic HMAC-SHA256 approval token engine with timing-safe comparison (`crypto.timingSafeEqual`) and parameter canonicalization (`src/lib/approvals/approval-token.ts`).
+- Extended `ApprovalRepository` with multi-status querying, search, pagination, and aggregate status metrics.
+- Developed REST API routes (`/api/approvals`, `/api/approvals/[id]`, `/api/approvals/[id]/decision`) with state machine validation and cryptographic token verification.
+- Built Human Approvals portal (`/approvals`, `ApprovalsPortalView`, `ApprovalRequestCard`, `ApprovalActionBadge`, `DecisionModal`) featuring live countdown timers, risk tier pills, and Supabase Realtime synchronization.
+- Verified with 33 unit and component tests (100% pass) and production build (38 routes).
 
 ## Next Steps
 
-1. Run `/gsd-execute-phase 27` to execute Wave 1 (Plan 27.1) and Wave 2 (Plan 27.2).
+1. Run `/gsd-plan-phase 28` to plan Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps).
 
 ## Active Decisions
 

@@ -15,8 +15,8 @@ Requirements derived from `PRD.md` (§7.8, §7.9, §7.10, §7.12, §8.5, §12) a
 
 | ID | Requirement | Source | Phase | Status |
 |---|---|---|---|---|
-| **REQ-APP-01** | **Unified Approval Centre & UI:** Dedicated `/approvals` management portal displaying pending, approved, rejected, and expired requests with action badges, resource targets, risk tier, expiry countdown, and contextual diff/plan inspection links. | PRD §7.9, §12 | 27 | Pending |
-| **REQ-APP-02** | **Cryptographic Token Verification & Dual-Channel Parity:** Server-side HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons, ensuring approval cannot be forged, replayed, or reused for modified targets. | PRD §7.9 | 27 | Pending |
+| **REQ-APP-01** | **Unified Approval Centre & UI:** Dedicated `/approvals` management portal displaying pending, approved, rejected, and expired requests with action badges, resource targets, risk tier, expiry countdown, and contextual diff/plan inspection links. | PRD §7.9, §12 | 27 | Complete |
+| **REQ-APP-02** | **Cryptographic Token Verification & Dual-Channel Parity:** Server-side HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons, ensuring approval cannot be forged, replayed, or reused for modified targets. | PRD §7.9 | 27 | Complete |
 | **REQ-COST-01** | **Cost Ledger & Metered Spend Accounting:** `CostRepository` tracking token counts, inference latency, provider-reported costs, and currency conversions in INR across all agent and user interactions. | PRD §7.10 | 28 | Pending |
 | **REQ-COST-02** | **Budget Thresholds & Automated Circuit Breaker:** Server-side circuit breaker blocking paid AI inference when daily (INR 25) or monthly (INR 750) caps are breached, with separate owner authorization required for the emergency reserve (INR 250) and hard monthly stop (INR 1,000). | PRD §7.8, §7.10 | 28 | Pending |
 | **REQ-SEC-01** | **Emergency Stop / Kill Switch:** Global emergency kill switch operable via Web dashboard button and Telegram `/kill` command, halting all active agent subprocesses, cancelling pending runs, and revoking outstanding approvals immediately. | PRD §7.6, §7.12 | 29 | Pending |
@@ -42,7 +42,7 @@ Requirements derived from `PRD.md` (§7.8, §7.9, §7.10, §7.12, §8.5, §12) a
 
 | Requirement | Phase | Target Plans | Verification Test | Status |
 |---|---|---|---|---|
-| REQ-APP-01, REQ-APP-02 | Phase 27 | Plan 27.1, Plan 27.2 | Approval token HMAC verification tests, expiration tests, dual-channel approval tests, `/approvals` UI tests | Pending |
+| REQ-APP-01, REQ-APP-02 | Phase 27 | Plan 27.1, Plan 27.2 | Approval token HMAC verification tests, expiration tests, dual-channel approval tests, `/approvals` UI tests | Complete |
 | REQ-COST-01, REQ-COST-02, NFR-REL-02 | Phase 28 | Plan 28.1, Plan 28.2 | Cost ledger accounting tests, circuit breaker threshold tests, emergency reserve authorization tests | Pending |
 | REQ-SEC-01, REQ-SEC-02, NFR-PERF-03 | Phase 29 | Plan 29.1, Plan 29.2 | Kill switch handler tests, subprocess tree termination tests, Telegram `/kill` command tests | Pending |
 | REQ-AUD-01, REQ-OPS-01 | Phase 30 | Plan 30.1, Plan 30.2 | Hash-chain integrity verification tests, backup dump/restore roundtrip test | Pending |

@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-17T14:22:00+05:30
-milestone: "v9.0 - Deployment & Continuous Maintenance"
+updated: 2026-11-17T16:34:00+05:30
+milestone: "v10.0 - Hardening, Security Audits & Final Release"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -142,22 +142,18 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 9 — Deployment & Continuous Maintenance (v9.0)
+### Milestone 9 / v9.0 — Deployment & Continuous Maintenance (✅ Complete 2026-11-17)
+- **Phase 31: Production Deployment Gate & Multi-Environment Pipeline:** DeploymentManager with preview generation, rollback state machine, and HMAC-authorized production promotion approval gate across Web `/deployments` and Telegram `/deploy` (`REQ-DEP-01`, `REQ-DEP-02`).
+- **Phase 32: System Health Diagnostics & Liveness Telemetry:** Sub-200ms non-blocking health probe `/api/health`, SystemHealthCard dashboard widget, and Telegram `/health` diagnostics (`REQ-OPS-02`, `NFR-REL-03`).
+- **Phase 33: Automated Maintenance, Storage Pruning & Branch Hygiene:** Scheduled 30-day artifact retention pruner, stale approval expiration with audit ledger tracking, CLI maintenance runner (`npm run maintenance:prune`), continuous main-only branch safety enforcement (`scripts/git-guard.ts check-branch-hygiene`), and Telegram `/prune` command (`REQ-OPS-03`, `NFR-SEC-04`).
+- **Phase 34: Proactive Maintenance Recommendations & Autonomous Advisory:** Autonomous advisory reasoning engine evaluating cost burn, model latency, repeated test regressions, and hygiene issues with 1-click remediation actions and Telegram `/advisory` digest (`REQ-OPS-04`, `REQ-OPS-05`).
 
-This milestone establishes production deployment gating, multi-environment pipelines, real-time health monitoring, storage pruning, and automated operational maintenance across Jarvis (`PRD §7.10, §7.13, §12`):
-- Production deployment approval gate requiring explicit human owner authorization before promotion.
-- Preview deployment generation and automated rollback verification.
-- Comprehensive system health, diagnostics, and liveness telemetry endpoint (`/api/health`) and dashboard widgets.
-- Automated storage pruning, ephemeral log rotation, and database index maintenance.
-- Continuous Git branch safety audit runner enforcing strict `main`-only lock in CI/CD.
-- Proactive maintenance recommendations and autonomous advisory alerts across Web and Telegram.
+---
 
-## Milestone 9 Success Criteria
+## Next Milestone: Milestone 10 — Hardening, Security Audits & Final Release (v10.0)
 
-- [ ] Production deployment gate blocks live promotions until explicit HMAC-authorized approval is granted (`REQ-DEP-01`).
-- [ ] Multi-environment deployment runner tracks preview URLs, deployment statuses, and rollback states (`REQ-DEP-02`).
-- [ ] Diagnostic health check endpoint `/api/health` probes database, AI gateway, and background runners with sub-200ms latency (`REQ-OPS-02`).
-- [ ] Live System Health widget and operational telemetry status visible in Web dashboard and Telegram `/health` (`NFR-REL-03`).
-- [ ] Automated maintenance runner rotates ephemeral logs, purges stale unapproved requests, and compacts caches (`REQ-OPS-03`).
-- [ ] Continuous branch safety audit runner automatically detects and blocks non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
-- [ ] Autonomous advisory analyzer synthesizes actionable maintenance recommendations (cost optimization, model degradation, test regressions) (`REQ-OPS-04`, `REQ-OPS-05`).
+This final milestone establishes comprehensive penetration testing, security fuzzing, performance load testing, dependency vulnerability audits, and final release documentation before autonomous production operation:
+- End-to-end security penetration testing across API endpoints and Webhook verification.
+- Load testing under simulated high-frequency agent task intake.
+- Zero-warning dependency audit and automated license compliance check.
+- Final user guide, operational runbooks, and release packaging.

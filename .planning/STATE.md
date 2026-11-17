@@ -6,24 +6,23 @@ updated: 2026-11-17T14:22:00+05:30
 
 ## Current Position
 
-**Milestone:** v9.0 - Deployment & Continuous Maintenance (Completed)  
-**Current Phase:** 34 - Proactive Maintenance Recommendations & Autonomous Advisory  
-**Status:** Milestone 9 Complete; Ready for Milestone Completion Audit  
-**Plan:** Ready to complete Milestone 9 (`/gsd-complete-milestone`).
+**Milestone:** v9.0 - Deployment & Continuous Maintenance (Archived)  
+**Current Phase:** All Phases Complete (31–34)  
+**Status:** Milestone 9 Archived; Ready for Milestone 10 Initialization  
+**Plan:** Ready to initialize Milestone 10 (`/gsd-new-milestone`).
 
 ## Last Action
 
-Completed Phase 34 (Proactive Maintenance Recommendations & Autonomous Advisory):
-- Implemented `ProactiveAdvisoryEngine` in `src/lib/advisory/recommendation-engine.ts` with 5 heuristic pattern detectors (budget cap burn, model latency degradation, repeated test regressions, expiring approvals, and branch hygiene violations) producing prioritized recommendations (`REQ-OPS-04`).
-- Implemented `RemediationExecutor` in `src/lib/advisory/remediation-executor.ts` providing 1-click remediation actions with hash-chained audit ledger recording (`REQ-OPS-05`).
-- Created authenticated REST endpoints `GET /api/advisory` and `POST /api/advisory/remediate`.
-- Built `RecommendationsCard` in `src/components/advisory/recommendations-card.tsx` with severity badges, diagnostic rationale, 1-click remediation actions, and nominal zero-warning state, mounted directly on the Command Center Dashboard (`src/app/page.tsx`).
-- Added Telegram bot `/advisory` command reporting MarkdownV2 advisory digest.
-- Verified: 125 test files (764 tests passed, 0 failed), Next.js production build (56 routes compiled with 0 errors).
+Completed and archived Milestone 9 (v9.0 Deployment & Continuous Maintenance):
+- Archived roadmap details to `.planning/milestones/v9.0-ROADMAP.md`.
+- Archived verified requirements to `.planning/milestones/v9.0-REQUIREMENTS.md`.
+- Generated audit sign-off in `.planning/v9.0-MILESTONE-AUDIT.md` (100% pass rate, 0 gaps).
+- Evolved `PROJECT.md` and collapsed `ROADMAP.md` completed milestones list.
+- Verified test suite: 125 test files (764 tests passed, 0 failed), Next.js production build (56 routes compiled with 0 errors).
 
 ## Next Steps
 
-1. Run `/gsd-complete-milestone` to audit and complete Milestone 9 (v9.0 Deployment & Continuous Maintenance).
+1. Run `/gsd-new-milestone` to initialize Milestone 10 (v10.0 Hardening, Security Audits & Final Release).
 
 ## Active Decisions
 

@@ -7,20 +7,23 @@ updated: 2026-11-17T13:07:00+05:30
 ## Current Position
 
 **Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-**Current Phase:** 28 - Cost Ledger, Inference Circuit Breakers & Budget Caps  
-**Status:** Ready for Execution  
-**Plan:** Plans authored (28-01-PLAN.md, 28-02-PLAN.md). Ready to execute Phase 28 (`/gsd-execute-phase 28`).
+**Current Phase:** 29 - Emergency Kill Switch & Subprocess Cancellation Protocol  
+**Status:** Ready for Planning  
+**Plan:** Phase 28 completed and verified (97 test files, 613 tests passed, 42 routes compiled). Ready to plan Phase 29 (`/gsd-plan-phase 29`).
 
 ## Last Action
 
-Planned Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps):
-- Researched financial invariants from `docs/BUDGET_AND_COST_CONTROL.md` (Daily limit ₹25.00, Warning threshold ₹20.00, Monthly limit ₹750.00, Emergency reserve ₹250.00, Hard ceiling ₹1,000.00), failsafe rule (`NFR-REL-02`), and existing `cost_records` schema (`28-RESEARCH.md`).
-- Authored Plan 28.1 (`28-01-PLAN.md`): `CostRepository`, spend aggregations, failsafe `InferenceCircuitBreaker`, integration with `AIGateway`, and REST API endpoints (`GET /api/costs`, `GET /api/costs/summary`, `POST /api/costs/emergency-reserve`).
-- Authored Plan 28.2 (`28-02-PLAN.md`): Budget and Cost Control UI (`src/app/settings/page.tsx`, `src/components/cost/`), metrics cards, circuit breaker state indicator, emergency reserve modal, and ledger log table.
+Executed and verified Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps):
+- Implemented `CostRepository` with metered usage logging, token tracking, daily/monthly spend aggregation, and emergency reserve state management.
+- Implemented `InferenceCircuitBreaker` with daily cap (₹25), monthly budget (₹750), emergency reserve expansion (₹250), inviolable hard stop (₹1,000), and failsafe blocking (`NFR-REL-02`).
+- Integrated circuit breaker into `AIGateway` pre-inference checks.
+- Developed REST API routes (`/api/costs`, `/api/costs/summary`, `/api/costs/emergency-reserve`).
+- Built Budget & Cost Control UI (`src/app/settings/page.tsx`, `CostMetricsBanner`, `CircuitBreakerCard`, `CostLedgerTable`, `EmergencyReserveModal`).
+- Verified with 33 unit and component tests (100% pass) and production build (42 routes).
 
 ## Next Steps
 
-1. Run `/gsd-execute-phase 28` to execute Wave 1 (Plan 28.1) and Wave 2 (Plan 28.2).
+1. Run `/gsd-plan-phase 29` to plan Phase 29 (Emergency Kill Switch & Subprocess Cancellation Protocol).
 
 ## Active Decisions
 

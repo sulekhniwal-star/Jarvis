@@ -7,8 +7,8 @@ updated: 2026-11-17T13:07:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
-> **Current Phase:** 28 - Cost Ledger, Inference Circuit Breakers & Budget Caps  
-> **Status:** Phase 27 Complete; Ready for Planning Phase 28 (`/gsd-plan-phase 28`)
+> **Current Phase:** 29 - Emergency Kill Switch & Subprocess Cancellation Protocol  
+> **Status:** Phase 28 Complete; Ready for Planning Phase 29 (`/gsd-plan-phase 29`)
 
 ---
 
@@ -16,8 +16,8 @@ updated: 2026-11-17T13:07:00+05:30
 
 - [x] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
 - [x] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
-- [ ] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
-- [ ] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
+- [x] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
+- [x] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
 - [ ] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
 - [ ] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
 - [ ] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
@@ -51,14 +51,14 @@ updated: 2026-11-17T13:07:00+05:30
 ---
 
 ### Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps
-**Status:** ⏳ Pending  
+**Status:** Complete (2026-11-17)  
 **Objective:** Implement `CostRepository` metered usage ledger in INR, AI Gateway circuit breaker blocking paid model calls before invocation when daily (INR 25) or monthly (INR 750) caps are reached, and emergency reserve authorization workflows (`REQ-COST-01`, `REQ-COST-02`, `NFR-REL-02`).  
 **Depends on:** Phase 27  
 **Requirements:** REQ-COST-01, REQ-COST-02, NFR-REL-02  
 
 **Plans:**
-- [ ] Plan 28.1: `CostRepository` data access, token usage tracking, and daily/monthly spending aggregations.
-- [ ] Plan 28.2: Pre-inference circuit breaker middleware for `AIGateway`, emergency reserve approval gating, and dashboard budget widget.
+- [x] Plan 28.1: `CostRepository` data access, token usage tracking, and daily/monthly spending aggregations.
+- [x] Plan 28.2: Pre-inference circuit breaker middleware for `AIGateway`, emergency reserve approval gating, and dashboard budget widget.
 
 ---
 

@@ -12,6 +12,7 @@ import {
 } from "./models";
 import { ApprovalRepository } from "../repositories/approval-repository";
 import { BudgetService, UsageLedgerService } from "./ledger";
+import { InferenceCircuitBreaker } from "./circuit-breaker";
 import { OpenRouterAdapter, OpenRouterError } from "./adapters/openrouter";
 import { MockAIAdapter } from "./adapters/mock";
 
@@ -45,6 +46,7 @@ export interface AIGatewayOptions {
   approvalRepo?: ApprovalRepository;
   ledgerService?: UsageLedgerService;
   budgetService?: BudgetService;
+  circuitBreaker?: InferenceCircuitBreaker;
   freeFallbackChain?: string[];
 }
 
@@ -53,6 +55,7 @@ export class AIGateway {
   private readonly approvalRepo?: ApprovalRepository;
   private readonly ledgerService?: UsageLedgerService;
   private readonly budgetService?: BudgetService;
+  private readonly circuitBreaker?: InferenceCircuitBreaker;
   private readonly freeFallbackChain: string[];
 
   constructor(options: AIGatewayOptions) {
@@ -60,6 +63,7 @@ export class AIGateway {
     this.approvalRepo = options.approvalRepo;
     this.ledgerService = options.ledgerService;
     this.budgetService = options.budgetService;
+    this.circuitBreaker = options.circuitBreaker;
     this.freeFallbackChain =
       options.freeFallbackChain ?? FREE_MODEL_FALLBACK_CHAIN;
   }
@@ -101,8 +105,10 @@ export class AIGateway {
       throw new PaidInferenceApprovalRequiredError(model, estimatedCostInr);
     }
 
-    // Check budget limits before paid dispatch
-    if (this.budgetService) {
+    // Check circuit breaker and budget limits before paid dispatch
+    if (this.circuitBreaker) {
+      await this.circuitBreaker.evaluateInference(userId, model, 2000, 1000);
+    } else if (this.budgetService) {
       await this.budgetService.checkBudgetLimits(userId, estimatedCostInr);
     }
   }

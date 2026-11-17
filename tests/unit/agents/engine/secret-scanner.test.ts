@@ -69,8 +69,7 @@ describe("Secret Patterns & Fingerprinting (REQ-VR-03, NFR-SEC-02)", () => {
     const sampleGithub = "ghp_" + "d".repeat(36);
     const sampleDbUri = "postgres://admin:superSecretP@ssword@db.supabase.co:5432/main";
 
-    const matchType = (text: string) =>
-      KNOWN_SECRET_PATTERNS.find((p) => p.regex.test(text))?.type;
+    const matchType = (text: string) => KNOWN_SECRET_PATTERNS.find((p) => p.regex.test(text))?.type;
 
     expect(matchType(sampleAnthropic)).toBe("anthropic_key");
     expect(matchType(sampleOpenRouter)).toBe("openrouter_key");

@@ -59,6 +59,9 @@ export interface CommandDependencies {
       params: { commitSha: string; commitMessage?: string; notes?: string }
     ) => Promise<{ deployment: any; approval: any }>;
   };
+  healthService?: {
+    getHealthReport: (options?: { timeoutMs?: number }) => Promise<any>;
+  };
   userId?: string;
 }
 
@@ -89,6 +92,7 @@ export async function handleTelegramCommand(
         "• /cancel — Cancel active task clarification session",
         "• /kill — Emergency Stop: halt all agent workers & cancel tasks",
         "• /deploy [prod] — Multi-environment deployments & promotion",
+        "• /health — Real-time system diagnostics & latency",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
@@ -451,6 +455,69 @@ export async function handleTelegramCommand(
       lines.push(italic("Use /deploy prod to initiate a production promotion approval request\\."));
 
       return lines.join("\n");
+    }
+
+    case "/health": {
+      let healthService = deps?.healthService;
+      if (!healthService) {
+        try {
+          const { SystemHealthDiagnosticService } = await import("../ops/health-checker");
+          healthService = new SystemHealthDiagnosticService();
+        } catch {
+          // fallback
+        }
+      }
+
+      if (!healthService) {
+        return `❌ ${bold("Health diagnostic service is unavailable")}`;
+      }
+
+      try {
+        const report = await healthService.getHealthReport({ timeoutMs: 180 });
+
+        const statusIcon =
+          report.status === "healthy"
+            ? "🟢"
+            : report.status === "degraded"
+            ? "🟡"
+            : "🔴";
+
+        const statusLabel =
+          report.status === "healthy"
+            ? "SYSTEM OPERATIONAL"
+            : report.status === "degraded"
+            ? "PERFORMANCE DEGRADED"
+            : "SERVICE DISRUPTED";
+
+        const formatUptime = (seconds: number) => {
+          if (!seconds || seconds <= 0) return "0m";
+          const hrs = Math.floor(seconds / 3600);
+          const mins = Math.floor((seconds % 3600) / 60);
+          if (hrs > 0) return `${hrs}h ${mins}m`;
+          return `${mins}m`;
+        };
+
+        const lines: string[] = [
+          `${statusIcon} ${bold(statusLabel)}`,
+          "",
+          `⚡ ${bold("Probe Execution:")} ${escapeMarkdownV2(String(report.durationMs))}ms`,
+          `⏱️ ${bold("Uptime:")} ${escapeMarkdownV2(formatUptime(report.uptimeSeconds))}`,
+          "",
+          `🗄️ ${bold("Database:")} ${escapeMarkdownV2(String(report.services.database.latencyMs))}ms \\(${bold(report.services.database.status)}\\)`,
+          `🧠 ${bold("AI Gateway:")} ${escapeMarkdownV2(report.services.aiGateway.provider)} \\(${bold(report.services.aiGateway.circuitBreakerState)}\\)`,
+          `📋 ${bold("Task Queue:")} ${escapeMarkdownV2(String(report.services.taskQueue.activeRuns))} active, ${escapeMarkdownV2(String(report.services.taskQueue.queuedRuns))} queued`,
+          `💾 ${bold("Memory Heap:")} ${escapeMarkdownV2(String(report.services.system.memory.heapUsedMb))} MB \\(${escapeMarkdownV2(String(report.services.system.activeChildProcesses))} procs\\)`,
+        ];
+
+        if (report.services.database.error) {
+          lines.push(`⚠️ ${bold("DB Notice:")} ${escapeMarkdownV2(report.services.database.error)}`);
+        }
+
+        return lines.join("\n");
+      } catch (err: unknown) {
+        const e = err as Error;
+        return `❌ ${bold("Health Diagnostic Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
+      }
     }
 
     default: {

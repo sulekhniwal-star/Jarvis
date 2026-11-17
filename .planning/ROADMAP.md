@@ -7,8 +7,8 @@ updated: 2026-11-17T14:22:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v9.0 - Deployment & Continuous Maintenance (Active)  
-> **Current Phase:** 32 - System Health Diagnostics & Liveness Telemetry  
-> **Status:** Phase 31 Complete; Ready for Planning Phase 32 (`/gsd-plan-phase 32`)
+> **Current Phase:** 33 - Automated Maintenance, Storage Pruning & Branch Hygiene  
+> **Status:** Phase 32 Complete; Ready for Planning Phase 33 (`/gsd-plan-phase 33`)
 
 ---
 
@@ -16,8 +16,8 @@ updated: 2026-11-17T14:22:00+05:30
 
 - [x] Production deployment approval gate strictly blocking live promotions until explicit HMAC-authorized approval is granted via Web or Telegram (`REQ-DEP-01`).
 - [x] Multi-environment deployment runner managing preview deployments, tracking deployment state, preview URL binding, and instant rollback capability (`REQ-DEP-02`).
-- [ ] Diagnostic system health probe endpoint `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency) (`REQ-OPS-02`, `NFR-REL-03`).
-- [ ] Live System Health widget and operational telemetry dashboard in Web UI and Telegram `/health` command (`REQ-OPS-02`).
+- [x] Diagnostic system health probe endpoint `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency) (`REQ-OPS-02`, `NFR-REL-03`).
+- [x] Live System Health widget and operational telemetry dashboard in Web UI and Telegram `/health` command (`REQ-OPS-02`).
 - [ ] Automated storage pruning and retention worker rotating ephemeral build logs older than 30 days, expiring stale pending approvals, and compacting caches (`REQ-OPS-03`).
 - [ ] Continuous branch safety audit runner automatically detecting and blocking non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
 - [ ] Proactive maintenance recommendations engine detecting repeated test failures, high-latency models, budget exhaustion risk, or stale tasks, surfacing actionable maintenance recommendations in Dashboard and Telegram (`REQ-OPS-04`).
@@ -53,14 +53,14 @@ updated: 2026-11-17T14:22:00+05:30
 ---
 
 ### Phase 32: System Health Diagnostics & Liveness Telemetry
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-17)  
 **Objective:** Implement comprehensive diagnostic health probe `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency), accompanied by live dashboard telemetry widgets and Telegram `/health` command (`REQ-OPS-02`, `NFR-REL-03`).  
 **Depends on:** Phase 31  
 **Requirements:** REQ-OPS-02, NFR-REL-03  
 
 **Plans:**
-- [ ] Plan 32.1: Diagnostic health probe engine (`/api/health`), subsystem probes (database, AI gateway, queue, memory), and sub-200ms benchmark.
-- [ ] Plan 32.2: Live `SystemHealthWidget` dashboard card, Telegram `/health` diagnostic command, and status alert badges.
+- [x] Plan 32.1: Diagnostic health probe engine (`/api/health`), subsystem probes (database, AI gateway, queue, memory), and sub-200ms benchmark.
+- [x] Plan 32.2: Live `SystemHealthWidget` dashboard card, Telegram `/health` diagnostic command, and status alert badges.
 
 ---
 

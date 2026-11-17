@@ -84,6 +84,13 @@ export class ProcessCancellationRegistry {
   }
 
   /**
+   * Returns the count of currently registered active processes.
+   */
+  public getActiveCount(): number {
+    return this.activeProcesses.size;
+  }
+
+  /**
    * Clears registry entries without killing processes (useful for tests).
    */
   public clear(): void {

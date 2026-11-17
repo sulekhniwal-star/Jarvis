@@ -7,24 +7,22 @@ updated: 2026-11-17T14:22:00+05:30
 ## Current Position
 
 **Milestone:** v9.0 - Deployment & Continuous Maintenance (Active)  
-**Current Phase:** 32 - System Health Diagnostics & Liveness Telemetry  
-**Status:** Phase 31 Complete; Ready for Planning Phase 32  
-**Plan:** Ready to plan Phase 32 (`/gsd-plan-phase 32`).
+**Current Phase:** 33 - Automated Maintenance, Storage Pruning & Branch Hygiene  
+**Status:** Phase 32 Complete; Ready for Planning Phase 33  
+**Plan:** Ready to plan Phase 33 (`/gsd-plan-phase 33`).
 
 ## Last Action
 
-Completed Phase 31 (Production Deployment Gate & Multi-Environment Pipeline):
-- Implemented `DeploymentManager`, `DeploymentRepository`, and domain types for preview and production environments (`REQ-DEP-01`, `REQ-DEP-02`).
-- Enforced production deployment approval gate blocking live promotions until explicit human authorization is verified.
-- Built instant rollback engine updating active production pointer, marking previous release as `rolled_back`, and recording hash-chained audit events.
-- Added REST APIs (`/api/deployments`, `/promote`, `/rollback`, preview trigger).
-- Built Web UI Deployments Portal (`/deployments`) with status cards, history table, and promotion modal.
-- Integrated Telegram bot `/deploy` and `/deploy prod` commands.
-- Verified: 111 test files (700 tests passed, 0 failed) and Next.js production build (51 routes compiled successfully).
+Completed Phase 32 (System Health Diagnostics & Liveness Telemetry):
+- Implemented `SystemHealthDiagnosticService` in `src/lib/ops/health-checker.ts` with sub-200ms non-blocking probes across Supabase latency, AI Gateway circuit breaker state, task queue depth, and Node.js process telemetry (`REQ-OPS-02`, `NFR-REL-03`).
+- Created public liveness/readiness probe `GET /api/health` and authenticated diagnostic endpoint `GET /api/health/diagnostics`.
+- Built `SystemHealthCard` widget with operational status badge and 4 telemetry tiles, mounted in the main Command Center Dashboard (`src/app/page.tsx`).
+- Added Telegram bot `/health` command reporting real-time system metrics in MarkdownV2.
+- Verified: 115 test files (716 tests passed, 0 failed) and Next.js production build (53 routes compiled successfully).
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 32` to plan Phase 32 (System Health Diagnostics & Liveness Telemetry).
+1. Run `/gsd-plan-phase 33` to plan Phase 33 (Automated Maintenance, Storage Pruning & Branch Hygiene).
 
 ## Active Decisions
 

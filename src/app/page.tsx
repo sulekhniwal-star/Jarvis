@@ -6,6 +6,7 @@ import { GitSyncStatusCard } from "@/components/dashboard/git-sync-status";
 import { AgentRunsCard } from "@/components/dashboard/agent-runs-card";
 import { ActiveProjectsList } from "@/components/dashboard/active-projects-list";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
+import { SystemHealthCard } from "@/components/ops/system-health-card";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export default function Home() {
@@ -36,6 +37,9 @@ export default function Home() {
             <GitSyncStatusCard />
             <PendingApprovalsCard approvals={[]} />
           </div>
+
+          {/* System Health & Liveness Diagnostics */}
+          <SystemHealthCard />
 
           {/* Autonomous Execution Telemetry & Runs */}
           <div className="grid grid-cols-1 gap-6">

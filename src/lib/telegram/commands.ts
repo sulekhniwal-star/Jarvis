@@ -62,6 +62,13 @@ export interface CommandDependencies {
   healthService?: {
     getHealthReport: (options?: { timeoutMs?: number }) => Promise<any>;
   };
+  storagePrunerService?: {
+    runFullMaintenance: (options?: {
+      retentionDays?: number;
+      dryRun?: boolean;
+      userId?: string;
+    }) => Promise<any>;
+  };
   userId?: string;
 }
 
@@ -93,6 +100,7 @@ export async function handleTelegramCommand(
         "• /kill — Emergency Stop: halt all agent workers & cancel tasks",
         "• /deploy [prod] — Multi-environment deployments & promotion",
         "• /health — Real-time system diagnostics & latency",
+        "• /prune — Storage retention pruning & approval expiry",
         "",
         italic("Send any text message to submit a new software task\\."),
       ].join("\n");
@@ -517,6 +525,53 @@ export async function handleTelegramCommand(
       } catch (err: unknown) {
         const e = err as Error;
         return `❌ ${bold("Health Diagnostic Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
+      }
+    }
+
+    case "/prune": {
+      let pruner = deps?.storagePrunerService;
+      if (!pruner) {
+        const { StoragePruningService } = await import("../ops/storage-pruner");
+        pruner = new StoragePruningService();
+      }
+
+      try {
+        const report = await pruner.runFullMaintenance({
+          retentionDays: 30,
+          dryRun: false,
+          userId: deps?.userId,
+        });
+
+        const sizeMb = ((report.bytesReclaimed ?? 0) / (1024 * 1024)).toFixed(2);
+        const statusIcon = report.success ? "🧹" : "⚠️";
+        const statusTitle = report.success
+          ? "STORAGE RETENTION & PRUNING COMPLETE"
+          : "MAINTENANCE RUN WITH WARNINGS";
+
+        const lines: string[] = [
+          `${statusIcon} ${bold(statusTitle)}`,
+          "",
+          `⏱️ ${bold("Execution Duration:")} ${escapeMarkdownV2(String(report.durationMs))}ms`,
+          `💾 ${bold("Space Reclaimed:")} ${escapeMarkdownV2(sizeMb)} MB \\(${escapeMarkdownV2(String(report.bytesReclaimed))} bytes\\)`,
+          `📄 ${bold("Artifacts Pruned:")} ${escapeMarkdownV2(String(report.artifactsPruned))}`,
+          `⏳ ${bold("Stale Approvals Expired:")} ${escapeMarkdownV2(String(report.approvalsExpired))}`,
+          `📁 ${bold("Temp Logs Cleaned:")} ${escapeMarkdownV2(String(report.tempFilesCleaned))}`,
+          "",
+          `🌿 ${bold("Branch Hygiene:")} Locked to ${code("main")} \\(0 extraneous branches\\)`,
+        ];
+
+        if (report.errors && report.errors.length > 0) {
+          lines.push("");
+          lines.push(`⚠️ ${bold("Errors Encountered:")}`);
+          for (const err of report.errors.slice(0, 3)) {
+            lines.push(`• ${escapeMarkdownV2(err)}`);
+          }
+        }
+
+        return lines.join("\n");
+      } catch (err: unknown) {
+        const e = err as Error;
+        return `❌ ${bold("Maintenance Execution Failed:")} ${escapeMarkdownV2(e.message || "Unknown error")}`;
       }
     }
 

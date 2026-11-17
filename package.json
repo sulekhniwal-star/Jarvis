@@ -14,7 +14,8 @@
     "git:guard": "tsx scripts/git-guard.ts",
     "telegram:dev": "tsx scripts/telegram-polling.ts",
     "backup:snapshot": "tsx scripts/backup-runner.ts",
-    "backup:drill": "tsx scripts/recovery-drill.ts"
+    "backup:drill": "tsx scripts/recovery-drill.ts",
+    "maintenance:prune": "tsx scripts/maintenance-runner.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

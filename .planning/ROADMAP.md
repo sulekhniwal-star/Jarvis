@@ -7,8 +7,8 @@ updated: 2026-11-17T14:22:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v9.0 - Deployment & Continuous Maintenance (Active)  
-> **Current Phase:** 33 - Automated Maintenance, Storage Pruning & Branch Hygiene  
-> **Status:** Phase 32 Complete; Ready for Planning Phase 33 (`/gsd-plan-phase 33`)
+> **Current Phase:** 34 - Proactive Maintenance Recommendations & Autonomous Advisory  
+> **Status:** Phase 33 Complete; Ready for Planning Phase 34 (`/gsd-plan-phase 34`)
 
 ---
 
@@ -18,8 +18,8 @@ updated: 2026-11-17T14:22:00+05:30
 - [x] Multi-environment deployment runner managing preview deployments, tracking deployment state, preview URL binding, and instant rollback capability (`REQ-DEP-02`).
 - [x] Diagnostic system health probe endpoint `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency) (`REQ-OPS-02`, `NFR-REL-03`).
 - [x] Live System Health widget and operational telemetry dashboard in Web UI and Telegram `/health` command (`REQ-OPS-02`).
-- [ ] Automated storage pruning and retention worker rotating ephemeral build logs older than 30 days, expiring stale pending approvals, and compacting caches (`REQ-OPS-03`).
-- [ ] Continuous branch safety audit runner automatically detecting and blocking non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
+- [x] Automated storage pruning and retention worker rotating ephemeral build logs older than 30 days, expiring stale pending approvals, and compacting caches (`REQ-OPS-03`).
+- [x] Continuous branch safety audit runner automatically detecting and blocking non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
 - [ ] Proactive maintenance recommendations engine detecting repeated test failures, high-latency models, budget exhaustion risk, or stale tasks, surfacing actionable maintenance recommendations in Dashboard and Telegram (`REQ-OPS-04`).
 - [ ] 1-click remediation actions allowing the owner to trigger recommended maintenance tasks directly from the dashboard (`REQ-OPS-05`).
 
@@ -65,14 +65,14 @@ updated: 2026-11-17T14:22:00+05:30
 ---
 
 ### Phase 33: Automated Maintenance, Storage Pruning & Branch Hygiene
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete (2026-11-17)  
 **Objective:** Build automated maintenance runner rotating ephemeral build logs (> 30 days), purging expired unapproved requests, compacting cache stores, and continuously validating Git branch safety across CI/CD and local environments (`REQ-OPS-03`, `NFR-SEC-04`).  
 **Depends on:** Phase 32  
 **Requirements:** REQ-OPS-03, NFR-SEC-04  
 
 **Plans:**
-- [ ] Plan 33.1: Automated maintenance worker, log retention rotation, stale approval purger, and cache compaction.
-- [ ] Plan 33.2: Continuous branch safety audit runner (`scripts/git-guard.ts` CI verification) and automated hygiene reporting.
+- [x] Plan 33.1: Automated storage pruning service, artifact retention rotation, stale approval expiration with audit ledger tracking, REST route, and CLI runner.
+- [x] Plan 33.2: Continuous branch safety enforcement engine, Settings maintenance control card, and Telegram `/prune` command.
 
 ---
 
@@ -99,7 +99,7 @@ updated: 2026-11-17T14:22:00+05:30
 | Phase | Description | Status | Plans | Complete |
 |---|---|---|---|---|
 | 1–30 | Milestones 1 through 8 (Foundation through Approvals & Security) | ✅ | 60/60 | 100% |
-| 31 | Production Deployment Gate & Multi-Environment Pipeline | ⏳ | 0/2 | 0% |
-| 32 | System Health Diagnostics & Liveness Telemetry | ⏳ | 0/2 | 0% |
-| 33 | Automated Maintenance, Storage Pruning & Branch Hygiene | ⏳ | 0/2 | 0% |
+| 31 | Production Deployment Gate & Multi-Environment Pipeline | ✅ | 2/2 | 100% |
+| 32 | System Health Diagnostics & Liveness Telemetry | ✅ | 2/2 | 100% |
+| 33 | Automated Maintenance, Storage Pruning & Branch Hygiene | ✅ | 2/2 | 100% |
 | 34 | Proactive Maintenance Recommendations & Autonomous Advisory | ⏳ | 0/2 | 0% |

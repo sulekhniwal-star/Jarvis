@@ -1,7 +1,8 @@
 import { verifyActiveBranchIsMain, getWorkingTreeStatus } from "../src/lib/git/guard";
 import { inspectCommitDiff } from "../src/lib/git/diff";
+import { auditBranchHygiene } from "../src/lib/git/branch-hygiene";
 
-function run() {
+async function run() {
   const subcommand = process.argv[2] ?? "pre-commit";
 
   console.log(`[Git Guard] Executing subcommand: ${subcommand}`);
@@ -14,6 +15,39 @@ function run() {
         process.exit(1);
       }
       console.log(`[Git Guard] ✓ Active branch is 'main'`);
+      break;
+    }
+
+    case "check-branch-hygiene": {
+      const hygiene = auditBranchHygiene();
+      if (!hygiene.isCompliant) {
+        console.error(`[Git Guard] ❌ BRANCH HYGIENE VIOLATION (NFR-SEC-04):`);
+        for (const v of hygiene.violations) {
+          console.error(`  - ${v}`);
+        }
+        process.exit(1);
+      }
+      console.log(
+        `[Git Guard] ✓ Branch hygiene verified (active: main, 0 extraneous branches)`
+      );
+      break;
+    }
+
+    case "clean-branch-hygiene": {
+      const { cleanExtraneousBranches } = await import("../src/lib/git/branch-hygiene");
+      const result = cleanExtraneousBranches();
+      console.log(`[Git Guard] Pruned ${result.deleted.length} extraneous local branches.`);
+      for (const d of result.deleted) {
+        console.log(`  • Deleted: ${d}`);
+      }
+      if (result.failed.length > 0) {
+        console.error(`[Git Guard] ❌ Failed to delete ${result.failed.length} branches:`);
+        for (const f of result.failed) {
+          console.error(`  • ${f.branch}: ${f.error}`);
+        }
+        process.exit(1);
+      }
+      console.log(`[Git Guard] ✓ Clean branch hygiene restored (NFR-SEC-04).`);
       break;
     }
 
@@ -51,6 +85,18 @@ function run() {
       }
       console.log(`[Git Guard] ✓ Active branch is 'main'`);
 
+      const hygiene = auditBranchHygiene();
+      if (!hygiene.isCompliant) {
+        console.error(`[Git Guard] ❌ BRANCH HYGIENE VIOLATION (NFR-SEC-04):`);
+        for (const v of hygiene.violations) {
+          console.error(`  - ${v}`);
+        }
+        process.exit(1);
+      }
+      console.log(
+        `[Git Guard] ✓ Branch hygiene verified (0 extraneous branches)`
+      );
+
       const diffRes = inspectCommitDiff({ cached: true });
       if (diffRes.hasSecrets) {
         console.error(
@@ -65,7 +111,9 @@ function run() {
     }
 
     default:
-      console.error(`[Git Guard] Unknown subcommand '${subcommand}'. Valid: check-branch, check-clean, scan-diff, pre-commit`);
+      console.error(
+        `[Git Guard] Unknown subcommand '${subcommand}'. Valid: check-branch, check-branch-hygiene, check-clean, scan-diff, pre-commit`
+      );
       process.exit(1);
   }
 }

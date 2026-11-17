@@ -54,6 +54,38 @@ export const FORBIDDEN_FILE_PATTERNS = [
 ];
 
 /**
+ * Detects whether a path attempts directory traversal or root escape (REQ-SEC-03, NFR-SEC-05).
+ */
+export function isPathTraversal(filePath: string): boolean {
+  if (!filePath || typeof filePath !== "string") return false;
+  if (filePath.includes("\0")) return true;
+
+  let decoded = filePath;
+  try {
+    decoded = decodeURIComponent(filePath);
+  } catch {
+    // Malformed URI encoding is treated as hostile
+    return true;
+  }
+
+  const normalized = decoded.replace(/\\/g, "/").trim();
+
+  // Absolute Unix path
+  if (normalized.startsWith("/")) return true;
+
+  // Absolute Windows drive path (e.g. C:/, d:/)
+  if (/^[a-zA-Z]:/i.test(normalized)) return true;
+
+  // Check for '..' path segments
+  const segments = normalized.split("/");
+  for (const seg of segments) {
+    if (seg === "..") return true;
+  }
+
+  return false;
+}
+
+/**
  * Validates that all changed files conform to allowed boundaries and policies.
  */
 export function validateFileBoundaries(
@@ -64,8 +96,20 @@ export function validateFileBoundaries(
   const violations: DiffViolation[] = [];
 
   for (const file of files) {
-    const filePath = file.newPath || file.oldPath || "unknown";
-    const normPath = normalizePath(filePath);
+    const rawPath = file.newPath || file.oldPath || "unknown";
+
+    // -1. Check for directory traversal / sandbox escape attempts (security blocker)
+    if (isPathTraversal(rawPath)) {
+      violations.push({
+        code: "PATH_TRAVERSAL_DETECTED",
+        message: `File path '${rawPath}' contains directory traversal or root escape sequence and is rejected.`,
+        file: rawPath,
+        severity: "blocker",
+      });
+      continue;
+    }
+
+    const normPath = normalizePath(rawPath);
 
     // 0. Check for forbidden file extensions/patterns (security blocker)
     const isForbidden = FORBIDDEN_FILE_PATTERNS.some((pattern) =>

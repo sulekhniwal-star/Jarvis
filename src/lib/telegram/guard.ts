@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { TelegramUpdate } from "./types";
 
 /**
@@ -19,16 +20,28 @@ export function isAuthorizedSender(fromId: number | string | undefined | null): 
 
 /**
  * Verifies that the X-Telegram-Bot-Api-Secret-Token header matches the configured TELEGRAM_WEBHOOK_SECRET.
+ * Uses timing-safe constant-time comparison via SHA-256 buffer normalization (REQ-SEC-03, NFR-SEC-05).
  * If TELEGRAM_WEBHOOK_SECRET is not set (e.g. during local polling development), verification passes.
  */
-export function verifyWebhookSecret(headerSecret: string | null | undefined): boolean {
-  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+export function verifyWebhookSecret(
+  headerSecret: string | null | undefined,
+  customSecret?: string
+): boolean {
+  const expectedSecret = customSecret ?? process.env.TELEGRAM_WEBHOOK_SECRET;
   if (!expectedSecret) {
     // Secret verification is optional when secret is not configured
     return true;
   }
 
-  return headerSecret === expectedSecret;
+  if (!headerSecret || typeof headerSecret !== "string") {
+    return false;
+  }
+
+  // Digest normalization to 32 bytes ensures constant-time comparison without leaking length
+  const expectedHash = crypto.createHash("sha256").update(expectedSecret).digest();
+  const providedHash = crypto.createHash("sha256").update(headerSecret).digest();
+
+  return crypto.timingSafeEqual(expectedHash, providedHash);
 }
 
 export interface UpdateValidationResult {

@@ -7,15 +7,15 @@ updated: 2026-11-17T16:38:00+05:30
 # ROADMAP.md — Jarvis Project Roadmap
 
 > **Current Milestone:** v10.0 - Hardening, Security Audits & Final Release (Active)  
-> **Current Phase:** 36 - System-Wide Security Audit, Penetration Testing & Failsafe Gating  
-> **Status:** Phase 35 Completed; Ready for Planning Phase 36 (`/gsd-plan-phase 36`)
+> **Current Phase:** 37 - Accessibility, Responsive UI Optimization & Production Ergonomics  
+> **Status:** Phase 36 Completed; Ready for Planning Phase 37 (`/gsd-plan-phase 37`)
 
 ---
 
 ## Must-Haves (Milestone 10 Baseline)
 
 - [x] End-to-end integration test harness validating the full autonomous development lifecycle: Intake → Clarification → Planning → Coding Runner → Verification → Diff Review → Push Gate → Preview → Production Gate → Health Telemetry (`REQ-SYS-01`).
-- [ ] System-wide automated security and penetration test suite asserting 100% RLS coverage, timing-safe HMAC validation, path traversal sandbox isolation, and secret scanning enforcement (`REQ-SEC-03`, `NFR-SEC-05`).
+- [x] System-wide automated security and penetration test suite asserting 100% RLS coverage, timing-safe HMAC validation, path traversal sandbox isolation, and secret scanning enforcement (`REQ-SEC-03`, `NFR-SEC-05`).
 - [ ] WCAG 2.1 AA accessibility and cross-device responsive layout verification across all 10 core views (`REQ-UI-01`, `NFR-A11Y-01`).
 - [ ] Comprehensive Master Engineering Audit report and complete operational runbooks (disaster recovery, emergency procedures, production release) (`REQ-REL-01`).
 - [ ] Strict zero-warning standard: 0 TypeScript errors, 0 ESLint warnings, 100% passing tests, and clean production build (`NFR-QUAL-01`).
@@ -51,14 +51,14 @@ updated: 2026-11-17T16:38:00+05:30
 ---
 
 ### Phase 36: System-Wide Security Audit, Penetration Testing & Failsafe Gating
-**Status:** ⏳ Pending  
+**Status:** ✅ Completed (2026-11-17)  
 **Objective:** Execute automated security penetration test suite asserting 100% RLS policy coverage, timing-safe HMAC signature verification on all webhooks/tokens, path traversal sandbox containment, and circuit breaker failsafes (`REQ-SEC-03`, `NFR-SEC-05`).  
 **Depends on:** Phase 35  
 **Requirements:** REQ-SEC-03, NFR-SEC-05  
 
 **Plans:**
-- [ ] Plan 36.1: Database RLS boundary audit, timing-safe crypto signature tests, and injection boundary validation.
-- [ ] Plan 36.2: Pre-commit secret scanning penetration tests, branch guard fuzzing, and kill-switch stress tests.
+- [x] Plan 36.1: Database RLS boundary audit, timing-safe crypto signature tests, and injection boundary validation.
+- [x] Plan 36.2: Pre-commit secret scanning penetration tests, branch guard fuzzing, and kill-switch stress tests.
 
 ---
 

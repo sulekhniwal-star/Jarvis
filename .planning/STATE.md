@@ -8,21 +8,19 @@ updated: 2026-11-17T13:07:00+05:30
 
 **Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
 **Current Phase:** 28 - Cost Ledger, Inference Circuit Breakers & Budget Caps  
-**Status:** Ready for Planning  
-**Plan:** Phase 27 completed and verified (93 test files, 580 tests passed, 38 routes compiled). Ready to plan Phase 28 (`/gsd-plan-phase 28`).
+**Status:** Ready for Execution  
+**Plan:** Plans authored (28-01-PLAN.md, 28-02-PLAN.md). Ready to execute Phase 28 (`/gsd-execute-phase 28`).
 
 ## Last Action
 
-Executed and verified Phase 27 (Unified Approval Centre & Cryptographic Decision Engine):
-- Implemented cryptographic HMAC-SHA256 approval token engine with timing-safe comparison (`crypto.timingSafeEqual`) and parameter canonicalization (`src/lib/approvals/approval-token.ts`).
-- Extended `ApprovalRepository` with multi-status querying, search, pagination, and aggregate status metrics.
-- Developed REST API routes (`/api/approvals`, `/api/approvals/[id]`, `/api/approvals/[id]/decision`) with state machine validation and cryptographic token verification.
-- Built Human Approvals portal (`/approvals`, `ApprovalsPortalView`, `ApprovalRequestCard`, `ApprovalActionBadge`, `DecisionModal`) featuring live countdown timers, risk tier pills, and Supabase Realtime synchronization.
-- Verified with 33 unit and component tests (100% pass) and production build (38 routes).
+Planned Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps):
+- Researched financial invariants from `docs/BUDGET_AND_COST_CONTROL.md` (Daily limit ₹25.00, Warning threshold ₹20.00, Monthly limit ₹750.00, Emergency reserve ₹250.00, Hard ceiling ₹1,000.00), failsafe rule (`NFR-REL-02`), and existing `cost_records` schema (`28-RESEARCH.md`).
+- Authored Plan 28.1 (`28-01-PLAN.md`): `CostRepository`, spend aggregations, failsafe `InferenceCircuitBreaker`, integration with `AIGateway`, and REST API endpoints (`GET /api/costs`, `GET /api/costs/summary`, `POST /api/costs/emergency-reserve`).
+- Authored Plan 28.2 (`28-02-PLAN.md`): Budget and Cost Control UI (`src/app/settings/page.tsx`, `src/components/cost/`), metrics cards, circuit breaker state indicator, emergency reserve modal, and ledger log table.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 28` to plan Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps).
+1. Run `/gsd-execute-phase 28` to execute Wave 1 (Plan 28.1) and Wave 2 (Plan 28.2).
 
 ## Active Decisions
 

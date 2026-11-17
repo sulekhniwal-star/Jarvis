@@ -1,27 +1,30 @@
 ---
-updated: 2026-11-17T13:05:00+05:30
+updated: 2026-11-17T13:07:00+05:30
 ---
 
 # Project State
 
 ## Current Position
 
-**Milestone:** v8.0 - Approvals, Security & Cost Controls (Ready for Initialization)  
-**Current Phase:** None (Awaiting Milestone 8 Initialization)  
-**Status:** Milestone 7 Archived  
-**Plan:** Ready to initialize Milestone 8 (`/gsd-new-milestone`).
+**Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
+**Current Phase:** 27 - Unified Approval Centre & Cryptographic Decision Engine  
+**Status:** Ready for Planning  
+**Plan:** Milestone 8 initialized. Ready to plan Phase 27 (`/gsd-plan-phase 27`).
 
 ## Last Action
 
-Completed and Archived Milestone 7 (v7.0 — Projects, Agents & Memory UI):
-- Performed milestone audit with 100% requirements validated (`v7.0-MILESTONE-AUDIT.md`).
-- Archived milestone roadmap to `.planning/milestones/v7.0-ROADMAP.md`.
-- Archived milestone requirements to `.planning/milestones/v7.0-REQUIREMENTS.md`.
-- Updated `PROJECT.md` and `ROADMAP.md` tracking all 26 completed phases (547 tests green, 24 routes compiled).
+Initialized Milestone 8 (v8.0 — Approvals, Security & Cost Controls):
+- Scoped requirements in `REQUIREMENTS.md` (`REQ-APP-01`, `REQ-APP-02`, `REQ-COST-01`, `REQ-COST-02`, `REQ-SEC-01`, `REQ-SEC-02`, `REQ-AUD-01`, `REQ-OPS-01`).
+- Structured 4 sequential phases in `ROADMAP.md`:
+  - Phase 27: Unified Approval Centre & Cryptographic Decision Engine
+  - Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps
+  - Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol
+  - Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification
+- Updated `PROJECT.md` tracking active milestone goals and security governance.
 
 ## Next Steps
 
-1. Run `/gsd-new-milestone` to initialize requirements, research, and phase breakdown for Milestone 8 (Approvals, Security & Cost Controls).
+1. Run `/gsd-plan-phase 27` to research and plan Phase 27 (Unified Approval Centre & Cryptographic Decision Engine).
 
 ## Active Decisions
 

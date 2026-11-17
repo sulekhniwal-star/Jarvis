@@ -1,22 +1,26 @@
 ---
 milestone: "v8.0 - Approvals, Security & Cost Controls"
 version: "8.0.0"
-updated: 2026-11-17T13:05:00+05:30
+updated: 2026-11-17T13:07:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Ready for Initialization)  
-> **Status:** Milestone 7 Complete (100%); Ready to initialize Milestone 8 (`/gsd-new-milestone`)
+> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
+> **Current Phase:** 27 - Unified Approval Centre & Cryptographic Decision Engine  
+> **Status:** Milestone 8 Initialized; Ready for Planning Phase 27 (`/gsd-plan-phase 27`)
 
 ---
 
-## Must-Haves (Milestone 8 Baseline — Pending Initialization)
+## Must-Haves (Milestone 8 Baseline)
 
-- [ ] Emergency stop/kill switch halting all running agent subprocesses and sandbox instances immediately via web and Telegram.
-- [ ] Cost threshold circuit breakers and real-time inference spend limit enforcement.
-- [ ] Cryptographic approval token verification and tamper-evident audit log ledger.
-- [ ] Automated backup verification and disaster recovery drill.
+- [ ] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
+- [ ] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
+- [ ] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
+- [ ] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
+- [ ] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
+- [ ] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
+- [ ] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
 
 ---
 
@@ -32,15 +36,58 @@ updated: 2026-11-17T13:05:00+05:30
 
 ---
 
-## Milestone 8: Approvals, Security & Cost Controls (Pending Initialization)
+## Phases for Milestone 8: Approvals, Security & Cost Controls
 
-> Run `/gsd-new-milestone` to initialize requirements, technical discovery, and phase breakdown for Milestone 8.
+### Phase 27: Unified Approval Centre & Cryptographic Decision Engine
+**Status:** ⏳ Pending  
+**Objective:** Construct dedicated `/approvals` management portal, server-side HMAC-SHA256 signature verification for approval decisions, and dual-channel parity between Web UI and Telegram inline buttons (`REQ-APP-01`, `REQ-APP-02`).  
+**Depends on:** Phase 26 (Milestone 7)  
+**Requirements:** REQ-APP-01, REQ-APP-02  
+
+**Plans:**
+- [ ] Plan 27.1: Cryptographic approval token generator, HMAC signature validation service, and decision API routes (`POST /api/approvals/[id]/decision`).
+- [ ] Plan 27.2: Dedicated `/approvals` web portal with status filtering, countdown timers, risk badges, and contextual inspection links.
+
+---
+
+### Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps
+**Status:** ⏳ Pending  
+**Objective:** Implement `CostRepository` metered usage ledger in INR, AI Gateway circuit breaker blocking paid model calls before invocation when daily (INR 25) or monthly (INR 750) caps are reached, and emergency reserve authorization workflows (`REQ-COST-01`, `REQ-COST-02`, `NFR-REL-02`).  
+**Depends on:** Phase 27  
+**Requirements:** REQ-COST-01, REQ-COST-02, NFR-REL-02  
+
+**Plans:**
+- [ ] Plan 28.1: `CostRepository` data access, token usage tracking, and daily/monthly spending aggregations.
+- [ ] Plan 28.2: Pre-inference circuit breaker middleware for `AIGateway`, emergency reserve approval gating, and dashboard budget widget.
+
+---
+
+### Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol
+**Status:** ⏳ Pending  
+**Objective:** Build global emergency stop API (`POST /api/emergency/kill`) and Telegram `/kill` command, implementing recursive process-tree termination (`SIGINT`/`SIGTERM`/`SIGKILL`), task cancellation state propagation, and outstanding approval revocation within <1.0 second (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).  
+**Depends on:** Phase 28  
+**Requirements:** REQ-SEC-01, REQ-SEC-02, NFR-PERF-03  
+
+**Plans:**
+- [ ] Plan 29.1: Process-tree termination harness, active runner signal dispatcher, and emergency cancellation service.
+- [ ] Plan 29.2: Web Topbar Emergency Stop button, Telegram `/kill` and `/stop` commands, and real-time state cascade.
+
+---
+
+### Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification
+**Status:** ⏳ Pending  
+**Objective:** Build append-only cryptographic hash-chained audit logger in `audit_events`, dedicated audit ledger explorer UI, automated pg_dump database snapshot script, and automated disaster recovery drill test suite (`REQ-AUD-01`, `REQ-OPS-01`).  
+**Depends on:** Phase 29  
+**Requirements:** REQ-AUD-01, REQ-OPS-01  
+
+**Plans:**
+- [ ] Plan 30.1: Cryptographic hash-chained audit logger, verification API route, and `/audit` activity viewer.
+- [ ] Plan 30.2: Automated backup snapshot script with checksum verification and end-to-end disaster recovery drill test.
 
 ---
 
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 8:** Approvals, Security & Cost Controls (Emergency kill switch, budget circuit breakers, backup/recovery drills).
 - **Milestone 9:** Deployment & Continuous Maintenance (Production deployment gating, health monitors).
 - **Milestone 10:** Hardening, Security Audits & Release.
 
@@ -76,3 +123,7 @@ updated: 2026-11-17T13:05:00+05:30
 | 24 | Agent Operations Console & Telemetry Viewer | ✅ | 2/2 | 100% |
 | 25 | pgvector Semantic Memory Store & Context | ✅ | 2/2 | 100% |
 | 26 | Real-Time State Synchronization Engine | ✅ | 2/2 | 100% |
+| 27 | Unified Approval Centre & Decision Engine | ⏳ | 0/2 | 0% |
+| 28 | Cost Ledger & Inference Circuit Breakers | ⏳ | 0/2 | 0% |
+| 29 | Emergency Kill Switch & Cancellation | ⏳ | 0/2 | 0% |
+| 30 | Tamper-Evident Audit Ledger & Backup Recovery | ⏳ | 0/2 | 0% |

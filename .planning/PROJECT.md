@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-16T15:52:00+05:30
-milestone: "v7.0 - Projects, Agents & Memory UI"
+updated: 2026-11-17T13:05:00+05:30
+milestone: "v8.0 - Approvals, Security & Cost Controls"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -126,13 +126,21 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ---
 
-## Active Milestone: Milestone 7 — Projects, Agents & Memory UI (v7.0)
+### Milestone 7 / v7.0 — Projects, Agents & Memory UI (✅ Complete 2026-11-17)
+- **Phase 23: Project Workspace & Hierarchy UI:** Dedicated `/projects` index and `/projects/[id]` detail workspace displaying project metadata, milestone hierarchy, completion velocity, and interactive Kanban board with status toggle columns and task detail drawer (`REQ-UI-PROJ-01`, `REQ-UI-PROJ-02`).
+- **Phase 24: Agent Operations Console & Telemetry Viewer:** Dedicated `/agents` dashboard and `/agents/runs/[id]` drill-down console displaying durable agent execution history, step execution timeline, tabbed stdout/stderr logs, git diff viewer with quality score badges, and artifact drawer (`REQ-UI-AGENT-01`, `REQ-UI-AGENT-02`).
+- **Phase 25: pgvector Semantic Memory Store & Context Retrieval:** Typed `MemoryRepository` connected to `public.memories` using 1536-dimensional vector embeddings via OpenRouter (with deterministic local fallback), cosine similarity retrieval for agent context injection, and an interactive memory curation web interface (`REQ-MEM-01`, `REQ-MEM-02`, `REQ-MEM-03`, `NFR-PERF-01`).
+- **Phase 26: Real-Time State Synchronization Engine:** Supabase Realtime client hooks and channel subscriptions across `tasks`, `agent_runs`, `projects`, and `approvals`, providing instant optimistic UI updates and resilient 12-second background fallback polling upon disconnection (`REQ-RT-01`, `NFR-REL-01`).
 
-This milestone expands the web dashboard into a rich, interactive mission control for projects, durable agents, and semantic memory retrieval (`PRD §7.2, §7.3, §7.12, §12`):
-- **Phase 23: Project Workspace & Hierarchy UI:** Interactive project workspace with milestone, task, and specification exploration.
-- **Phase 24: Agent Runs Console & Telemetry Viewer:** Real-time agent run inspector with step execution logs, diff viewer, and artifact drawer.
-- **Phase 25: pgvector Semantic Memory Store & Context Retrieval:** Embeddings and similarity search storing project architectural decisions and past errors.
-- **Phase 26: Real-Time State Synchronization:** Supabase Realtime subscriptions keeping web client components synced with background agent operations.
+---
+
+## Active Milestone: Milestone 8 — Approvals, Security & Cost Controls (v8.0)
+
+This milestone hardens the control plane, operational security, and budget circuit breakers across Javis (`PRD §7.8, §7.10, §8.5, §12`):
+- Emergency stop/kill switch halting all running agent subprocesses and sandbox instances immediately via web and Telegram.
+- Cost threshold circuit breakers and real-time inference spend limit enforcement.
+- Cryptographic approval token verification and tamper-evident audit log ledger.
+- Automated backup verification and disaster recovery drill.
 
 ## Success Criteria
 
@@ -154,6 +162,6 @@ This milestone expands the web dashboard into a rich, interactive mission contro
 - [x] Diff inspector enforces strict file boundary modification rules and catches unintended regressions.
 - [x] Secret scanner blocks commits containing high-entropy tokens or credentials unless explicitly approved by owner.
 - [x] Bounded repair engine automatically fixes failing tests within 3 iterations or triggers safe rollback with Telegram alert.
-- [ ] Project Workspace UI displays real-time milestone progress, task DAGs, and specification details.
-- [ ] Agent Console provides live inspection of active runs, streaming step outputs, and diff artifacts.
-- [ ] Semantic memory returns relevant architectural context and past fixes for incoming user requests.
+- [x] Project Workspace UI displays real-time milestone progress, task DAGs, and specification details.
+- [x] Agent Console provides live inspection of active runs, streaming step outputs, and diff artifacts.
+- [x] Semantic memory returns relevant architectural context and past fixes for incoming user requests.

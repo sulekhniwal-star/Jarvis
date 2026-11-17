@@ -1,29 +1,28 @@
 ---
-milestone: "v7.0 - Projects, Agents & Memory UI"
-version: "7.0.0"
-updated: 2026-11-16T16:32:00+05:30
+milestone: "v8.0 - Approvals, Security & Cost Controls"
+version: "8.0.0"
+updated: 2026-11-17T13:05:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v7.0 - Projects, Agents & Memory UI (Active)  
-> **Current Phase:** 24 - Agent Operations Console & Telemetry Viewer  
-> **Status:** Phase 23 Complete; Ready for Planning Phase 24 (`/gsd-plan-phase 24`)
+> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Ready for Initialization)  
+> **Status:** Milestone 7 Complete (100%); Ready to initialize Milestone 8 (`/gsd-new-milestone`)
 
 ---
 
-## Must-Haves (Milestone 7 Baseline)
+## Must-Haves (Milestone 8 Baseline — Pending Initialization)
 
-- [ ] Dedicated Project Workspace pages (`/projects`, `/projects/[id]`) with milestone hierarchy, completion velocity, and interactive Kanban board with status columns (`backlog`, `in_progress`, `blocked`, `completed`).
-- [ ] Dedicated Agent Operations Console (`/agents`, `/agents/runs/[id]`) with live execution timeline, tabbed stdout/stderr logs, git diff viewer with quality scores, and artifact inspection drawer.
-- [ ] pgvector Semantic Memory Store (`MemoryRepository`, `public.memories`) using OpenRouter 1536-dim embeddings with deterministic offline fallback and top-K similarity context injection for `SpecifierAgent` and `PlannerAgent`.
-- [ ] Memory Curation & Management Web Interface to browse, search semantically, create, edit, and delete memories with full provenance.
-- [ ] Real-time State Synchronization Engine subscribing to Supabase Realtime postgres changes for `tasks`, `agent_runs`, `projects`, and `approvals` with resilient fallback polling.
+- [ ] Emergency stop/kill switch halting all running agent subprocesses and sandbox instances immediately via web and Telegram.
+- [ ] Cost threshold circuit breakers and real-time inference spend limit enforcement.
+- [ ] Cryptographic approval token verification and tamper-evident audit log ledger.
+- [ ] Automated backup verification and disaster recovery drill.
 
 ---
 
 ## Completed Milestones
 
+- [x] **[Milestone 7: v7.0 — Projects, Agents & Memory UI](file:///f:/Javis/.planning/milestones/v7.0-ROADMAP.md)** (Phases 23–26, Complete 2026-11-17) — Project workspace & hierarchy Kanban UI, Agent Operations Console with 4-stage telemetry drill-down, pgvector semantic memory store & agent context retrieval, and Supabase Realtime synchronization engine with resilient 12s fallback polling.
 - [x] **[Milestone 6: v6.0 — Quality, Verification & Self-Review](file:///f:/Javis/.planning/milestones/v6.0-ROADMAP.md)** (Phases 19–22, Complete 2026-11-16) — Multi-stage verification harness, semantic diff inspector & quality gate, entropy & secret scanner, and 3-strike bounded self-repair protocol with automated git rollback.
 - [x] **Milestone 5: v5.0 — Coding Execution Sandbox** (Phases 15–18, Complete 2026-11-16) — Standard coding agent interface, headless Aider CLI adapter, ephemeral GitHub Actions runner environment, and execution telemetry pipeline.
 - [x] **Milestone 4: v4.0 — GitHub Integration & Branchless Discipline** (Phases 12–14, Complete 2026-11-15) — GitHub API client, HMAC webhook receiver, remote push approval gate, and repository sync monitor.
@@ -33,53 +32,9 @@ updated: 2026-11-16T16:32:00+05:30
 
 ---
 
-## Phases for Milestone 7: Projects, Agents & Memory UI
+## Milestone 8: Approvals, Security & Cost Controls (Pending Initialization)
 
-### Phase 23: Project Workspace & Hierarchy UI
-**Status:** ✅ Complete (2026-11-16)  
-**Objective:** Construct dedicated `/projects` index and `/projects/[id]` detail workspace featuring project metadata, milestone hierarchy drill-down, progress metrics, and an interactive Kanban board with status toggle columns and task detail drawer (`REQ-UI-PROJ-01`, `REQ-UI-PROJ-02`).  
-**Depends on:** Phase 22 (Milestone 6)  
-**Requirements:** REQ-UI-PROJ-01, REQ-UI-PROJ-02  
-
-**Plans:**
-- [x] Plan 23.1: Project workspace routes (`/projects`, `/projects/[id]`), breadcrumbs, milestone hierarchy tree, and project metadata header.
-- [x] Plan 23.2: Interactive Kanban task board with status columns (`backlog`, `in_progress`, `blocked`, `completed`), status transition controls, and task detail drawer linking specs/plans/runs.
-
----
-
-### Phase 24: Agent Operations Console & Telemetry Viewer
-**Status:** ✅ Complete (2026-11-16)  
-**Objective:** Build dedicated `/agents` dashboard and `/agents/runs/[id]` drill-down console displaying durable agent execution history, step execution timeline, tabbed stdout/stderr logs, git diff viewer with quality score badges, and artifact drawer (`REQ-UI-AGENT-01`, `REQ-UI-AGENT-02`).  
-**Depends on:** Phase 23  
-**Requirements:** REQ-UI-AGENT-01, REQ-UI-AGENT-02  
-
-**Plans:**
-- [x] Plan 24.1: Agent operations dashboard (`/agents`) with status filtering, duration/cost metrics, and recent runs table.
-- [x] Plan 24.2: Run telemetry drill-down (`/agents/runs/[id]`) with execution timeline, tabbed log viewer, git diff viewer, and artifact drawer.
-
----
-
-### Phase 25: pgvector Semantic Memory Store & Context Retrieval
-**Status:** ✅ Complete (2026-11-17)  
-**Objective:** Implement typed `MemoryRepository` connected to `public.memories` using 1536-dimensional vector embeddings via OpenRouter (with deterministic local fallback), cosine similarity retrieval for agent context injection, and an interactive memory curation web interface (`REQ-MEM-01`, `REQ-MEM-02`, `REQ-MEM-03`, `NFR-PERF-01`).  
-**Depends on:** Phase 24  
-**Requirements:** REQ-MEM-01, REQ-MEM-02, REQ-MEM-03, NFR-PERF-01  
-
-**Plans:**
-- [x] Plan 25.1: `MemoryRepository` data access layer, OpenRouter embedding generator with deterministic local fallback, and top-K similarity search service.
-- [x] Plan 25.2: Memory context injection for `SpecifierAgent` and `PlannerAgent`, plus interactive memory curation web UI (`/memory`).
-
----
-
-### Phase 26: Real-Time State Synchronization Engine
-**Status:** ✅ Complete (2026-11-17)  
-**Objective:** Implement Supabase Realtime client hooks and channel subscriptions across `tasks`, `agent_runs`, `projects`, and `approvals`, providing instant optimistic UI updates and resilient fallback polling upon disconnection (`REQ-RT-01`, `NFR-REL-01`).  
-**Depends on:** Phase 25  
-**Requirements:** REQ-RT-01, NFR-REL-01  
-
-**Plans:**
-- [x] Plan 26.1: Supabase Realtime connection manager, channel subscription hooks, and optimistic UI state synchronizers.
-- [x] Plan 26.2: Reconnect resilience, fallback polling mechanisms, and end-to-end integration tests for real-time dashboard updates.
+> Run `/gsd-new-milestone` to initialize requirements, technical discovery, and phase breakdown for Milestone 8.
 
 ---
 

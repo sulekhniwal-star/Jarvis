@@ -8,22 +8,19 @@ updated: 2026-11-17T13:07:00+05:30
 
 **Milestone:** v8.0 - Approvals, Security & Cost Controls (Active)  
 **Current Phase:** 29 - Emergency Kill Switch & Subprocess Cancellation Protocol  
-**Status:** Ready for Planning  
-**Plan:** Phase 28 completed and verified (97 test files, 613 tests passed, 42 routes compiled). Ready to plan Phase 29 (`/gsd-plan-phase 29`).
+**Status:** Ready for Execution  
+**Plan:** Plans authored (29-01-PLAN.md, 29-02-PLAN.md). Ready to execute Phase 29 (`/gsd-execute-phase 29`).
 
 ## Last Action
 
-Executed and verified Phase 28 (Cost Ledger, Inference Circuit Breakers & Budget Caps):
-- Implemented `CostRepository` with metered usage logging, token tracking, daily/monthly spend aggregation, and emergency reserve state management.
-- Implemented `InferenceCircuitBreaker` with daily cap (₹25), monthly budget (₹750), emergency reserve expansion (₹250), inviolable hard stop (₹1,000), and failsafe blocking (`NFR-REL-02`).
-- Integrated circuit breaker into `AIGateway` pre-inference checks.
-- Developed REST API routes (`/api/costs`, `/api/costs/summary`, `/api/costs/emergency-reserve`).
-- Built Budget & Cost Control UI (`src/app/settings/page.tsx`, `CostMetricsBanner`, `CircuitBreakerCard`, `CostLedgerTable`, `EmergencyReserveModal`).
-- Verified with 33 unit and component tests (100% pass) and production build (42 routes).
+Planned Phase 29 (Emergency Kill Switch & Subprocess Cancellation Protocol):
+- Researched cross-platform process-tree termination (`taskkill /T /F` on Windows, `SIGKILL` on POSIX), sub-second performance constraint (`NFR-PERF-03` < 1000ms), and dual-channel parity between Web Topbar and Telegram `/kill` (`29-RESEARCH.md`).
+- Authored Plan 29.1 (`29-01-PLAN.md`): `ProcessCancellationRegistry`, `EmergencyKillSwitchService`, audit logging, and REST API routes (`POST /api/system/kill`, `GET /api/system/kill/status`).
+- Authored Plan 29.2 (`29-02-PLAN.md`): Telegram `/kill` command, Web Topbar `EmergencyStopButton`, confirmation dialog, emergency alert banner, and sub-second verification tests.
 
 ## Next Steps
 
-1. Run `/gsd-plan-phase 29` to plan Phase 29 (Emergency Kill Switch & Subprocess Cancellation Protocol).
+1. Run `/gsd-execute-phase 29` to execute Wave 1 (Plan 29.1) and Wave 2 (Plan 29.2).
 
 ## Active Decisions
 

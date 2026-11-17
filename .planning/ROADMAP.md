@@ -1,25 +1,27 @@
 ---
-milestone: "v8.0 - Approvals, Security & Cost Controls"
-version: "8.0.0"
-updated: 2026-11-17T13:07:00+05:30
+milestone: "v9.0 - Deployment & Continuous Maintenance"
+version: "9.0.0"
+updated: 2026-11-17T14:22:00+05:30
 ---
 
 # ROADMAP.md — Jarvis Project Roadmap
 
-> **Current Milestone:** v8.0 - Approvals, Security & Cost Controls (Archived)  
-> **Status:** Milestone 8 Complete; Ready for Milestone 9 Initialization (`/gsd-new-milestone`)
+> **Current Milestone:** v9.0 - Deployment & Continuous Maintenance (Active)  
+> **Current Phase:** 31 - Production Deployment Gate & Multi-Environment Pipeline  
+> **Status:** Milestone 9 Initialized; Ready for Planning Phase 31 (`/gsd-plan-phase 31`)
 
 ---
 
-## Must-Haves (Milestone 8 Baseline — All Completed)
+## Must-Haves (Milestone 9 Baseline)
 
-- [x] Unified Approval Centre (`/approvals`) displaying pending, approved, rejected, and expired requests with risk tier, expiry counters, and diff inspection links (`REQ-APP-01`).
-- [x] Cryptographic HMAC-SHA256 signature verification for approval decisions across Web UI and Telegram inline buttons (`REQ-APP-02`).
-- [x] Metered Cost Ledger and usage accounting tracking tokens, latency, and costs in INR (`REQ-COST-01`).
-- [x] Server-side AI Inference Circuit Breakers enforcing daily (INR 25) and monthly (INR 750) caps with emergency reserve authorization (`REQ-COST-02`, `NFR-REL-02`).
-- [x] Global Emergency Kill Switch operable via Web dashboard and Telegram `/kill` command, halting all active agent subprocesses within <1s (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).
-- [x] Tamper-evident hash-chained audit event ledger (`audit_events`) providing cryptographically verifiable operation history (`REQ-AUD-01`).
-- [x] Automated database backup snapshot runner with encryption, checksum verification, and recovery drill test suite (`REQ-OPS-01`).
+- [ ] Production deployment approval gate strictly blocking live promotions until explicit HMAC-authorized approval is granted via Web or Telegram (`REQ-DEP-01`).
+- [ ] Multi-environment deployment runner managing preview deployments, tracking deployment state, preview URL binding, and instant rollback capability (`REQ-DEP-02`).
+- [ ] Diagnostic system health probe endpoint `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency) (`REQ-OPS-02`, `NFR-REL-03`).
+- [ ] Live System Health widget and operational telemetry dashboard in Web UI and Telegram `/health` command (`REQ-OPS-02`).
+- [ ] Automated storage pruning and retention worker rotating ephemeral build logs older than 30 days, expiring stale pending approvals, and compacting caches (`REQ-OPS-03`).
+- [ ] Continuous branch safety audit runner automatically detecting and blocking non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
+- [ ] Proactive maintenance recommendations engine detecting repeated test failures, high-latency models, budget exhaustion risk, or stale tasks, surfacing actionable maintenance recommendations in Dashboard and Telegram (`REQ-OPS-04`).
+- [ ] 1-click remediation actions allowing the owner to trigger recommended maintenance tasks directly from the dashboard (`REQ-OPS-05`).
 
 ---
 
@@ -36,60 +38,59 @@ updated: 2026-11-17T13:07:00+05:30
 
 ---
 
-## Phases for Milestone 8: Approvals, Security & Cost Controls
+## Phases for Milestone 9: Deployment & Continuous Maintenance
 
-### Phase 27: Unified Approval Centre & Cryptographic Decision Engine
-**Status:** Complete (2026-11-17)  
-**Objective:** Construct dedicated `/approvals` management portal, server-side HMAC-SHA256 signature verification for approval decisions, and dual-channel parity between Web UI and Telegram inline buttons (`REQ-APP-01`, `REQ-APP-02`).  
-**Depends on:** Phase 26 (Milestone 7)  
-**Requirements:** REQ-APP-01, REQ-APP-02  
+### Phase 31: Production Deployment Gate & Multi-Environment Pipeline
+**Status:** ⏳ Pending  
+**Objective:** Construct `DeploymentManager` supporting preview and production environments, enforcing explicit human owner approval for production deployments across Web UI and Telegram, preview URL tracking, and rollback state management (`REQ-DEP-01`, `REQ-DEP-02`).  
+**Depends on:** Phase 30 (Milestone 8)  
+**Requirements:** REQ-DEP-01, REQ-DEP-02  
 
 **Plans:**
-- [x] Plan 27.1: Cryptographic approval token generator, HMAC signature validation service, and decision API routes (`POST /api/approvals/[id]/decision`).
-- [x] Plan 27.2: Dedicated `/approvals` web portal with status filtering, countdown timers, risk badges, and contextual inspection links.
+- [ ] Plan 31.1: `DeploymentManager` core service, deployment repository, preview URL tracking, and production promotion gate.
+- [ ] Plan 31.2: Web UI Deployment management view, Telegram deployment notification & approval cards, and rollback triggers.
 
 ---
 
-### Phase 28: Cost Ledger, Inference Circuit Breakers & Budget Caps
-**Status:** Complete (2026-11-17)  
-**Objective:** Implement `CostRepository` metered usage ledger in INR, AI Gateway circuit breaker blocking paid model calls before invocation when daily (INR 25) or monthly (INR 750) caps are reached, and emergency reserve authorization workflows (`REQ-COST-01`, `REQ-COST-02`, `NFR-REL-02`).  
-**Depends on:** Phase 27  
-**Requirements:** REQ-COST-01, REQ-COST-02, NFR-REL-02  
+### Phase 32: System Health Diagnostics & Liveness Telemetry
+**Status:** ⏳ Pending  
+**Objective:** Implement comprehensive diagnostic health probe `/api/health` monitoring Supabase database latency, AI gateway availability, background task queue depth, and memory/disk metrics (< 200ms latency), accompanied by live dashboard telemetry widgets and Telegram `/health` command (`REQ-OPS-02`, `NFR-REL-03`).  
+**Depends on:** Phase 31  
+**Requirements:** REQ-OPS-02, NFR-REL-03  
 
 **Plans:**
-- [x] Plan 28.1: `CostRepository` data access, token usage tracking, and daily/monthly spending aggregations.
-- [x] Plan 28.2: Pre-inference circuit breaker middleware for `AIGateway`, emergency reserve approval gating, and dashboard budget widget.
+- [ ] Plan 32.1: Diagnostic health probe engine (`/api/health`), subsystem probes (database, AI gateway, queue, memory), and sub-200ms benchmark.
+- [ ] Plan 32.2: Live `SystemHealthWidget` dashboard card, Telegram `/health` diagnostic command, and status alert badges.
 
 ---
 
-### Phase 29: Emergency Kill Switch & Subprocess Cancellation Protocol
-**Status:** Complete (2026-11-17)  
-**Objective:** Build global emergency stop API (`POST /api/system/kill`) and Telegram `/kill` command, implementing recursive process-tree termination (`SIGINT`/`SIGTERM`/`SIGKILL`), task cancellation state propagation, and outstanding approval revocation within <1.0 second (`REQ-SEC-01`, `REQ-SEC-02`, `NFR-PERF-03`).  
-**Depends on:** Phase 28  
-**Requirements:** REQ-SEC-01, REQ-SEC-02, NFR-PERF-03  
+### Phase 33: Automated Maintenance, Storage Pruning & Branch Hygiene
+**Status:** ⏳ Pending  
+**Objective:** Build automated maintenance runner rotating ephemeral build logs (> 30 days), purging expired unapproved requests, compacting cache stores, and continuously validating Git branch safety across CI/CD and local environments (`REQ-OPS-03`, `NFR-SEC-04`).  
+**Depends on:** Phase 32  
+**Requirements:** REQ-OPS-03, NFR-SEC-04  
 
 **Plans:**
-- [x] Plan 29.1: Process-tree termination harness, active runner signal dispatcher, and emergency cancellation service.
-- [x] Plan 29.2: Web Topbar Emergency Stop button, Telegram `/kill` command, and real-time state cascade.
+- [ ] Plan 33.1: Automated maintenance worker, log retention rotation, stale approval purger, and cache compaction.
+- [ ] Plan 33.2: Continuous branch safety audit runner (`scripts/git-guard.ts` CI verification) and automated hygiene reporting.
 
 ---
 
-### Phase 30: Tamper-Evident Audit Ledger & Backup Recovery Verification
-**Status:** Complete (2026-11-17)  
-**Objective:** Build append-only cryptographic hash-chained audit logger in `audit_events`, dedicated audit ledger explorer UI, automated pg_dump database snapshot script, and automated disaster recovery drill test suite (`REQ-AUD-01`, `REQ-OPS-01`).  
-**Depends on:** Phase 29  
-**Requirements:** REQ-AUD-01, REQ-OPS-01  
+### Phase 34: Proactive Maintenance Recommendations & Autonomous Advisory
+**Status:** ⏳ Pending  
+**Objective:** Construct diagnostic reasoning analyzer detecting repeated test regressions, model degradation, budget exhaustion risk, or stale tasks, surfacing actionable maintenance recommendations in the Web Dashboard and Telegram with 1-click remediation actions (`REQ-OPS-04`, `REQ-OPS-05`).  
+**Depends on:** Phase 33  
+**Requirements:** REQ-OPS-04, REQ-OPS-05  
 
 **Plans:**
-- [x] Plan 30.1: Cryptographic hash-chained audit logger, verification API route, and `/audit` activity viewer.
-- [x] Plan 30.2: Automated backup snapshot script with checksum verification and end-to-end disaster recovery drill test.
+- [ ] Plan 34.1: Recommendation engine, heuristic pattern detectors (cost, model latency, test failures), and recommendation repository.
+- [ ] Plan 34.2: Web Dashboard Recommendations card with 1-click remediation actions and Telegram alert digest.
 
 ---
 
 ## Future Milestones Overview (from PRD §12 & docs/ROADMAP.md)
 
-- **Milestone 9:** Deployment & Continuous Maintenance (Production deployment gating, health monitors).
-- **Milestone 10:** Hardening, Security Audits & Release.
+- **Milestone 10:** Hardening, Security Audits & Final Release.
 
 ---
 
@@ -97,33 +98,8 @@ updated: 2026-11-17T13:07:00+05:30
 
 | Phase | Description | Status | Plans | Complete |
 |---|---|---|---|---|
-| 1 | Environment & Project Foundation | ✅ | 2/2 | 100% |
-| 2 | Database & Auth Infrastructure | ✅ | 2/2 | 100% |
-| 3 | Core Domain Models & Repositories | ✅ | 2/2 | 100% |
-| 4 | Provider Adapters & AI Gateway | ✅ | 2/2 | 100% |
-| 5 | Authenticated UI Shell & Dashboard | ✅ | 2/2 | 100% |
-| 6 | Task Intake & Specification Engine | ✅ | 2/2 | 100% |
-| 7 | Execution Planning Engine | ✅ | 2/2 | 100% |
-| 8 | Plan Review UI & Approval Gate | ✅ | 2/2 | 100% |
-| 9 | Telegram Core Client & Security Guard | ✅ | 2/2 | 100% |
-| 10 | Telegram Remote Task Intake & Status | ✅ | 2/2 | 100% |
-| 11 | Telegram Approval Cards & Decision Webhook | ✅ | 2/2 | 100% |
-| 12 | GitHub Client, Auth & Webhooks | ✅ | 2/2 | 100% |
-| 13 | Remote Push Approval Gate & Branchless Guard | ✅ | 2/2 | 100% |
-| 14 | Repository Sync Monitor & Dual-Channel Status | ✅ | 2/2 | 100% |
-| 15 | Coding Agent Interface & Engine Contract | ✅ | 2/2 | 100% |
-| 16 | Headless Aider CLI Adapter | ✅ | 2/2 | 100% |
-| 17 | Ephemeral Sandbox Runner Environment | ✅ | 2/2 | 100% |
-| 18 | Execution Telemetry & Artifact Pipeline | ✅ | 2/2 | 100% |
-| 19 | Automated Verification Framework | ✅ | 2/2 | 100% |
-| 20 | Automated Diff Inspector & Quality Gate | ✅ | 2/2 | 100% |
-| 21 | Pre-Commit Entropy & Secret Scanner | ✅ | 2/2 | 100% |
-| 22 | Autonomous Self-Review & Bounded Repair | ✅ | 2/2 | 100% |
-| 23 | Project Workspace & Hierarchy UI | ✅ | 2/2 | 100% |
-| 24 | Agent Operations Console & Telemetry Viewer | ✅ | 2/2 | 100% |
-| 25 | pgvector Semantic Memory Store & Context | ✅ | 2/2 | 100% |
-| 26 | Real-Time State Synchronization Engine | ✅ | 2/2 | 100% |
-| 27 | Unified Approval Centre & Decision Engine | ✅ | 2/2 | 100% |
-| 28 | Cost Ledger & Inference Circuit Breakers | ✅ | 2/2 | 100% |
-| 29 | Emergency Kill Switch & Cancellation | ✅ | 2/2 | 100% |
-| 30 | Tamper-Evident Audit Ledger & Backup Recovery | ✅ | 2/2 | 100% |
+| 1–30 | Milestones 1 through 8 (Foundation through Approvals & Security) | ✅ | 60/60 | 100% |
+| 31 | Production Deployment Gate & Multi-Environment Pipeline | ⏳ | 0/2 | 0% |
+| 32 | System Health Diagnostics & Liveness Telemetry | ⏳ | 0/2 | 0% |
+| 33 | Automated Maintenance, Storage Pruning & Branch Hygiene | ⏳ | 0/2 | 0% |
+| 34 | Proactive Maintenance Recommendations & Autonomous Advisory | ⏳ | 0/2 | 0% |

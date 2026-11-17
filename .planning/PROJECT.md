@@ -1,8 +1,8 @@
 ---
 status: ACTIVE
 created: 2026-11-15T17:35:00+05:30
-updated: 2026-11-17T13:05:00+05:30
-milestone: "v8.0 - Approvals, Security & Cost Controls"
+updated: 2026-11-17T14:22:00+05:30
+milestone: "v9.0 - Deployment & Continuous Maintenance"
 ---
 
 # PROJECT.md — Jarvis Project Context & Specification
@@ -144,33 +144,20 @@ Jarvis is a secure, persistent personal AI command centre whose primary responsi
 
 ## Active Milestone: Milestone 9 — Deployment & Continuous Maintenance (v9.0)
 
-This milestone establishes production deployment gating, continuous health monitoring, performance telemetry, and automated operational maintenance.
+This milestone establishes production deployment gating, multi-environment pipelines, real-time health monitoring, storage pruning, and automated operational maintenance across Jarvis (`PRD §7.10, §7.13, §12`):
+- Production deployment approval gate requiring explicit human owner authorization before promotion.
+- Preview deployment generation and automated rollback verification.
+- Comprehensive system health, diagnostics, and liveness telemetry endpoint (`/api/health`) and dashboard widgets.
+- Automated storage pruning, ephemeral log rotation, and database index maintenance.
+- Continuous Git branch safety audit runner enforcing strict `main`-only lock in CI/CD.
+- Proactive maintenance recommendations and autonomous advisory alerts across Web and Telegram.
 
-## Success Criteria
+## Milestone 9 Success Criteria
 
-- [x] Local Supabase development environment running via Docker with automated migrations.
-- [x] RLS policies verified to prevent unauthorized or cross-context access.
-- [x] Next.js dashboard renders authenticated shell with zero console errors and accessible navigation.
-- [x] OpenRouter adapter executes test prompts, tracks token counts, and blocks simulated paid calls when unapproved.
-- [x] Git safety module successfully rejects any branch operation targeting branches other than `main`.
-- [x] All code conforms to conventional commits, passes ESLint and TypeScript compilation with zero errors.
-- [x] Telegram Bot Gateway ingests natural language prompts, conducts clarification loops, and delivers interactive approval cards.
-- [x] GitHub webhook endpoint verifies HMAC signatures and logs events with zero security breaches.
-- [x] Remote push approval gate strictly blocks pushing to `origin/main` until human owner authorizes.
-- [x] Repository synchronization monitor accurately tracks commit divergence between local and remote `main`.
-- [x] Coding agent interface abstracts execution engines with uniform input context and output artifacts.
-- [x] Headless Aider adapter executes task prompts within strict file-modification boundaries in batch mode.
-- [x] Ephemeral sandbox runner isolates execution with zero exposure of master credentials or persistent host state.
-- [x] Execution telemetry pipeline records complete build/test logs, diff patches, and transitions `agent_runs` state.
-- [x] Automated verification runner executes lint, typecheck, unit tests, and production build with structured JSON reports.
-- [x] Diff inspector enforces strict file boundary modification rules and catches unintended regressions.
-- [x] Secret scanner blocks commits containing high-entropy tokens or credentials unless explicitly approved by owner.
-- [x] Bounded repair engine automatically fixes failing tests within 3 iterations or triggers safe rollback with Telegram alert.
-- [x] Project Workspace UI displays real-time milestone progress, task DAGs, and specification details.
-- [x] Agent Console provides live inspection of active runs, streaming step outputs, and diff artifacts.
-- [x] Semantic memory returns relevant architectural context and past fixes for incoming user requests.
-- [x] Real-time state synchronization engine propagates database mutations across UI and Telegram.
-- [x] Unified Approval Centre provides cryptographic HMAC decision validation and dual-channel parity.
-- [x] Cost ledger and circuit breakers enforce strict daily and monthly budget ceilings in INR.
-- [x] Emergency kill switch terminates all active subprocess trees and cascades cancellations in sub-second time.
-- [x] Append-only audit ledger provides cryptographic hash-chain tamper detection and automated zero-loss backup recovery.
+- [ ] Production deployment gate blocks live promotions until explicit HMAC-authorized approval is granted (`REQ-DEP-01`).
+- [ ] Multi-environment deployment runner tracks preview URLs, deployment statuses, and rollback states (`REQ-DEP-02`).
+- [ ] Diagnostic health check endpoint `/api/health` probes database, AI gateway, and background runners with sub-200ms latency (`REQ-OPS-02`).
+- [ ] Live System Health widget and operational telemetry status visible in Web dashboard and Telegram `/health` (`NFR-REL-03`).
+- [ ] Automated maintenance runner rotates ephemeral logs, purges stale unapproved requests, and compacts caches (`REQ-OPS-03`).
+- [ ] Continuous branch safety audit runner automatically detects and blocks non-main branch operations across CI/CD and local environments (`NFR-SEC-04`).
+- [ ] Autonomous advisory analyzer synthesizes actionable maintenance recommendations (cost optimization, model degradation, test regressions) (`REQ-OPS-04`, `REQ-OPS-05`).

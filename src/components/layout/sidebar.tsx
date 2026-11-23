@@ -103,7 +103,11 @@ export function Sidebar({ pendingApprovalsCount = 0 }: SidebarProps) {
                 <span>{item.label}</span>
               </div>
               {showBadge && (
-                <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
+                <Badge
+                  variant="warning"
+                  className="px-1.5 py-0 text-[10px]"
+                  aria-label={`${pendingApprovalsCount} pending approvals requiring review`}
+                >
                   {pendingApprovalsCount}
                 </Badge>
               )}

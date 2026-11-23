@@ -76,7 +76,7 @@ export function MobileNav({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan"
               aria-label="Close navigation"
             >
               <X className="w-5 h-5" aria-hidden="true" />
@@ -98,7 +98,7 @@ export function MobileNav({
                   href={item.href}
                   onClick={onClose}
                   aria-current={isActive ? "page" : undefined}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan ${
                     isActive
                       ? "bg-surface-2 text-accent-cyan font-semibold"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface-2/60"
@@ -109,7 +109,11 @@ export function MobileNav({
                     <span>{item.label}</span>
                   </div>
                   {showBadge && (
-                    <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
+                    <Badge
+                      variant="warning"
+                      className="px-1.5 py-0 text-[10px]"
+                      aria-label={`${pendingApprovalsCount} pending approvals requiring review`}
+                    >
                       {pendingApprovalsCount}
                     </Badge>
                   )}

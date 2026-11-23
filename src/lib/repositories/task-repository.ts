@@ -101,6 +101,43 @@ export class TaskRepository extends BaseRepository {
     }
   }
 
+  public async listAll(
+    filters: TaskFilterOptions = {}
+  ): Promise<PaginatedResult<Task>> {
+    const limit = filters.limit ?? 50;
+    const offset = filters.offset ?? 0;
+    const sortBy = filters.sortBy ?? "created_at";
+    const ascending = filters.sortDirection === "asc";
+
+    try {
+      let query = this.client
+        .from("tasks")
+        .select("*", { count: "exact" });
+
+      if (filters.status) query = query.eq("status", filters.status);
+      if (filters.priority) query = query.eq("priority", filters.priority);
+      if (filters.riskLevel) query = query.eq("risk_level", filters.riskLevel);
+      if (filters.milestoneId) query = query.eq("milestone_id", filters.milestoneId);
+
+      const { data, error, count } = await query
+        .order(sortBy, { ascending })
+        .range(offset, offset + limit - 1);
+
+      if (error) {
+        this.handleError(error, "Failed to list all tasks");
+      }
+
+      return {
+        data: data ?? [],
+        total: count ?? 0,
+        limit,
+        offset,
+      };
+    } catch (err) {
+      this.handleError(err, "Failed to list all tasks");
+    }
+  }
+
   public async update(id: string, data: UpdateTaskDTO): Promise<Task> {
     try {
       const updatePayload: TablesUpdate<"tasks"> = {

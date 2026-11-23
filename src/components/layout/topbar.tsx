@@ -27,7 +27,7 @@ export function Topbar({
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileNav}
-          className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan"
+          className="lg:hidden p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan"
           aria-label="Open mobile navigation"
         >
           <Menu className="w-5 h-5" aria-hidden="true" />

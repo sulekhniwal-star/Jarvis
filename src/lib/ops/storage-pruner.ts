@@ -70,7 +70,7 @@ export class StoragePruningService {
     }
 
     try {
-      let query = this.supabase
+      const query = this.supabase
         .from("run_artifacts")
         .select("id, storage_path, file_size_bytes, created_at")
         .lt("created_at", cutoffIso);

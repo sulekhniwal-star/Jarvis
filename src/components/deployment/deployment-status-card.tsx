@@ -114,7 +114,7 @@ export function DeploymentStatusCard({
             </div>
 
             <p className="text-xs text-text-secondary line-clamp-1 italic">
-              "{activeProduction.commit_message || "No commit message"}"
+              &ldquo;{activeProduction.commit_message || "No commit message"}&rdquo;
             </p>
           </div>
         ) : (
@@ -215,7 +215,7 @@ export function DeploymentStatusCard({
             </div>
 
             <p className="text-xs text-text-secondary line-clamp-1 italic">
-              "{latestPreview.commit_message || "Automated preview build"}"
+              &ldquo;{latestPreview.commit_message || "Automated preview build"}&rdquo;
             </p>
           </div>
         ) : (

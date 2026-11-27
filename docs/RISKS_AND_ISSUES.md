@@ -35,3 +35,28 @@
   - `.planning/research/STACK.md`
 - **Current State:** **Resolved**. Committed by owner in `da2a0a9` (`chore: remove empty deleted file`) and pushed to `origin/main`. Working tree clean.
 - **Resolution Plan:** Completed. Documented in `CHANGELOG.md` and `PROGRESS.md`.
+
+### Issue ISS-002: ESLint Failures (14 Errors, 65 Warnings)
+- **Date Raised:** 2026-11-27
+- **Details:** `pnpm lint` (`eslint .`) exited with code 1 (79 problems: 14 errors, 65 warnings), including `react-hooks/refs` errors in `use-realtime-subscription.ts` and `use-realtime-tasks.ts`, `react/no-unescaped-entities` in UI components, and `prefer-const` in `storage-pruner.ts`.
+- **Current State:** **Resolved (Errors)**. Fixed all 14 ESLint errors; `npx eslint . --quiet` exits 0. (65 non-blocking warnings remain).
+
+### Issue ISS-003: Version Drift (`VERSION` vs `package.json`)
+- **Date Raised:** 2026-11-27
+- **Details:** Root `VERSION` read `1.6.0` while `package.json` read `10.0.0`.
+- **Current State:** **Resolved**. Updated `VERSION` to `10.0.0`.
+
+### Issue ISS-004: OpenRouter Free Tier 50 RPD Limit
+- **Date Raised:** 2026-11-27
+- **Details:** Standard Free Tier on OpenRouter caps `:free` models at 50 requests/day (20 RPM). Multi-step autonomous agent loops may exhaust 50 RPD quickly unless $10 lifetime credits are purchased (unlocks 1,000 RPD) or requests are batched.
+- **Current State:** **Open**. Needs owner decision / awareness.
+
+### Issue ISS-005: Missing Python Worker & `docs/audits/` Directory
+- **Date Raised:** 2026-11-27
+- **Details:** `docs/TECH_STACK.md` defines a Python 3.11+ specialized AI service contract, but no `.py` files exist in the repo. `docs/audits/` does not yet exist.
+- **Current State:** **Open**.
+
+### Issue ISS-006: Historical Non-`main` Remote Branches on `origin`
+- **Date Raised:** 2026-11-27
+- **Details:** `origin` retains 6 historical branches (`feat-milestone-0..3`, `dependabot/*`, `jarvis/*`). Local repo has only `main`.
+- **Current State:** **Open**. Requires owner authorization to prune remote branches on GitHub.

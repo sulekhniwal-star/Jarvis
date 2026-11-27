@@ -96,7 +96,9 @@ export function useRealtimeTasks({
   });
 
   const tasksRef = React.useRef(tasks);
-  tasksRef.current = tasks;
+  React.useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
 
   const transitionTaskStatus = React.useCallback(
     async (taskId: string, targetStatus: TaskStatus): Promise<boolean> => {

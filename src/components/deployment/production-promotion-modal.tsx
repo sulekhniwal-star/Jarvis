@@ -223,7 +223,7 @@ export function ProductionPromotionModal({
             <div className="rounded-lg bg-surface-2/40 border border-surface-3 p-3 flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-accent-cyan flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-text-secondary leading-relaxed">
-                Production promotion will <strong className="text-text-primary">not</strong> execute automatically. A cryptographic approval request will be dispatched to the owner's Telegram and web console.
+                Production promotion will <strong className="text-text-primary">not</strong> execute automatically. A cryptographic approval request will be dispatched to the owner&apos;s Telegram and web console.
               </p>
             </div>
 

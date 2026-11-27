@@ -303,7 +303,7 @@ export function ApprovalRequestCard({
             </div>
             {approval.decision_reason && (
               <p className="text-text-secondary italic text-[11px] truncate">
-                "{approval.decision_reason}"
+                &quot;{approval.decision_reason}&quot;
               </p>
             )}
           </div>
@@ -322,7 +322,7 @@ export function ApprovalRequestCard({
             </div>
             {approval.decision_reason && (
               <p className="text-text-secondary italic text-[11px] truncate">
-                "{approval.decision_reason}"
+                &quot;{approval.decision_reason}&quot;
               </p>
             )}
           </div>

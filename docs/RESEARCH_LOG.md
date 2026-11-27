@@ -75,3 +75,10 @@ In accordance with Section 8 of the Master Directive:
 - **Architectural Impact:**
   - Built single-owner verification (`OWNER_TELEGRAM_ID`) to reject untrusted senders.
   - Designed interactive approval cards with Markdown formatting.
+
+### 2.6 Updated Quota & Pricing Verification (2026-11-27)
+- **Date Checked:** 2026-11-27
+- **Supabase Free Tier** (`https://supabase.com/docs`): 500 MB database, 1 GB file storage, 5 GB egress, 50,000 MAU, 2 active projects; pauses after **7 days of inactivity** (retained up to 1 year).
+- **OpenRouter Free Models** (`https://openrouter.ai/docs`): Free `:free` models and `openrouter/free` router are capped at **20 RPM** and **50 RPD** on Standard Free Tier (**1,000 RPD** unlocked after $10 lifetime credit purchase); failed requests count toward RPD.
+- **GitHub Actions** (`https://docs.github.com/en/billing`): Free tier includes compute allowance equivalent to **2,000 minutes/month** on standard 2-core Linux (`ubuntu-latest`) runners for private repositories (unlimited for public repos).
+- **Vercel Hobby Plan** (`https://vercel.com/docs`): $0/month personal non-commercial; includes **1,000,000 function invocations**, **4 CPU-hours**, **360 GB-hours** provisioned memory, **300s max duration** (Fluid Compute), 250 MB uncompressed bundle limit (500 MB Python), single `iad1` region. No overage billing; usage pauses on limit exhaustion.

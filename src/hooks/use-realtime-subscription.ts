@@ -34,10 +34,12 @@ export function useRealtimeSubscription<T = Record<string, unknown>>({
 
   // Keep onEvent and onPoll fresh in refs to avoid recreating subscriptions
   const onEventRef = React.useRef(onEvent);
-  onEventRef.current = onEvent;
-
   const onPollRef = React.useRef(onPoll);
-  onPollRef.current = onPoll;
+
+  React.useEffect(() => {
+    onEventRef.current = onEvent;
+    onPollRef.current = onPoll;
+  }, [onEvent, onPoll]);
 
   // Track recently processed event keys for deduplication
   const processedEventsRef = React.useRef<Map<string, number>>(new Map());

@@ -54,7 +54,7 @@ export function CostMetricsBanner({
           <div className="flex items-center justify-between text-xs text-text-secondary font-mono mb-1">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-accent-cyan" aria-hidden="true" />
-              Today's Spend
+              Today&apos;s Spend
             </span>
             <span className="font-semibold text-text-primary">{dailyPct}%</span>
           </div>

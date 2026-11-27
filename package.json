@@ -1,6 +1,6 @@
 {
   "name": "jarvis",
-  "version": "0.1.0",
+  "version": "10.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
@@ -15,7 +15,8 @@
     "telegram:dev": "tsx scripts/telegram-polling.ts",
     "backup:snapshot": "tsx scripts/backup-runner.ts",
     "backup:drill": "tsx scripts/recovery-drill.ts",
-    "maintenance:prune": "tsx scripts/maintenance-runner.ts"
+    "maintenance:prune": "tsx scripts/maintenance-runner.ts",
+    "release:verify": "tsx scripts/release-verify.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

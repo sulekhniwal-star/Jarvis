@@ -2,8 +2,8 @@ import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { TasksBacklogView } from "@/components/tasks/tasks-backlog-view";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { ApprovalRepository } from "@/lib/repositories/approval-repository";
 import { Task } from "@/lib/repositories/types";
@@ -11,19 +11,14 @@ import { Task } from "@/lib/repositories/types";
 export const dynamic = "force-dynamic";
 
 export default async function TasksPage() {
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Tasks Backlog">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let tasks: Task[] = [];
@@ -35,7 +30,7 @@ export default async function TasksPage() {
 
     const [tasksRes, pendingApprovals] = await Promise.all([
       taskRepo.listAll({ limit: 100 }),
-      approvalRepo.listPending(userId),
+      approvalRepo.listPending(user.id),
     ]);
 
     tasks = tasksRes.data;

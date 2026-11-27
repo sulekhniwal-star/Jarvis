@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { SpecificationRepository } from "@/lib/repositories/specification-repository";
 import { PlanRepository } from "@/lib/repositories/plan-repository";
@@ -11,11 +9,15 @@ import {
   PlannerDAGError,
 } from "@/lib/agents/planner";
 import { AcceptanceCriterion, SpecificationPayload } from "@/lib/agents/specifier";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id: taskId } = await params;
 
@@ -26,21 +28,8 @@ export async function POST(
       );
     }
 
-    // Resolve Supabase client and authenticated user
-    let supabase;
-    let userId: string | undefined;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const taskRepo = new TaskRepository(supabase);
     const specRepo = new SpecificationRepository(supabase);

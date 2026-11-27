@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { MilestoneRepository } from "@/lib/repositories/milestone-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -11,6 +10,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id } = await params;
 
@@ -21,24 +23,8 @@ export async function GET(
       );
     }
 
-    let supabase;
-    let userId: string | undefined;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    if (!userId) {
-      userId = "00000000-0000-0000-0000-000000000001";
-    }
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const projectRepo = new ProjectRepository(supabase);
     const milestoneRepo = new MilestoneRepository(supabase);

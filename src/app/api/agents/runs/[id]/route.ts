@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
@@ -7,11 +6,15 @@ import { parseUnifiedDiff } from "@/lib/agents/engine/verification/diff-inspecto
 import { scoreDiffQuality } from "@/lib/agents/engine/verification/diff-inspector/quality-scorer";
 import { RunArtifact } from "@/types/database";
 import { DiffViolation } from "@/lib/agents/engine/verification/diff-inspector/types";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id } = await params;
     if (!id) {
@@ -21,10 +24,9 @@ export async function GET(
       );
     }
 
-    const adminClient = createAdminClient();
-    const agentRunRepo = new AgentRunRepository(adminClient);
-    const taskRepo = new TaskRepository(adminClient);
-    const projectRepo = new ProjectRepository(adminClient);
+    const agentRunRepo = new AgentRunRepository(auth.supabase);
+    const taskRepo = new TaskRepository(auth.supabase);
+    const projectRepo = new ProjectRepository(auth.supabase);
 
     const run = await agentRunRepo.getById(id);
     if (!run) {
@@ -45,7 +47,7 @@ export async function GET(
           try {
             project = await projectRepo.getById(
               task.project_id,
-              "00000000-0000-0000-0000-000000000001"
+              auth.user.id
             );
           } catch {
             // Ignore project fetch error

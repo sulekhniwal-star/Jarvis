@@ -6,7 +6,8 @@ import {
   EnrichedAgentRun,
   AgentMetrics,
 } from "@/components/agents/agents-console-view";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
@@ -14,6 +15,16 @@ import { ProjectRepository } from "@/lib/repositories/project-repository";
 export const dynamic = "force-dynamic";
 
 export default async function AgentsPage() {
+  const { user, supabase, isConfigured } = await getServerAuth();
+
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Agent Operations Console">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
+  }
+
   let runs: EnrichedAgentRun[] = [];
   let metrics: AgentMetrics = {
     totalRuns: 0,
@@ -25,10 +36,9 @@ export default async function AgentsPage() {
   };
 
   try {
-    const adminClient = createAdminClient();
-    const agentRunRepo = new AgentRunRepository(adminClient);
-    const taskRepo = new TaskRepository(adminClient);
-    const projectRepo = new ProjectRepository(adminClient);
+    const agentRunRepo = new AgentRunRepository(supabase);
+    const taskRepo = new TaskRepository(supabase);
+    const projectRepo = new ProjectRepository(supabase);
 
     const result = await agentRunRepo.listRuns({
       limit: 50,
@@ -55,7 +65,7 @@ export default async function AgentsPage() {
                 try {
                   const project = await projectRepo.getById(
                     task.project_id,
-                    "00000000-0000-0000-0000-000000000001"
+                    user.id
                   );
                   if (project) {
                     projectName = project.name;
@@ -121,7 +131,7 @@ export default async function AgentsPage() {
       avgDurationMs,
     };
   } catch {
-    // In build or environments without DB credentials, metrics and runs remain empty
+    // Graceful fallback on DB errors
   }
 
   return (

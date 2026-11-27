@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { MilestoneRepository } from "@/lib/repositories/milestone-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const CreateProjectSchema = z.object({
   name: z.string({ message: "Project name is required" }).min(1, "Project name is required"),
@@ -12,29 +11,15 @@ const CreateProjectSchema = z.object({
   repositoryUrl: z.string().url().optional().nullable().or(z.literal("")),
   defaultBranch: z.string().optional().default("main"),
   settings: z.record(z.string(), z.unknown()).optional(),
-  userId: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
-    let supabase;
-    let userId: string | undefined;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    if (!userId) {
-      userId = "00000000-0000-0000-0000-000000000001";
-    }
+    const { user, supabase } = auth;
+    const userId = user.id;
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") ?? "50", 10);
@@ -91,6 +76,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json();
     const parsed = CreateProjectSchema.safeParse(body);
@@ -105,27 +93,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let supabase;
-    let userId = parsed.data.userId;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    if (!userId) {
-      userId = "00000000-0000-0000-0000-000000000001";
-    }
-
-    const projectRepo = new ProjectRepository(supabase);
-    const project = await projectRepo.create(userId, {
+    const projectRepo = new ProjectRepository(auth.supabase);
+    const project = await projectRepo.create(auth.user.id, {
       name: parsed.data.name,
       description: parsed.data.description,
       repositoryUrl: parsed.data.repositoryUrl || undefined,

@@ -2,31 +2,26 @@ import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { AuditLedgerView } from "@/components/audit/audit-ledger-view";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import {
   AuditLedgerService,
   AuditEventRecord,
   AuditChainVerificationResult,
   GENESIS_PREV_HASH,
 } from "@/lib/audit/audit-ledger";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuditPage() {
-  let supabase;
-  let userId: string | null = null;
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Audit Ledger">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let events: AuditEventRecord[] = [];
@@ -40,11 +35,11 @@ export default async function AuditPage() {
 
   try {
     const auditService = new AuditLedgerService(supabase);
-    const result = await auditService.listEvents(userId, { limit: 100 });
+    const result = await auditService.listEvents(user.id, { limit: 100 });
     events = result.events;
     totalCount = result.total;
 
-    initialVerification = await auditService.verifyChainIntegrity({ userId });
+    initialVerification = await auditService.verifyChainIntegrity({ userId: user.id });
   } catch (err) {
     console.error("[AuditPage] Failed to prefetch audit ledger data:", err);
   }

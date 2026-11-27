@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { ApprovalRepository } from "@/lib/repositories/approval-repository";
 import { PushGateService } from "@/lib/git/push-gate";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const GitPushInputSchema = z.object({
   action: z.enum(["request", "execute"]),
@@ -12,10 +11,12 @@ const GitPushInputSchema = z.object({
   taskId: z.string().optional(),
   notes: z.string().optional(),
   telegramChatId: z.union([z.string(), z.number()]).optional(),
-  userId: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json();
     const parsed = GitPushInputSchema.safeParse(body);
@@ -37,30 +38,10 @@ export async function POST(request: NextRequest) {
       taskId,
       notes,
       telegramChatId,
-      userId: explicitUserId,
     } = parsed.data;
 
-    let supabase;
-    let userId = explicitUserId;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "UNAUTHORIZED", message: "User authentication required." },
-        { status: 401 }
-      );
-    }
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const approvalRepo = new ApprovalRepository(supabase);
     const pushGateService = new PushGateService({

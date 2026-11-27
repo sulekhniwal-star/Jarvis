@@ -7,27 +7,22 @@ import {
 } from "@/components/memory/memory-browser-view";
 import { MemoryItem } from "@/components/memory/memory-card";
 import { ProjectOption } from "@/components/memory/create-memory-modal";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { MemoryRepository } from "@/lib/repositories/memory-repository";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 
 export const dynamic = "force-dynamic";
 
 export default async function MemoryPage() {
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Semantic Memory Store">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let memories: MemoryItem[] = [];
@@ -45,8 +40,8 @@ export default async function MemoryPage() {
     const projectRepo = new ProjectRepository(supabase);
 
     const [memoriesResult, projectsResult] = await Promise.all([
-      memoryRepo.listMemories({ userId, limit: 100 }),
-      projectRepo.list(userId, { limit: 100 }),
+      memoryRepo.listMemories({ userId: user.id, limit: 100 }),
+      projectRepo.list(user.id, { limit: 100 }),
     ]);
 
     projects = projectsResult.data.map((p) => ({
@@ -70,7 +65,7 @@ export default async function MemoryPage() {
       historicalErrors: memories.filter((m) => m.category === "historical_error").length,
     };
   } catch {
-    // In build or environments without DB credentials, graceful fallback
+    // Graceful fallback
   }
 
   return (
@@ -85,4 +80,3 @@ export default async function MemoryPage() {
     </AppShell>
   );
 }
-

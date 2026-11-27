@@ -9,9 +9,10 @@ export function isAuthorizedSender(fromId: number | string | undefined | null): 
     return false;
   }
 
-  const ownerId = process.env.OWNER_TELEGRAM_ID;
+  const ownerId =
+    process.env.OWNER_TELEGRAM_ID || process.env.TELEGRAM_OWNER_CHAT_ID;
   if (!ownerId) {
-    console.error("[TelegramSecurityGuard] OWNER_TELEGRAM_ID environment variable is not configured.");
+    console.error("[TelegramSecurityGuard] OWNER_TELEGRAM_ID / TELEGRAM_OWNER_CHAT_ID environment variable is not configured.");
     return false;
   }
 
@@ -21,7 +22,7 @@ export function isAuthorizedSender(fromId: number | string | undefined | null): 
 /**
  * Verifies that the X-Telegram-Bot-Api-Secret-Token header matches the configured TELEGRAM_WEBHOOK_SECRET.
  * Uses timing-safe constant-time comparison via SHA-256 buffer normalization (REQ-SEC-03, NFR-SEC-05).
- * If TELEGRAM_WEBHOOK_SECRET is not set (e.g. during local polling development), verification passes.
+ * In production, TELEGRAM_WEBHOOK_SECRET is mandatory.
  */
 export function verifyWebhookSecret(
   headerSecret: string | null | undefined,
@@ -29,7 +30,10 @@ export function verifyWebhookSecret(
 ): boolean {
   const expectedSecret = customSecret ?? process.env.TELEGRAM_WEBHOOK_SECRET;
   if (!expectedSecret) {
-    // Secret verification is optional when secret is not configured
+    if (process.env.NODE_ENV === "production") {
+      console.error("[TelegramSecurityGuard] TELEGRAM_WEBHOOK_SECRET is required in production.");
+      return false;
+    }
     return true;
   }
 

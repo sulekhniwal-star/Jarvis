@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { GET, POST } from "@/app/api/verification/route";
+import { requireApiAuth } from "@/lib/auth/require-auth";
+
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123", email: "owner@jarvis.local" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
 
 vi.mock("@/lib/agents/engine/verification/verification-harness", () => {
   return {
@@ -59,7 +68,6 @@ describe("/api/verification Route Handlers (REQ-VR-01)", () => {
         "typecheck",
         "test",
         "build",
-        "custom",
       ]);
       expect(data.defaultFailFast).toBe(true);
       expect(data.defaultTimeoutMs).toBe(60000);
@@ -100,6 +108,37 @@ describe("/api/verification Route Handlers (REQ-VR-01)", () => {
 
       const data = await response.json();
       expect(data.error).toBe("VALIDATION_FAILED");
+    });
+
+    it("returns 400 when arbitrary custom stage is requested", async () => {
+      const request = new NextRequest("http://localhost:3000/api/verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stages: ["custom"],
+          customCommand: "whoami",
+        }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 401 when unauthenticated", async () => {
+      vi.mocked(requireApiAuth).mockResolvedValueOnce({
+        user: null,
+        supabase: null,
+        errorResponse: NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 }),
+      });
+
+      const request = new NextRequest("http://localhost:3000/api/verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stages: ["lint"] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(401);
     });
   });
 });

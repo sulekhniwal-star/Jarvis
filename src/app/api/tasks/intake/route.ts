@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { SpecificationRepository } from "@/lib/repositories/specification-repository";
 import { createDefaultAIGateway } from "@/lib/ai/gateway";
 import { SpecifierAgent, SpecifierValidationError } from "@/lib/agents/specifier";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const TaskIntakeInputSchema = z.object({
   projectId: z.string().min(1, "Project ID is required"),
   title: z.string().min(1, "Task title is required"),
   rawPrompt: z.string().min(1, "User task prompt is required"),
   priority: z.enum(["low", "medium", "high", "critical"]).optional(),
-  userId: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json();
     const parsed = TaskIntakeInputSchema.safeParse(body);
@@ -30,25 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { projectId, title, rawPrompt, priority, userId: explicitUserId } =
-      parsed.data;
-
-    // Resolve Supabase client and user
-    let supabase;
-    let userId = explicitUserId;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      // In testing or environments without cookies, fallback to admin client
-      supabase = createAdminClient();
-    }
+    const { projectId, title, rawPrompt, priority } = parsed.data;
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const taskRepo = new TaskRepository(supabase);
     const specRepo = new SpecificationRepository(supabase);

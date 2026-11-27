@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { secretScanner } from "@/lib/agents/engine/verification";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const SecretScanRequestSchema = z.object({
   content: z.string({ message: "content must be a string" }),
@@ -12,6 +13,9 @@ const SecretScanRequestSchema = z.object({
 });
 
 export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   return NextResponse.json(
     {
       description:
@@ -42,6 +46,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json().catch(() => ({}));
     const parseResult = SecretScanRequestSchema.safeParse(body);

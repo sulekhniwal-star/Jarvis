@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -20,6 +19,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id } = await params;
 
@@ -43,20 +45,8 @@ export async function POST(
       );
     }
 
-    let supabase;
-    let userId = "00000000-0000-0000-0000-000000000001";
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const projectRepo = new ProjectRepository(supabase);
     const taskRepo = new TaskRepository(supabase);

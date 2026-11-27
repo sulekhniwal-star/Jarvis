@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { diffInspector } from "@/lib/agents/engine/verification";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const DiffInspectionRequestSchema = z.object({
   diffPatch: z.string({ message: "diffPatch must be a string" }),
@@ -9,6 +10,9 @@ const DiffInspectionRequestSchema = z.object({
 });
 
 export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   return NextResponse.json(
     {
       description:
@@ -36,6 +40,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json().catch(() => ({}));
     const parseResult = DiffInspectionRequestSchema.safeParse(body);

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ProjectWorkspaceView } from "@/components/projects/project-workspace-view";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { MilestoneRepository } from "@/lib/repositories/milestone-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
@@ -24,19 +24,14 @@ export default async function ProjectWorkspacePage({ params }: ProjectWorkspaceP
     notFound();
   }
 
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Project Workspace">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   const projectRepo = new ProjectRepository(supabase);
@@ -47,12 +42,12 @@ export default async function ProjectWorkspacePage({ params }: ProjectWorkspaceP
   try {
     if (UUID_REGEX.test(id)) {
       try {
-        project = await projectRepo.getById(id, userId);
+        project = await projectRepo.getById(id, user.id);
       } catch {
-        project = await projectRepo.getBySlug(id, userId);
+        project = await projectRepo.getBySlug(id, user.id);
       }
     } else {
-      project = await projectRepo.getBySlug(id, userId);
+      project = await projectRepo.getBySlug(id, user.id);
     }
   } catch {
     project = null;

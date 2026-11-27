@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { ExecutionCoordinator } from "@/lib/agents/engine/telemetry/execution-coordinator";
 import { TelegramClient } from "@/lib/telegram/client";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const ExecuteTaskStepInputSchema = z.object({
   taskId: z.string().uuid("taskId must be a valid UUID"),
@@ -50,6 +50,9 @@ const ExecuteTaskStepInputSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
@@ -60,10 +63,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search")?.toLowerCase() || undefined;
 
     try {
-      const adminClient = createAdminClient();
-      const agentRunRepo = new AgentRunRepository(adminClient);
-      const taskRepo = new TaskRepository(adminClient);
-      const projectRepo = new ProjectRepository(adminClient);
+      const agentRunRepo = new AgentRunRepository(auth.supabase);
+      const taskRepo = new TaskRepository(auth.supabase);
+      const projectRepo = new ProjectRepository(auth.supabase);
 
       const result = await agentRunRepo.listRuns({
         status,
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest) {
                   try {
                     const project = await projectRepo.getById(
                       task.project_id,
-                      "00000000-0000-0000-0000-000000000001"
+                      auth.user.id
                     );
                     if (project) {
                       projectName = project.name;
@@ -211,6 +213,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json();
     const parsed = ExecuteTaskStepInputSchema.safeParse(body);
@@ -225,16 +230,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let taskRepo: TaskRepository | undefined;
-    let agentRunRepo: AgentRunRepository | undefined;
-
-    try {
-      const adminClient = createAdminClient();
-      taskRepo = new TaskRepository(adminClient);
-      agentRunRepo = new AgentRunRepository(adminClient);
-    } catch {
-      // Repositories remain undefined in headless/offline tests
-    }
+    const taskRepo = new TaskRepository(auth.supabase);
+    const agentRunRepo = new AgentRunRepository(auth.supabase);
 
     const coordinator = new ExecutionCoordinator({
       taskRepo,

@@ -2,24 +2,22 @@ import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { DeploymentsView } from "@/components/deployment/deployments-view";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { DeploymentManager } from "@/lib/deployment/deployment-manager";
 import { DeploymentRecord } from "@/lib/deployment/types";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export default async function DeploymentsPage() {
-  let supabase;
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-  } catch {
-    try {
-      supabase = createAdminClient();
-    } catch {
-      // Fallback
-    }
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Deployments">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let deployments: DeploymentRecord[] = [];

@@ -1,6 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST } from "@/app/api/verification/diff/route";
+
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
 
 describe("/api/verification/diff Route Handlers (REQ-VR-02)", () => {
   describe("GET /api/verification/diff", () => {

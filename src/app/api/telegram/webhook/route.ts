@@ -9,6 +9,9 @@ import {
   TelegramDecisionService,
 } from "@/lib/telegram";
 
+const processedUpdateIds = new Set<number>();
+const MAX_TRACKED_UPDATES = 1000;
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Verify X-Telegram-Bot-Api-Secret-Token header
@@ -29,6 +32,18 @@ export async function POST(req: NextRequest) {
         { error: "Invalid JSON update payload" },
         { status: 400 }
       );
+    }
+
+    // 2.5. Deduplicate repeated Telegram update deliveries
+    if (typeof update.update_id === "number") {
+      if (processedUpdateIds.has(update.update_id)) {
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+      if (processedUpdateIds.size >= MAX_TRACKED_UPDATES) {
+        const oldest = processedUpdateIds.values().next().value;
+        if (oldest !== undefined) processedUpdateIds.delete(oldest);
+      }
+      processedUpdateIds.add(update.update_id);
     }
 
     // 3. Security Guard: Verify update originates from the authorized owner

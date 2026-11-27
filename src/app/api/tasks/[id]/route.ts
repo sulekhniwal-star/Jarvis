@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { SpecificationRepository } from "@/lib/repositories/specification-repository";
 import { PlanRepository } from "@/lib/repositories/plan-repository";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskStateMachine } from "@/lib/state-machines/task-state-machine";
 import { TaskStatus } from "@/types/database";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const UpdateTaskSchema = z.object({
   status: z
@@ -34,6 +33,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id: taskId } = await params;
 
@@ -44,12 +46,7 @@ export async function GET(
       );
     }
 
-    let supabase;
-    try {
-      supabase = await createClient();
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { supabase } = auth;
 
     const taskRepo = new TaskRepository(supabase);
     const specRepo = new SpecificationRepository(supabase);
@@ -84,6 +81,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id: taskId } = await params;
 
@@ -107,12 +107,7 @@ export async function PATCH(
       );
     }
 
-    let supabase;
-    try {
-      supabase = await createClient();
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { supabase } = auth;
 
     const taskRepo = new TaskRepository(supabase);
     const currentTask = await taskRepo.getById(taskId);

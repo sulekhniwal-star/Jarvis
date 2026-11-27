@@ -210,9 +210,19 @@ export function createDefaultAIGateway(
   options?: Partial<AIGatewayOptions>
 ): AIGateway {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const adapter =
-    options?.adapter ??
-    (apiKey ? new OpenRouterAdapter({ apiKey }) : new MockAIAdapter());
+  let adapter: AIProviderAdapter;
+
+  if (options?.adapter) {
+    adapter = options.adapter;
+  } else if (apiKey) {
+    adapter = new OpenRouterAdapter({ apiKey });
+  } else if (process.env.NODE_ENV === "test") {
+    adapter = new MockAIAdapter();
+  } else {
+    throw new Error(
+      "[AI Gateway] OPENROUTER_API_KEY is not configured. Refusing to fall back to MockAIAdapter in non-test environments."
+    );
+  }
 
   return new AIGateway({
     adapter,

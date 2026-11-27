@@ -180,8 +180,8 @@ describe("Dashboard Overview Modules", () => {
   });
 
   describe("Home Dashboard Page", () => {
-    it("renders complete integrated dashboard page without errors", () => {
-      render(<Home />);
+    it("renders complete integrated dashboard page without errors", async () => {
+      render(await Home());
 
       expect(screen.getByText("System Command Center")).toBeInTheDocument();
       expect(screen.getByText("AI Core Gateway")).toBeInTheDocument();

@@ -3,10 +3,10 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ApprovalsPortalView } from "@/components/approvals/approvals-portal-view";
 import { EnrichedApprovalItem } from "@/components/approvals/approval-request-card";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { ApprovalMetrics, ApprovalRepository } from "@/lib/repositories/approval-repository";
 import { generateApprovalToken } from "@/lib/approvals/approval-token";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -22,19 +22,14 @@ interface ProjectLookup {
 }
 
 export default async function ApprovalsPage() {
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Human Approvals">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let approvals: EnrichedApprovalItem[] = [];
@@ -51,8 +46,8 @@ export default async function ApprovalsPage() {
 
     const [listResult, dbMetrics, tasksResult, projectsResult] =
       await Promise.all([
-        approvalRepo.listApprovals(userId, { limit: 100 }),
-        approvalRepo.getApprovalMetrics(userId),
+        approvalRepo.listApprovals(user.id, { limit: 100 }),
+        approvalRepo.getApprovalMetrics(user.id),
         supabase.from("tasks").select("id, title, project_id"),
         supabase.from("projects").select("id, name"),
       ]);
@@ -73,7 +68,7 @@ export default async function ApprovalsPage() {
         id: item.id,
         actionType: item.action_type,
         targetResource: item.target_resource,
-        userId,
+        userId: user.id,
         expiresAt: item.expires_at,
       });
 

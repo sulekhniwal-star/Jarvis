@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { PlanRepository } from "@/lib/repositories/plan-repository";
 import { ApprovalRepository } from "@/lib/repositories/approval-repository";
 import { ApprovalActionType } from "@/types/database";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const PlanDecisionInputSchema = z.object({
   decision: z.enum(["approve", "request_revision"]),
   feedback: z.string().optional(),
-  userId: z.string().optional(),
 });
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id: taskId } = await params;
 
@@ -40,23 +41,9 @@ export async function POST(
       );
     }
 
-    const { decision, feedback, userId: explicitUserId } = parsed.data;
-
-    // Resolve Supabase client and user
-    let supabase;
-    let userId = explicitUserId;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { decision, feedback } = parsed.data;
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const taskRepo = new TaskRepository(supabase);
     const planRepo = new PlanRepository(supabase);

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { MemoryRepository } from "@/lib/repositories/memory-repository";
 import { MemoryCategory } from "@/types/database";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const CreateMemorySchema = z.object({
   category: z.enum([
@@ -18,6 +17,9 @@ const CreateMemorySchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const category = (searchParams.get("category") as MemoryCategory) || undefined;
@@ -28,20 +30,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    let supabase;
-    let userId = "00000000-0000-0000-0000-000000000001";
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const memoryRepo = new MemoryRepository(supabase);
 
@@ -108,6 +98,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json();
     const validation = CreateMemorySchema.safeParse(body);
@@ -122,24 +115,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let supabase;
-    let userId = "00000000-0000-0000-0000-000000000001";
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    const memoryRepo = new MemoryRepository(supabase);
+    const memoryRepo = new MemoryRepository(auth.supabase);
     const newMemory = await memoryRepo.createMemory({
-      userId,
+      userId: auth.user.id,
       projectId: validation.data.projectId ?? null,
       category: validation.data.category,
       content: validation.data.content,

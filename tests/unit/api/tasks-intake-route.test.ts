@@ -3,6 +3,14 @@ import { NextRequest } from "next/server";
 import { POST as intakeHandler } from "@/app/api/tasks/intake/route";
 import { POST as clarifyHandler } from "@/app/api/tasks/[id]/clarify/route";
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 // Mock Supabase
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockResolvedValue({

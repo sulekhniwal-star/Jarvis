@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 const { mockGetSyncStatus, mockClearCache } = vi.hoisted(() => ({
   mockGetSyncStatus: vi.fn(),
   mockClearCache: vi.fn(),

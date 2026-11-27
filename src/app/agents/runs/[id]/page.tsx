@@ -6,7 +6,8 @@ import {
   RunTelemetryView,
   RunTelemetryViewProps,
 } from "@/components/agents/run-telemetry-view";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { AgentRunRepository } from "@/lib/repositories/agent-run-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
@@ -25,6 +26,16 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
     notFound();
   }
 
+  const { user, supabase, isConfigured } = await getServerAuth();
+
+  if (!user || !supabase) {
+    return (
+      <AppShell title={`Run #${id.slice(0, 8)} Telemetry`}>
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
+  }
+
   let runData: RunTelemetryViewProps["run"] | null = null;
   let taskData: RunTelemetryViewProps["task"] = null;
   let projectData: RunTelemetryViewProps["project"] = null;
@@ -32,10 +43,9 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
   let diffSummaryData: RunTelemetryViewProps["diffSummary"] = null;
 
   try {
-    const adminClient = createAdminClient();
-    const agentRunRepo = new AgentRunRepository(adminClient);
-    const taskRepo = new TaskRepository(adminClient);
-    const projectRepo = new ProjectRepository(adminClient);
+    const agentRunRepo = new AgentRunRepository(supabase);
+    const taskRepo = new TaskRepository(supabase);
+    const projectRepo = new ProjectRepository(supabase);
 
     const run = await agentRunRepo.getById(id);
     if (!run) {
@@ -61,7 +71,7 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
             try {
               const project = await projectRepo.getById(
                 task.project_id,
-                "00000000-0000-0000-0000-000000000001"
+                user.id
               );
               if (project) {
                 projectData = {
@@ -105,7 +115,6 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
       }
     }
   } catch {
-    // If database unavailable or run not found
     if (!runData) {
       notFound();
     }

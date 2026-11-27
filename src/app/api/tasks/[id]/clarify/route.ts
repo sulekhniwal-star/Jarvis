@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { SpecificationRepository } from "@/lib/repositories/specification-repository";
 import { createDefaultAIGateway } from "@/lib/ai/gateway";
 import { SpecifierAgent, SpecifierValidationError } from "@/lib/agents/specifier";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const ClarificationInputSchema = z.object({
   answers: z
@@ -17,13 +16,15 @@ const ClarificationInputSchema = z.object({
       })
     )
     .min(1, "At least one clarification answer is required"),
-  userId: z.string().optional(),
 });
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id: taskId } = await params;
 
@@ -47,23 +48,9 @@ export async function POST(
       );
     }
 
-    const { answers, userId: explicitUserId } = parsed.data;
-
-    // Resolve Supabase client and user
-    let supabase;
-    let userId = explicitUserId;
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
+    const { answers } = parsed.data;
+    const { supabase, user } = auth;
+    const userId = user.id;
 
     const taskRepo = new TaskRepository(supabase);
     const specRepo = new SpecificationRepository(supabase);

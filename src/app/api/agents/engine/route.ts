@@ -3,8 +3,12 @@ import {
   codingEngineRegistry,
   MockCodingAgentEngine,
 } from "@/lib/agents/engine";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     // If no engines are registered yet, register the standard mock engine as default
     if (codingEngineRegistry.listEngines().length === 0) {

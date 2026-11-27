@@ -2,8 +2,8 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PlanReviewView } from "@/components/plan-review";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { TaskRepository } from "@/lib/repositories/task-repository";
 import { PlanRepository } from "@/lib/repositories/plan-repository";
 import { PlanPayloadSchema } from "@/lib/agents/planner/types";
@@ -21,12 +21,14 @@ export default async function PlanReviewPage({ params }: PlanReviewPageProps) {
     notFound();
   }
 
-  // Resolve Supabase client
-  let supabase;
-  try {
-    supabase = await createClient();
-  } catch {
-    supabase = createAdminClient();
+  const { user, supabase, isConfigured } = await getServerAuth();
+
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Plan Review">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   const taskRepo = new TaskRepository(supabase);
@@ -66,7 +68,6 @@ export default async function PlanReviewPage({ params }: PlanReviewPageProps) {
     );
   }
 
-  // Parse structured plan payload
   const rawPayload = {
     steps: planRecord.steps,
     dependencies: planRecord.dependencies,

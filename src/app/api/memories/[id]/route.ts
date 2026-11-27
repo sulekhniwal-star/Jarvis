@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { MemoryRepository } from "@/lib/repositories/memory-repository";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const { id } = await params;
     if (!id) {
@@ -16,23 +18,8 @@ export async function DELETE(
       );
     }
 
-    let supabase;
-    let userId = "00000000-0000-0000-0000-000000000001";
-
-    try {
-      supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        userId = session.user.id;
-      }
-    } catch {
-      supabase = createAdminClient();
-    }
-
-    const memoryRepo = new MemoryRepository(supabase);
-    await memoryRepo.deleteMemory(id, userId);
+    const memoryRepo = new MemoryRepository(auth.supabase);
+    await memoryRepo.deleteMemory(id, auth.user.id);
 
     return NextResponse.json(
       { success: true, message: `Memory '${id}' deleted successfully` },

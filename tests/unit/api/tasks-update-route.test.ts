@@ -3,6 +3,14 @@ import { NextRequest } from "next/server";
 import { POST as createTaskInProjectHandler } from "@/app/api/projects/[id]/tasks/route";
 import { GET as getTaskDetailHandler, PATCH as updateTaskHandler } from "@/app/api/tasks/[id]/route";
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 // Mock Supabase
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockResolvedValue({

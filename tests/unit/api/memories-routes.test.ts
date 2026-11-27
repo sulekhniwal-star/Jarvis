@@ -8,6 +8,14 @@ const mockCreateMemory = vi.fn();
 const mockSearchSimilarMemories = vi.fn();
 const mockDeleteMemory = vi.fn();
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockResolvedValue({
     auth: {

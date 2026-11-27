@@ -6,6 +6,14 @@ const mockListRuns = vi.fn();
 const mockTaskGetById = vi.fn();
 const mockProjectGetById = vi.fn();
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn().mockReturnValue({}),
 }));

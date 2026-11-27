@@ -2,8 +2,8 @@ import * as React from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ProjectsIndexView, ProjectSummary } from "@/components/projects/projects-index-view";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { ProjectRepository } from "@/lib/repositories/project-repository";
 import { MilestoneRepository } from "@/lib/repositories/milestone-repository";
 import { TaskRepository } from "@/lib/repositories/task-repository";
@@ -11,19 +11,14 @@ import { TaskRepository } from "@/lib/repositories/task-repository";
 export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="Projects Workspace">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let projects: ProjectSummary[] = [];
@@ -33,7 +28,7 @@ export default async function ProjectsPage() {
     const milestoneRepo = new MilestoneRepository(supabase);
     const taskRepo = new TaskRepository(supabase);
 
-    const paginated = await projectRepo.list(userId, { limit: 50 });
+    const paginated = await projectRepo.list(user.id, { limit: 50 });
 
     projects = await Promise.all(
       paginated.data.map(async (project) => {

@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, ShieldAlert, User } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { useRouter } from "next/navigation";
+import { Menu, ShieldAlert, User, LogOut } from "lucide-react";
 import { RealtimeStatusBadge } from "./realtime-status-badge";
 import { EmergencyStopButton } from "../system/emergency-stop-button";
 
@@ -18,6 +18,22 @@ export function Topbar({
   onOpenMobileNav,
   pendingApprovalsCount = 0,
 }: TopbarProps) {
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = React.useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      // Keep UI responsive
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
   return (
     <header
       className="sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8 h-16 bg-background/80 backdrop-blur-md border-b border-surface-3"
@@ -57,13 +73,24 @@ export function Topbar({
 
         <div className="flex items-center gap-2 pl-3 border-l border-surface-3">
           <RealtimeStatusBadge className="hidden sm:inline-flex" />
-          <div
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 border border-surface-3 text-text-secondary"
-            title="Authenticated Owner"
+          <Link
+            href="/settings"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2 border border-surface-3 text-text-secondary hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan"
+            title="Owner Settings"
             aria-label="Owner profile"
           >
             <User className="w-4 h-4" aria-hidden="true" />
-          </div>
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface-2 border border-surface-3 text-text-secondary hover:text-danger hover:border-danger/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan disabled:opacity-50"
+            title="Sign Out"
+            aria-label="Sign out"
+          >
+            <LogOut className="w-4 h-4" aria-hidden="true" />
+          </button>
         </div>
       </div>
     </header>

@@ -3,26 +3,21 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { CostManagementView } from "@/components/cost/cost-management-view";
 import { MaintenanceControlCard } from "@/components/ops/maintenance-control-card";
+import { AuthRequiredBanner } from "@/components/auth/auth-required-banner";
+import { getServerAuth } from "@/lib/auth/require-auth";
 import { CostRepository, CostSpendSummary } from "@/lib/repositories/cost-repository";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  let supabase;
-  let userId = "00000000-0000-0000-0000-000000000001";
+  const { user, supabase, isConfigured } = await getServerAuth();
 
-  try {
-    supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-  } catch {
-    supabase = createAdminClient();
+  if (!user || !supabase) {
+    return (
+      <AppShell title="System Settings">
+        <AuthRequiredBanner isConfigured={isConfigured} />
+      </AppShell>
+    );
   }
 
   let summary: CostSpendSummary = {
@@ -40,7 +35,7 @@ export default async function SettingsPage() {
 
   try {
     const costRepo = new CostRepository(supabase);
-    summary = await costRepo.getSpendSummary(userId);
+    summary = await costRepo.getSpendSummary(user.id);
   } catch (err) {
     console.error("[SettingsPage] Failed to prefetch cost summary:", err);
   }

@@ -4,6 +4,7 @@ import {
   failureAnalyzer,
   repairPromptSynthesizer,
 } from "@/lib/agents/engine/verification";
+import { requireApiAuth } from "@/lib/auth/require-auth";
 
 const RepairAnalysisRequestSchema = z.object({
   errorOutput: z.string({ message: "errorOutput must be a string" }),
@@ -14,6 +15,9 @@ const RepairAnalysisRequestSchema = z.object({
 });
 
 export async function GET() {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   return NextResponse.json(
     {
       description:
@@ -36,6 +40,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireApiAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   try {
     const body = await request.json().catch(() => ({}));
     const parseResult = RepairAnalysisRequestSchema.safeParse(body);

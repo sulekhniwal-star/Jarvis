@@ -2,6 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { GET } from "@/app/api/agents/sandbox/route";
 import { sandboxOrchestrator } from "@/lib/agents/engine/sandbox";
 
+vi.mock("@/lib/auth/require-auth", () => ({
+  requireApiAuth: vi.fn().mockResolvedValue({
+    user: { id: "user-123" },
+    supabase: {},
+    errorResponse: null,
+  }),
+}));
+
 describe("GET /api/agents/sandbox", () => {
   it("returns 200 with diagnostics and supported modes", async () => {
     const response = await GET();

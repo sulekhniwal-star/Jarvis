@@ -11,6 +11,14 @@ import { Task } from "@/lib/repositories/types";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: () => "/tasks",
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
 }));
 
 describe("WCAG 2.1 AA Accessibility Standards & Layout Ergonomics (REQ-UI-01, NFR-A11Y-01)", () => {
